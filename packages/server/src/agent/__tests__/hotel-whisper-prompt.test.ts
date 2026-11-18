@@ -10,7 +10,7 @@ const profile = { ...EXAMPLE_PROMPT_PROFILE, language: "pt-BR" as const, hotelMo
 
 const whisper = (over: Record<string, unknown> = {}): CommittedEvent => {
   const base = humanLine("psiu, o que voce recomenda pra beber?", "Visitante");
-  return { ...base, payload: { ...base.payload, mode: "whisper", hearing: { "example-friend": "clear" }, ...over } };
+  return { ...base, payload: { ...base.payload, mode: "whisper", hearing: { "example-character": "clear" }, ...over } };
 };
 
 describe("a whisper to the actor reads as private and addressed to it", () => {
@@ -37,9 +37,9 @@ describe("a whisper to the actor reads as private and addressed to it", () => {
 
   it("only a whisper this actor heard clearly counts: a bystander's notice and its own line do not", () => {
     expect(whisperedBy(hotelInput([whisper()]))).toBe('"Visitante"');
-    expect(whisperedBy(hotelInput([whisper({ hearing: { "example-friend": "notice" } })]))).toBeUndefined();
+    expect(whisperedBy(hotelInput([whisper({ hearing: { "example-character": "notice" } })]))).toBeUndefined();
     expect(whisperedBy(hotelInput([whisper({ hearing: {} })]))).toBeUndefined();
-    expect(whisperedBy(hotelInput([{ ...whisper(), actorId: "example-friend" }]))).toBeUndefined();
+    expect(whisperedBy(hotelInput([{ ...whisper(), actorId: "example-character" }]))).toBeUndefined();
     expect(whisperedBy(hotelInput([whisper({ untrusted: false })]))).toBeUndefined();
   });
 
@@ -50,7 +50,7 @@ describe("a whisper to the actor reads as private and addressed to it", () => {
   });
 
   it("an actor's own whisper reads as private to the person it went to", () => {
-    const own: CommittedEvent = { ...humanLine("fica entre nós", "Duda"), actorId: "example-friend", payload: { content: "fica entre nós", senderName: "Duda", mode: "whisper", whisperToName: "Visitante" } };
+    const own: CommittedEvent = { ...humanLine("fica entre nós", "Duda"), actorId: "example-character", payload: { content: "fica entre nós", senderName: "Duda", mode: "whisper", whisperToName: "Visitante" } };
     const built = PromptBuilder.build(hotelInput([own]), profile, "action_intent", undefined, "compact");
     expect(built.user).toContain('"Duda" (cochichando com "Visitante")');
   });

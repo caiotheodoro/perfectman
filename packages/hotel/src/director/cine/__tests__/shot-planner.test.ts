@@ -172,9 +172,9 @@ describe("room changes", () => {
   it("runs the crowd murmur in one room at a time and stops it when the scene leaves", () => {
     const { play, world, intro } = setup();
     expect(uis(intro).some((u) => u.k === "sfx" && u.cue === "crowd_murmur")).toBe(false);
-    world.move("leo", 12);
+    world.move("renan", 12);
     const fresh = setup();
-    fresh.world.move("leo", 12);
+    fresh.world.move("renan", 12);
     const p = new ShotPlanner(DEFAULT_CINE).intro(0, 12, fresh.world, NARRATION);
     expect(uis(p).find((u) => u.k === "sfx")).toMatchObject({ cue: "crowd_murmur", loop: true, id: "murmur-12" });
     void play;

@@ -7,7 +7,7 @@ const PULSE_INTERVAL_MS = 1000;
 function memory(overrides: Partial<Memory> = {}): Memory {
   return {
     id: "m",
-    agentId: "goulart",
+    agentId: "vasco",
     simulationId: "sim",
     type: "episodic",
     subjectAgentIds: [],
@@ -30,8 +30,8 @@ const NOBODY = "nobody-self-id";
 
 describe("scoreMemorySalience", () => {
   it("weights subject relevance above recency (old relevant beats new irrelevant)", () => {
-    const involved = new Set(["bruno"]);
-    const oldRelevant = memory({ createdAt: 10, subjectAgentIds: ["bruno"] });
+    const involved = new Set(["dario"]);
+    const oldRelevant = memory({ createdAt: 10, subjectAgentIds: ["dario"] });
     const newIrrelevant = memory({ createdAt: 200 });
     expect(scoreMemorySalience(oldRelevant, involved, NOBODY, 200, 10, 200, PULSE_INTERVAL_MS)).toBeGreaterThan(
       scoreMemorySalience(newIrrelevant, involved, NOBODY, 200, 10, 200, PULSE_INTERVAL_MS),
@@ -39,9 +39,9 @@ describe("scoreMemorySalience", () => {
   });
 
   it("makes subject relevance strictly dominate every opposing term at once", () => {
-    const involved = new Set(["bruno"]);
+    const involved = new Set(["dario"]);
     const worstRelevant = memory({
-      subjectAgentIds: ["bruno"],
+      subjectAgentIds: ["dario"],
       type: "episodic",
       confidence: 0,
       unresolved: false,
@@ -66,17 +66,17 @@ describe("scoreMemorySalience", () => {
   // used for "my own secret/plan") could never earn the relevance bonus
   // before this fix, no matter how central it was to the agent's behavior.
   it("treats a memory about the agent themselves as relevant, even with no one else involved", () => {
-    const selfSubject = memory({ subjectAgentIds: ["bruno"] });
+    const selfSubject = memory({ subjectAgentIds: ["dario"] });
     const noSubject = memory({ subjectAgentIds: [] });
-    expect(scoreMemorySalience(selfSubject, new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS)).toBeGreaterThan(
-      scoreMemorySalience(noSubject, new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS),
+    expect(scoreMemorySalience(selfSubject, new Set(), "dario", 100, 0, 100, PULSE_INTERVAL_MS)).toBeGreaterThan(
+      scoreMemorySalience(noSubject, new Set(), "dario", 100, 0, 100, PULSE_INTERVAL_MS),
     );
   });
 
   it("does not grant the relevance bonus to a memory about someone else who isn't involved", () => {
     const otherSubject = memory({ subjectAgentIds: ["theo"] });
-    expect(scoreMemorySalience(otherSubject, new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS)).toBe(
-      scoreMemorySalience(memory({ subjectAgentIds: [] }), new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS),
+    expect(scoreMemorySalience(otherSubject, new Set(), "dario", 100, 0, 100, PULSE_INTERVAL_MS)).toBe(
+      scoreMemorySalience(memory({ subjectAgentIds: [] }), new Set(), "dario", 100, 0, 100, PULSE_INTERVAL_MS),
     );
   });
 
@@ -151,14 +151,14 @@ describe("selectRelevantMemories", () => {
       memory({
         id: "open-intent",
         type: "pending_intention",
-        subjectAgentIds: ["bruno"],
+        subjectAgentIds: ["dario"],
         confidence: 0.95,
         unresolved: true,
         createdAt: 40,
       }),
       memory({ id: "noise-3", createdAt: 103 }),
     ];
-    const selected = selectRelevantMemories(store, new Set(["bruno"]), NOBODY, 2, 103, PULSE_INTERVAL_MS);
+    const selected = selectRelevantMemories(store, new Set(["dario"]), NOBODY, 2, 103, PULSE_INTERVAL_MS);
     expect(selected[0]!.id).toBe("open-intent");
   });
 
@@ -169,7 +169,7 @@ describe("selectRelevantMemories", () => {
       memory({
         id: "my-secret",
         type: "self",
-        subjectAgentIds: ["bruno"],
+        subjectAgentIds: ["dario"],
         confidence: 0.9,
         unresolved: true,
         createdAt: 40,
@@ -177,7 +177,7 @@ describe("selectRelevantMemories", () => {
       }),
       memory({ id: "noise-3", createdAt: 103 }),
     ];
-    const selected = selectRelevantMemories(store, new Set(), "bruno", 2, 103, PULSE_INTERVAL_MS);
+    const selected = selectRelevantMemories(store, new Set(), "dario", 2, 103, PULSE_INTERVAL_MS);
     expect(selected[0]!.id).toBe("my-secret");
   });
 

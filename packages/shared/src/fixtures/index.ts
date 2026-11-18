@@ -4,11 +4,11 @@ export type { PersonaSeedEntry } from "./personas.js";
 export { buildSimulationFixture } from "./simulation-fixture.js";
 export type { SimulationFixture } from "./simulation-fixture.js";
 
-export { buildGoulartColdStartScenario } from "./cold-start-first-10-minutes.js";
-export type { GoulartColdStartScenario } from "./cold-start-first-10-minutes.js";
+export { buildVascoColdStartScenario } from "./cold-start-first-10-minutes.js";
+export type { VascoColdStartScenario } from "./cold-start-first-10-minutes.js";
 
-export { buildBrunoCaioExclusionScenario } from "./bruno-caio-exclusion.js";
-export type { BrunoCaioExclusionScenario } from "./bruno-caio-exclusion.js";
+export { buildDarioTomasExclusionScenario } from "./dario-tomas-exclusion.js";
+export type { DarioTomasExclusionScenario } from "./dario-tomas-exclusion.js";
 
 export { buildPrivateChannelMotiveScenario } from "./private-channel-motive.js";
 export type { PrivateChannelMotiveScenario } from "./private-channel-motive.js";

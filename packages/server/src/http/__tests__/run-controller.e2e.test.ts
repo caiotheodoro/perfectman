@@ -60,10 +60,10 @@ async function readFixtures() {
     personas: [
       { filename: "iris.persona.md", text: persona },
       {
-        filename: "bruno.persona.md",
+        filename: "dario.persona.md",
         text: persona
-          .replace("personaId: iris", "personaId: bruno")
-          .replace("displayName: Íris", "displayName: Bruno"),
+          .replace("personaId: iris", "personaId: dario")
+          .replace("displayName: Íris", "displayName: Dario"),
       },
     ],
     scenario: { filename: "dinner.scenario.md", text: scenario },
@@ -154,7 +154,7 @@ describe("RunController — a full mock run", () => {
     const hello = events.find((e) => e.type === "hello");
     expect(hello).toBeDefined();
     if (hello?.type !== "hello") throw new Error("unreachable");
-    expect(hello.agents.map((a) => a.id).sort()).toEqual(["bruno", "iris", "marcela"]);
+    expect(hello.agents.map((a) => a.id).sort()).toEqual(["dario", "iris", "marcela"]);
     expect(hello.channels.map((c) => c.id)).toEqual(["geral", "iris_marcela"]);
   });
 

@@ -39,7 +39,7 @@ describe("hotel-mode prompt (ADR-0023, D43)", () => {
 
   it("renders an arrival as the actor's own, and keeps engine bookkeeping out of the room", () => {
     const base = humanLine("oi", "Visitante");
-    const arrived: CommittedEvent = { ...base, id: "evt-a", actorId: "example-friend", type: "body_arrived", payload: { planId: "p", room: "lounge", tile: [1, 1] } };
+    const arrived: CommittedEvent = { ...base, id: "evt-a", actorId: "example-character", type: "body_arrived", payload: { planId: "p", room: "lounge", tile: [1, 1] } };
     const bookkeeping: CommittedEvent = { ...base, id: "evt-b", type: "speech_deferred", payload: {} };
     const built = PromptBuilder.build(hotelInput([arrived, bookkeeping, base]), profile, "action_intent");
     expect(built.user).toContain("Você chegou.");

@@ -43,7 +43,7 @@ Every concept in the domain has a dedicated type file. No god-objects. Types are
 
 ### Runtime Constants (`src/constants/`)
 
-- **`personas.ts`** — 5 canonical `PersonaConfig` objects: `GOULART`, `BRUNO`, `CAIO`, `MARIANA`, `LEO` plus `ALL_PERSONAS` array and `getPersonaById`. Each persona has archetype, writing style, baseline mood values, social tendencies, and personality dimensions (openness, conscientiousness, extraversion, agreeableness, neuroticism).
+- **`personas.ts`** — 5 canonical `PersonaConfig` objects: `VASCO`, `DARIO`, `TOMAS`, `LARA`, `RENAN` plus `ALL_PERSONAS` array and `getPersonaById`. Each persona has archetype, writing style, baseline mood values, social tendencies, and personality dimensions (openness, conscientiousness, extraversion, agreeableness, neuroticism).
 - **`emotion-rules.ts`** — Interaction matrices: which events trigger which social emotion deltas, mood decay constants, rumination factors.
 - **`stagnation.ts`** — `STAGNATION_THRESHOLDS` (normal/yellow/red/critical), `STAGNATION_WEIGHTS` (per metric), `ATTRACTOR_THRESHOLDS`, `ATTRACTOR_DETECTION_WINDOW_PULSES`.
 - **`circumplex.ts`** — Russell circumplex angle/radius math helpers.
@@ -67,12 +67,12 @@ Validation schemas for: `SimulationEvent`, `AgentIntent`, `AgentState`, `Channel
 |---|---|---|
 | `buildSimulationFixture()` | 5 agents in #geral, neutral baseline | All agents active, no events |
 | `buildFivePersonaSeedFixture()` | Same fixture, returns per-persona entries | Used for multi-agent iteration |
-| `buildGoulartColdStartScenario()` | Empty channel, goulart bored | `boredom_accumulator.value = 0.75 > threshold 0.6`, others offline |
-| `buildBrunoCaioExclusionScenario()` | Caio replies to Goulart, ignoring Bruno | Bruno `fearOfExclusion: 0.2`, Caio reply event with no Bruno target |
-| `buildPrivateChannelMotiveScenario()` | Mariana wants private channel | `desireForIntimacy` elevated, `attraction` and `comfort` toward Caio |
-| `buildDelayedReplyScenario()` | Leo's message 4min unanswered | `socialAnxiety: 0.2`, `timeSinceLastPublicMessage: 240` |
-| `buildNoOpInhibitionScenario()` | Bruno publicly mocked | `shame: 0.85`, `humiliation: 0.75`, `valence: -0.8` |
-| `buildBiasedMemoryScenario()` | Goulart has mixed memories of Caio | 2 positive episodic, 2 negative emotional_residue/social_theory, same timestamp |
+| `buildVascoColdStartScenario()` | Empty channel, vasco bored | `boredom_accumulator.value = 0.75 > threshold 0.6`, others offline |
+| `buildDarioTomasExclusionScenario()` | Tomas replies to Vasco, ignoring Dario | Dario `fearOfExclusion: 0.2`, Tomas reply event with no Dario target |
+| `buildPrivateChannelMotiveScenario()` | Lara wants private channel | `desireForIntimacy` elevated, `attraction` and `comfort` toward Tomas |
+| `buildDelayedReplyScenario()` | Renan's message 4min unanswered | `socialAnxiety: 0.2`, `timeSinceLastPublicMessage: 240` |
+| `buildNoOpInhibitionScenario()` | Dario publicly mocked | `shame: 0.85`, `humiliation: 0.75`, `valence: -0.8` |
+| `buildBiasedMemoryScenario()` | Vasco has mixed memories of Tomas | 2 positive episodic, 2 negative emotional_residue/social_theory, same timestamp |
 
 **`fixtures/helpers.ts`** — factory functions used by all builders: `makeAgentState`, `makeRelationalState`, `makeCommittedEvent`, `makePublicChannel`, `makePrivateChannel`, `membershipFor`, `makeSimulation`, `makeMemory`.
 

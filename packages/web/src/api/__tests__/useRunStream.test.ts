@@ -198,10 +198,10 @@ describe("fold — channels, notices and endings", () => {
     let state = fold(BASE, hello("run_1"));
     state = fold(state, {
       type: "channel",
-      channel: { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "bruno"] },
+      channel: { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "dario"] },
     });
     expect(state.replay?.channels).toHaveLength(1);
-    expect(state.replay?.channels[0]?.memberAgentIds).toEqual(["iris", "bruno"]);
+    expect(state.replay?.channels[0]?.memberAgentIds).toEqual(["iris", "dario"]);
   });
 
   it("collects notices in arrival order", () => {

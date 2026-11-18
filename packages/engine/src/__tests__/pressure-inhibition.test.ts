@@ -6,7 +6,7 @@ import type {
   ActionEmotions,
   CommittedEvent,
 } from "@perfectman/shared";
-import { CAIO, BRUNO, GOULART } from "@perfectman/shared";
+import { TOMAS, DARIO, VASCO } from "@perfectman/shared";
 import { computePressures } from "../pressure/compute-pressures.js";
 import { computeInhibitions } from "../inhibition/compute-inhibitions.js";
 import { deriveMotivations } from "../motivation/derive-motivations.js";
@@ -39,7 +39,7 @@ function makeAgent(id: string, overrides?: Partial<AgentState>): AgentState {
   return {
     agentId: id,
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: BASE_MOOD,
     socialEmotions: ZERO_SOCIAL,
@@ -133,7 +133,7 @@ describe("computePressures", () => {
 describe("computeInhibitions", () => {
   it("returns empty when social emotions are zero", () => {
     const agent = makeAgent("a1");
-    const result = computeInhibitions(agent, CAIO, ZERO_ACTIONS);
+    const result = computeInhibitions(agent, TOMAS, ZERO_ACTIONS);
     // conflict_avoidance might still trigger based on persona.conflictSensitivity
     // All non-persona-driven should be zero
     for (const inh of result) {
@@ -141,11 +141,11 @@ describe("computeInhibitions", () => {
     }
   });
 
-  it("Bruno has high fearOfExclusion inhibition when fearOfExclusion is high", () => {
-    const agent = makeAgent("bruno", {
+  it("Dario has high fearOfExclusion inhibition when fearOfExclusion is high", () => {
+    const agent = makeAgent("dario", {
       socialEmotions: { ...ZERO_SOCIAL, fearOfExclusion: 0.8 },
     });
-    const result = computeInhibitions(agent, BRUNO, ZERO_ACTIONS);
+    const result = computeInhibitions(agent, DARIO, ZERO_ACTIONS);
     const inh = result.find(i => i.type === "fear_of_exclusion_worsening");
     expect(inh).toBeDefined();
     expect(["medium", "high"]).toContain(inh!.strength);
@@ -156,7 +156,7 @@ describe("computeInhibitions", () => {
       socialEmotions: { ...ZERO_SOCIAL, shame: 0.7 },
     });
     const actions = { ...ZERO_ACTIONS, shameWithdrawal: 0.7 };
-    const result = computeInhibitions(agent, CAIO, actions);
+    const result = computeInhibitions(agent, TOMAS, actions);
     expect(result.some(i => i.type === "shame_about_desire")).toBe(true);
   });
 
@@ -164,7 +164,7 @@ describe("computeInhibitions", () => {
     const agent = makeAgent("a1", {
       socialEmotions: { ...ZERO_SOCIAL, shame: 0.8 },
     });
-    const result = computeInhibitions(agent, CAIO, ZERO_ACTIONS);
+    const result = computeInhibitions(agent, TOMAS, ZERO_ACTIONS);
     for (const inh of result) {
       expect(inh.agentId).toBe("a1");
       expect(["low", "medium", "high"]).toContain(inh.strength);
@@ -177,7 +177,7 @@ describe("computeInhibitions", () => {
 describe("deriveMotivations", () => {
   it("returns no motivations when action emotions are zero", () => {
     const agent = makeAgent("a1");
-    const result = deriveMotivations(agent, CAIO, ZERO_ACTIONS);
+    const result = deriveMotivations(agent, TOMAS, ZERO_ACTIONS);
     // boredom might appear due to low arousal
     for (const m of result) {
       // Zero action emotions → boredom (low arousal) is the only motivation production can emit
@@ -190,15 +190,15 @@ describe("deriveMotivations", () => {
     const agent = makeAgent("a1", {
       coreMood: { ...BASE_MOOD, arousal: 0.05 },
     });
-    const result = deriveMotivations(agent, GOULART, ZERO_ACTIONS);
-    // Goulart has boredomSensitivity=1.4
+    const result = deriveMotivations(agent, VASCO, ZERO_ACTIONS);
+    // Vasco has boredomSensitivity=1.4
     expect(result.some(m => m.type === "boredom")).toBe(true);
   });
 
   it("motivations sorted strongest first", () => {
     const agent = makeAgent("a1");
     const actions = { ...ZERO_ACTIONS, curiousApproach: 0.9, repairImpulse: 0.6 };
-    const result = deriveMotivations(agent, CAIO, actions);
+    const result = deriveMotivations(agent, TOMAS, actions);
     const ranks = result.map(m => ({ strong: 2, moderate: 1, weak: 0 })[m.strength]);
     for (let i = 1; i < ranks.length; i++) {
       expect(ranks[i-1]!).toBeGreaterThanOrEqual(ranks[i]!);
@@ -208,7 +208,7 @@ describe("deriveMotivations", () => {
   it("motivation descriptions never contain raw numbers", () => {
     const agent = makeAgent("a1");
     const actions = { ...ZERO_ACTIONS, curiousApproach: 0.8, impulsiveProvocation: 0.7 };
-    const result = deriveMotivations(agent, GOULART, actions);
+    const result = deriveMotivations(agent, VASCO, actions);
     for (const m of result) {
       // Descriptions should not contain standalone decimal numbers like 0.3
       expect(/\b0\.\d+\b/.test(m.description)).toBe(false);

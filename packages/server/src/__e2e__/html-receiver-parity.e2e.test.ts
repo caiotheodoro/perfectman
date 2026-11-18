@@ -258,7 +258,7 @@ describe("html receiver parity (SC-002)", () => {
   it("writes the artifact and renders the four persona names on both paths", async () => {
     expect(existsSync(OUTPUT_PATH)).toBe(true);
     const receiverHtml = generateHtml(receiverReplay);
-    for (const name of ["Ana", "Bruno", "Carla", "Diego"]) {
+    for (const name of ["Ana", "Dario", "Carla", "Diego"]) {
       expect(receiverHtml).toContain(name);
       expect(generateHtml(recorderReplay)).toContain(name);
     }

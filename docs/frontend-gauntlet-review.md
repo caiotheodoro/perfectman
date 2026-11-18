@@ -16,7 +16,7 @@ These are actual React screenshots. Both mobile frames show the first authored i
 
 ## Comparison and selection
 
-Six independent nonhuman studies used the same Iris/Bruno/Marcela public, thought and private sequence. Two fresh-context critics inspected running output at 1280px and 390px without builder rationale. Both chose **E / Graphic**, with D / Companions second. Their complete rankings were E–D–C–A–B–F and E–D–A–B–C–F. These are design judgments, not a user study.
+Six independent nonhuman studies used the same Iris/Dario/Marcela public, thought and private sequence. Two fresh-context critics inspected running output at 1280px and 390px without builder rationale. Both chose **E / Graphic**, with D / Companions second. Their complete rankings were E–D–C–A–B–F and E–D–A–B–C–F. These are design judgments, not a user study.
 
 | Study | Public scene | Largest gap at comparison |
 | --- | --- | --- |

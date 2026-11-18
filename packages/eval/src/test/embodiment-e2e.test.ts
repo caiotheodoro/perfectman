@@ -7,7 +7,7 @@ const ACTORS = [
   { id: "duda", name: "Duda", tile: [3, 4] as [number, number] },
   { id: "rafa", name: "Rafa", tile: [9, 2] as [number, number] },
   { id: "gabi", name: "Gabi", tile: [6, 6] as [number, number] },
-  { id: "leo", name: "Leo", tile: [11, 1] as [number, number] },
+  { id: "renan", name: "Renan", tile: [11, 1] as [number, number] },
 ];
 const IDS = ACTORS.map((a) => a.id);
 
@@ -24,7 +24,7 @@ async function run(seed: number): Promise<{ world: GridWorld; human: string }> {
   await world.runFor(20_000);
   world.grid.humanWalk(human, [2, 3]);
   await world.runFor(10_000);
-  const second = await world.humanSay(human, "Gabi e Leo, venham ca!");
+  const second = await world.humanSay(human, "Gabi e Renan, venham ca!");
   world.loop.requestFocused(second.addressedIds);
   await world.runFor(90_000);
   return { world, human };

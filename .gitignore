@@ -22,10 +22,7 @@ config/persona-notes-template*.md
 packages/server/config/
 packages/server/data/
 packages/server/index.json
-docs/personas/*
-!docs/personas/README.md
-!docs/personas/templates/
-!docs/personas/templates/**
+docs/personas/
 transcript_*.md
 *_assessment.json
 *_asessment.json

@@ -8,7 +8,7 @@ import type { PriorEvent } from "../embodiment/drama-sim-preset.js";
 import { seedState } from "../embodiment/sim-states.js";
 
 const START = 1_000_000;
-const refs = ["ana", "bia", "caio"];
+const refs = ["ana", "bia", "tomas"];
 const calm = (): Map<string, AgentState> => new Map(refs.map((r) => [r, seedState(r, { others: refs })]));
 const hostile = (tone: string, minutesAgo = 2): PriorEvent => ({ actorId: "ana", minutesAgo, tone, targets: ["bia"] });
 
@@ -19,7 +19,7 @@ describe("appraise: what a scene's prior messages do to the people they were sai
     expect(rel.resentment).toBeCloseTo(0.3);
     expect(rel.lastNegativeAt).toBe(START - 120_000);
     expect(START - rel.lastNegativeAt!).toBeLessThanOrEqual(300_000);
-    expect(out.get("caio")!.relationalStates.get("ana")!.resentment).toBe(0);
+    expect(out.get("tomas")!.relationalStates.get("ana")!.resentment).toBe(0);
     expect(out.get("ana")!.relationalStates.get("bia")!.resentment).toBe(0);
   });
 

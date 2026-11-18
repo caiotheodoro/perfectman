@@ -28,7 +28,7 @@ describe("seats, initiative and facing from a distance", () => {
   });
 
   it("every actor of a cast of four sits at least once in 10 minutes when seats are free", () => {
-    const names = ["duda", "rafa", "gabi", "leo"];
+    const names = ["duda", "rafa", "gabi", "renan"];
     for (const ref of names) {
       let mem: PlanInput["memory"] = { firstPlanAt: NOW };
       let sat = 0;

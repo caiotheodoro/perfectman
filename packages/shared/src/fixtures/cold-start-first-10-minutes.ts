@@ -1,11 +1,11 @@
 /**
- * buildGoulartColdStartScenario
- * Goulart arrives in an empty #geral channel.
+ * buildVascoColdStartScenario
+ * Vasco arrives in an empty #geral channel.
  * Boredom + initiative accumulates until he sends the first message.
  *
  * Expected engine signals:
- * - goulart.coreMood.arousal low (boredom)
- * - goulart.initiativeAccumulators: boredom source accumulating
+ * - vasco.coreMood.arousal low (boredom)
+ * - vasco.initiativeAccumulators: boredom source accumulating
  * - Other agents: offline or not yet arrived
  * - After engine step: decision.outcome = "act", triggeringReason = "initiative"
  */
@@ -18,7 +18,7 @@ import type {
   PersonaConfig,
   CommittedEvent,
 } from "../index.js";
-import { GOULART, ALL_PERSONAS } from "../constants/personas.js";
+import { VASCO, ALL_PERSONAS } from "../constants/personas.js";
 import {
   makeSimulation,
   makePublicChannel,
@@ -27,50 +27,50 @@ import {
   makeCommittedEvent,
 } from "./helpers.js";
 
-export type GoulartColdStartScenario = {
+export type VascoColdStartScenario = {
   simulation: Simulation;
   channels: Channel[];
   memberships: ChannelMembership[];
-  goulartPersona: PersonaConfig;
-  goulartState: AgentState;
+  vascoPersona: PersonaConfig;
+  vascoState: AgentState;
   otherPersonas: PersonaConfig[];
   otherStates: AgentState[];
   /** Empty — no messages yet. Channel just opened. */
   committedEvents: CommittedEvent[];
   /**
    * Expected signals from engine step:
-   * - goulart initiative should accumulate (boredom source)
+   * - vasco initiative should accumulate (boredom source)
    * - decision.outcome will be "act" once threshold crossed
    * - triggeringReason = "initiative"
    */
   expectedSignals: {
-    goulartHasHighBoredomInitiative: boolean;
+    vascoHasHighBoredomInitiative: boolean;
     otherAgentsOffline: boolean;
     channelIsEmpty: boolean;
   };
 };
 
-export function buildGoulartColdStartScenario(): GoulartColdStartScenario {
+export function buildVascoColdStartScenario(): VascoColdStartScenario {
   const simulationId = "sim_cold_start";
   const channelId = "ch_geral";
 
   const simulation = makeSimulation(
     simulationId,
-    "Cold Start — Goulart First",
+    "Cold Start — Vasco First",
     ALL_PERSONAS.map(p => p.id),
     [channelId],
   );
 
-  const channel = makePublicChannel(channelId, simulationId, "#geral", ["goulart"]);
-  const memberships = membershipFor(channelId, ["goulart"]);
+  const channel = makePublicChannel(channelId, simulationId, "#geral", ["vasco"]);
+  const memberships = membershipFor(channelId, ["vasco"]);
 
-  // Goulart: low arousal (boredom), above-neutral energy — ready to initiate
-  const goulartState = makeAgentState(
-    "goulart",
+  // Vasco: low arousal (boredom), above-neutral energy — ready to initiate
+  const vascoState = makeAgentState(
+    "vasco",
     simulationId,
-    "goulart",
+    "vasco",
     {
-      valence: GOULART.baselineValence,
+      valence: VASCO.baselineValence,
       arousal: 0.15,          // bored — below baseline
       stability: 0.8,
       energy: 0.7,
@@ -79,8 +79,8 @@ export function buildGoulartColdStartScenario(): GoulartColdStartScenario {
     new Map(),
   );
 
-  // Seed Goulart with a healthy boredom initiative accumulator
-  goulartState.initiativeAccumulators = [
+  // Seed Vasco with a healthy boredom initiative accumulator
+  vascoState.initiativeAccumulators = [
     {
       source: "boredom_accumulator",
       value: 0.75,        // above threshold (0.6)
@@ -92,7 +92,7 @@ export function buildGoulartColdStartScenario(): GoulartColdStartScenario {
   ];
 
   // Others not yet arrived
-  const others = ALL_PERSONAS.filter(p => p.id !== "goulart");
+  const others = ALL_PERSONAS.filter(p => p.id !== "vasco");
   const otherStates = others.map(persona =>
     makeAgentState(persona.id, simulationId, persona.id, {}, {}, new Map()),
   );
@@ -104,13 +104,13 @@ export function buildGoulartColdStartScenario(): GoulartColdStartScenario {
     simulation,
     channels: [channel],
     memberships,
-    goulartPersona: GOULART,
-    goulartState,
+    vascoPersona: VASCO,
+    vascoState,
     otherPersonas: others,
     otherStates,
     committedEvents: [],
     expectedSignals: {
-      goulartHasHighBoredomInitiative: true,
+      vascoHasHighBoredomInitiative: true,
       otherAgentsOffline: true,
       channelIsEmpty: true,
     },

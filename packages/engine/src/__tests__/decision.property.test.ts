@@ -1,13 +1,13 @@
 import { describe, it, expect } from "vitest";
 import fc from "fast-check";
 import type { Pressure, Inhibition, AgentState, DecisionContext, CoreMood, SocialEmotions } from "@perfectman/shared";
-import { CAIO } from "@perfectman/shared";
+import { TOMAS } from "@perfectman/shared";
 import { resolveDecision } from "../decision/resolve-decision.js";
 
 const BASE_MOOD: CoreMood = { valence: 0, arousal: 0.5, stability: 0.6, energy: 0.6, circumplexAngle: 1.5, circumplexRadius: 0.5, momentumValence: 0, momentumArousal: 0 };
 const ZERO_SOCIAL: SocialEmotions = { jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0, affection: 0, resentment: 0, suspicion: 0, admiration: 0, contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0, desireForStatus: 0, desireForIntimacy: 0 };
 const AGENT: AgentState = {
-  agentId: "a1", simulationId: "sim1", personaId: "caio", presence: "active",
+  agentId: "a1", simulationId: "sim1", personaId: "tomas", presence: "active",
   coreMood: BASE_MOOD, socialEmotions: ZERO_SOCIAL, relationalStates: new Map(), memories: [],
   initiativeAccumulators: [], lastProcessedEventId: null, lastActionAt: null, lastRuminationPulse: null,
   arrivalPulse: null, createdAt: 1, updatedAt: 1,
@@ -65,7 +65,7 @@ describe("resolveDecision properties", () => {
       fc.property(fc.array(pulseInput(["low", "medium", "high"]), { minLength: 2, maxLength: 12 }), (pulses) => {
         let prevActed = false;
         for (const p of pulses) {
-          const d = resolveDecision(p.pressures, p.inhibitions, AGENT, CAIO, ctxFor(p, { justActed: prevActed }));
+          const d = resolveDecision(p.pressures, p.inhibitions, AGENT, TOMAS, ctxFor(p, { justActed: prevActed }));
           const acted = d.outcome === "act";
           expect(acted && prevActed).toBe(false);
           prevActed = acted;
@@ -79,7 +79,7 @@ describe("resolveDecision properties", () => {
       fc.property(fc.array(pulseInput(["low", "medium", "high", "overwhelming"]), { minLength: 2, maxLength: 12 }), (pulses) => {
         let prevActed = false;
         for (const p of pulses) {
-          const d = resolveDecision(p.pressures, p.inhibitions, AGENT, CAIO, ctxFor(p, { justActed: prevActed }));
+          const d = resolveDecision(p.pressures, p.inhibitions, AGENT, TOMAS, ctxFor(p, { justActed: prevActed }));
           const acted = d.outcome === "act";
           if (acted && prevActed) expect(p.pressures[0]?.intensity).toBe("overwhelming");
           prevActed = acted;
@@ -91,7 +91,7 @@ describe("resolveDecision properties", () => {
   it("P3: being addressed always reaches the LLM unless a no-op-favoring or high inhibition outranks the urge", () => {
     fc.assert(
       fc.property(pulseInput(["low", "medium", "high"]), fc.boolean(), (p, justActed) => {
-        const d = resolveDecision(p.pressures, p.inhibitions, AGENT, CAIO, ctxFor(p, { addressed: true, justActed }));
+        const d = resolveDecision(p.pressures, p.inhibitions, AGENT, TOMAS, ctxFor(p, { addressed: true, justActed }));
         const top = p.pressures[0];
         const inh = p.inhibitions[0];
         const blocked =
@@ -110,8 +110,8 @@ describe("resolveDecision properties", () => {
     fc.assert(
       fc.property(pulseInput(["low", "medium", "high", "overwhelming"]), fc.boolean(), fc.boolean(), (p, addressed, justActed) => {
         const ctx = ctxFor(p, { addressed, justActed });
-        const a = resolveDecision(p.pressures, p.inhibitions, AGENT, CAIO, ctx);
-        const b = resolveDecision(p.pressures, p.inhibitions, AGENT, CAIO, ctx);
+        const a = resolveDecision(p.pressures, p.inhibitions, AGENT, TOMAS, ctx);
+        const b = resolveDecision(p.pressures, p.inhibitions, AGENT, TOMAS, ctx);
         expect(a).toEqual(b);
         expect(a.needsLLM).toBe(a.outcome === "act");
       }),

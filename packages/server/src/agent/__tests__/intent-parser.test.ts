@@ -15,7 +15,7 @@ describe("IntentParser", () => {
     {
       intentType: "reply_to_message",
       channelTargets: ["general-id"],
-      personTargets: ["agent-peer", "example-friend"],
+      personTargets: ["agent-peer", "example-character"],
       blocked: false,
     },
     {
@@ -306,7 +306,7 @@ Hope you like it!
       actorId: actorId,
       intentType: "reply_to_message",
       channelTarget: "general-id",
-      personTargets: ["agent-unauthorized"], // not agent-peer or example-friend
+      personTargets: ["agent-unauthorized"], // not agent-peer or example-character
       visibleContent: "Who are you?",
       privateMotiveSummary: "Attempt to talk to stranger",
       emotionDrivers: [],

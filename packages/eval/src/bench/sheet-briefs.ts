@@ -35,7 +35,7 @@ export const QUARTO_1214: SheetBrief = {
   drama: "derive",
   cast: [
     { id: "person-1", name: "Dani", goal: "Manter a sua parte escondida sem parecer culpada.", objective: { description: "ficar com o que tirou antes do rateio", costOfExposure: "o grupo a expulsa e ela perde tudo", breakingPoint: "quando contarem o saco de novo na frente dela" } },
-    { id: "person-2", name: "Léo", goal: "Descobrir quem tirou o dinheiro antes do rateio.", objective: { description: "achar quem mexeu no saco", constraint: "sem prova vira inimigo de todos" } },
+    { id: "person-2", name: "Renan", goal: "Descobrir quem tirou o dinheiro antes do rateio.", objective: { description: "achar quem mexeu no saco", constraint: "sem prova vira inimigo de todos" } },
     { id: "person-3", name: "Maju", goal: "Sair do grupo hoje com a sua parte inteira.", objective: { description: "sair com a parte inteira antes do amanhecer", costOfExposure: "se o grupo souber que ela vai embora, a parte dela vira garantia" } },
     { id: "person-4", name: "Bento", goal: "Entregar o saco ao estranho às seis sem que ninguém perceba.", objective: { description: "entregar o saco às seis da manhã", costOfExposure: "os outros o tratam como traidor", breakingPoint: "quando alguém ficar entre ele e a porta" } },
   ],

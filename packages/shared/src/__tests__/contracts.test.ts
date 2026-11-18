@@ -34,8 +34,8 @@ describe("scenario contracts", () => {
 describe("persona pack contracts", () => {
   it("carries the unhinged spec", () => {
     const pack: PersonaPack = {
-      personaId: "bruno",
-      displayName: "Bruno",
+      personaId: "dario",
+      displayName: "Dario",
       archetype: "observer",
       identityFrame: "x",
       voiceGuidelines: [],

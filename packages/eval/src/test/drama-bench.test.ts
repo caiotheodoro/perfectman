@@ -214,7 +214,7 @@ describe("the bench gate (scripts/ci/check-bench-gate.mjs)", () => {
 
   it("[Contract A] the sheet is the whole script: a scenario act it did not write, or a skip beyond its own, is a miss", async () => {
     const r = await result("sheet_climax_by_240");
-    const stray = judge("sheet_climax_by_240", r, (e) => [...e, { kind: "act_started", atMs: 60_000, actId: "stray", verb: "insult", actor: "caio", with: "duda", origin: "scenario" } as DramaEvent].sort((a, b) => a.atMs - b.atMs));
+    const stray = judge("sheet_climax_by_240", r, (e) => [...e, { kind: "act_started", atMs: 60_000, actId: "stray", verb: "insult", actor: "tomas", with: "duda", origin: "scenario" } as DramaEvent].sort((a, b) => a.atMs - b.atMs));
     expect(stray.checks.some((c) => c.startsWith("sheet-no-stray-scenario-acts"))).toBe(true);
     const skip = judge("sheet_climax_by_240", r, (e) => e.map((x) => (x.kind === "act_started" && x.verb === "insult" ? { ...x, authoredSkip: true } : x)));
     expect(skip.checks.some((c) => c.startsWith("sheet-skip-only-peak"))).toBe(true);

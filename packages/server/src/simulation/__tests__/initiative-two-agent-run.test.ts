@@ -24,7 +24,7 @@ import type {
   Simulation,
   SimulationSettings,
 } from "@perfectman/shared";
-import { BRUNO, GOULART, createId } from "@perfectman/shared";
+import { DARIO, VASCO, createId } from "@perfectman/shared";
 import { runEngineStep } from "@perfectman/engine";
 
 /**
@@ -51,7 +51,7 @@ const SIM: Simulation = {
   id: "sim_initiative_run",
   name: "initiative-run",
   status: "running",
-  agentIds: ["agent_bruno", "agent_goulart"],
+  agentIds: ["agent_dario", "agent_vasco"],
   channelIds: ["ch_public"],
   settings: SETTINGS,
   seed: 7,
@@ -156,7 +156,7 @@ async function runTwoAgentSimulation(): Promise<{
   }
 
   const agents: AgentContext[] = [];
-  for (const persona of [BRUNO, GOULART]) {
+  for (const persona of [DARIO, VASCO]) {
     const agentId = `agent_${persona.id}`;
     const state = makeAgentState(agentId, persona);
     await agentStateRepo.upsert(state);

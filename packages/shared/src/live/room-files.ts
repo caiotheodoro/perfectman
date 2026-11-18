@@ -6,11 +6,11 @@ import type { MessageLength } from "../script-likeness/guards.js";
 /** The persona compiler rejects fewer style examples than this. */
 const MIN_EXAMPLES = 3;
 export const ROLES = {
-  connector: { label: "Peacemaker", calibration: "caio", voice: "Warm and quick; looks for common ground.", examples: ["Can we hear everyone out?", "I think we want the same thing.", "Let's take this one step at a time."],
+  connector: { label: "Peacemaker", calibration: "tomas", voice: "Warm and quick; looks for common ground.", examples: ["Can we hear everyone out?", "I think we want the same thing.", "Let's take this one step at a time."],
     examplesPt: ["Calma, vamos ouvir todo mundo.", "Acho que a gente quer a mesma coisa.", "Uma coisa de cada vez, tá?", "Bora conversar com calma.", "Ninguém aqui é inimigo de ninguém.", "Me conta o seu lado, sem pressa."] },
-  skeptic: { label: "Straight talker", calibration: "mariana", voice: "Brief and direct; asks the question others avoid.", examples: ["What aren't we saying?", "That doesn't answer the question.", "I'd rather sort this out now."],
+  skeptic: { label: "Straight talker", calibration: "lara", voice: "Brief and direct; asks the question others avoid.", examples: ["What aren't we saying?", "That doesn't answer the question.", "I'd rather sort this out now."],
     examplesPt: ["O que a gente não está dizendo?", "Isso não responde a pergunta.", "Prefiro resolver isso agora.", "Fala logo o que você quer dizer.", "Hmm, não me convenceu.", "E se a gente olhar os fatos?"] },
-  performer: { label: "Instigator", calibration: "goulart", voice: "Bold and playful; fills silence and challenges the room.", examples: ["Someone had to say it.", "Wait, hear me out.", "You're all being very quiet."],
+  performer: { label: "Instigator", calibration: "vasco", voice: "Bold and playful; fills silence and challenges the room.", examples: ["Someone had to say it.", "Wait, hear me out.", "You're all being very quiet."],
     examplesPt: ["Alguém tinha que falar.", "Espera, me escuta essa.", "Tá todo mundo quieto demais.", "Ah, qual é, anima essa noite!", "Quem topa uma aposta?", "Duvido que vocês aguentem."] },
 } as const;
 /** A reply speed; it sets how long the person takes to answer (`presence.responseDelayMs` in the persona file). */

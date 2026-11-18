@@ -12,7 +12,7 @@ import type {
   RateLimitStatus,
   WorldSignals,
 } from "@perfectman/shared";
-import { CAIO, BRUNO, createSeededRng } from "@perfectman/shared";
+import { TOMAS, DARIO, createSeededRng } from "@perfectman/shared";
 import { runEngineStep } from "../step/run-engine-step.js";
 
 // --- Helpers ---
@@ -55,7 +55,7 @@ function makeAgent(id: string): AgentState {
   return {
     agentId: id,
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: BASE_MOOD,
     socialEmotions: ZERO_SOCIAL,
@@ -139,7 +139,7 @@ function makeSnapshot(overrides?: Partial<EngineSnapshot>): EngineSnapshot {
     simulation: DEFAULT_SIMULATION,
     recentEventsWindow: [],
     agentState: makeAgent("a1"),
-    persona: CAIO,
+    persona: TOMAS,
     channels: [makeChannel("ch1")],
     channelMembership: [makeMembership("ch1", "a1"), makeMembership("ch1", "a2")],
     relationalStates: new Map(),

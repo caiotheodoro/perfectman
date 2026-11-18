@@ -31,7 +31,7 @@ export function makeContextEvent(index: number, simulationId = "sim-1"): Committ
 export function makeContextMemory(index: number, simulationId = "sim-1"): Memory {
   return {
     id: `mem-${String(index).padStart(3, "0")}`,
-    agentId: "example-friend",
+    agentId: "example-character",
     simulationId,
     type: "episodic",
     subjectAgentIds: ["agent-1"],
@@ -57,13 +57,13 @@ export type AgentInputFixtureOptions = {
 };
 
 export function makeAgentRuntimeInput(options: AgentInputFixtureOptions = {}): AgentRuntimeInput {
-  const agentId = "example-friend";
+  const agentId = "example-character";
   return {
     simulationId: options.simulationId ?? "sim-1",
     agentId,
     personaConfig: {
       id: agentId,
-      name: "Example Friend",
+      name: "Example Character",
       archetype: "careful-observer",
       writingStyle: "lowercase blunt",
       styleExamples: [],

@@ -190,9 +190,9 @@ flowchart TD
 Example:
 
 ```text
-Caio answers Goulart but not Bruno.
-Bruno can see the public reply.
-Bruno notices because he already feels excluded.
+Tomas answers Vasco but not Dario.
+Dario can see the public reply.
+Dario notices because he already feels excluded.
 The interpreter reads possible disrespect.
 Pressure says ask what is going on.
 Inhibition says that looks needy.
@@ -232,19 +232,19 @@ Examples:
 
 ```text
 No one has spoken for a while.
-Goulart gets bored and wants to revive the room.
+Vasco gets bored and wants to revive the room.
 He says: "morreu isso aqui foi?"
 ```
 
 ```text
-Caio remembers Giovanni felt safer to talk to.
+Tomas remembers Giovanni felt safer to talk to.
 The public room feels noisy.
 Affinity and comfort rise.
-Caio opens a private channel with Giovanni.
+Tomas opens a private channel with Giovanni.
 ```
 
 ```text
-Bruno keeps replaying a silence from earlier.
+Dario keeps replaying a silence from earlier.
 Rumination raises resentment.
 He acts later even though no new message happened.
 ```
@@ -513,9 +513,9 @@ flowchart TD
 Spectators should see:
 
 ```text
-Bruno noticed Caio was around, just not around for him.
-Caio saw the shift and chose not to repair it.
-Matheus used the silence without making it look like a move.
+Dario noticed Tomas was around, just not around for him.
+Tomas saw the shift and chose not to repair it.
+Felipe used the silence without making it look like a move.
 ```
 
 Spectators should not primarily see:
@@ -551,7 +551,7 @@ sequenceDiagram
 Visible result:
 
 ```text
-Goulart: morreu isso aqui foi?
+Vasco: morreu isso aqui foi?
 ```
 
 Hidden cause:
@@ -583,7 +583,7 @@ sequenceDiagram
 Visible to involved agents:
 
 ```text
-Caio opened a private channel with Giovanni.
+Tomas opened a private channel with Giovanni.
 ```
 
 Hidden motive:
@@ -691,13 +691,13 @@ This creates incomplete information. Incomplete information creates human social
 Example:
 
 ```text
-Caio and Matheus are talking privately.
-Bruno cannot see the private channel.
-Bruno only sees that Caio stopped replying publicly.
-Bruno starts believing Caio is excluding him.
+Tomas and Felipe are talking privately.
+Dario cannot see the private channel.
+Dario only sees that Tomas stopped replying publicly.
+Dario starts believing Tomas is excluding him.
 ```
 
-Bruno may be wrong. That is good. Humans are often wrong about the meaning of silence.
+Dario may be wrong. That is good. Humans are often wrong about the meaning of silence.
 
 ## Attention Engine
 
@@ -736,12 +736,12 @@ is the agent currently focused on a private thread?
 Example:
 
 ```text
-event: Goulart posts in #geral
+event: Vasco posts in #geral
 
-Caio notices with medium-high probability.
-Bruno notices with high probability because he is already suspicious.
+Tomas notices with medium-high probability.
+Dario notices with high probability because he is already suspicious.
 Giovanni notices with low-medium probability and likely lurks.
-Matheus ignores it unless Caio or his private plan is involved.
+Felipe ignores it unless Tomas or his private plan is involved.
 ```
 
 Attention should not always trigger an LLM call. Some events can be stored as low-grade background awareness.
@@ -775,9 +775,9 @@ Presence should change naturally from events and personality. It should not requ
 Examples:
 
 ```text
-After public embarrassment, Bruno becomes avoidant.
-After being directly challenged, Goulart becomes active.
-After private plotting starts, Matheus becomes less public and more private-focused.
+After public embarrassment, Dario becomes avoidant.
+After being directly challenged, Vasco becomes active.
+After private plotting starts, Felipe becomes less public and more private-focused.
 After long low-stakes chatter, Giovanni drifts into lurking.
 ```
 
@@ -920,12 +920,12 @@ Pressure can accumulate. A single ignored message may do little. Five ignored me
 Example:
 
 ```text
-Bruno asks a question in #geral.
-Caio does not answer.
-Matheus posts privately to Caio.
-Bruno sees Caio later react to Goulart.
+Dario asks a question in #geral.
+Tomas does not answer.
+Felipe posts privately to Tomas.
+Dario sees Tomas later react to Vasco.
 
-Bruno pressure:
+Dario pressure:
   urgeToAskWhatIsGoingOn: high
   urgeToMock: medium
   urgeToDisappear: medium
@@ -939,13 +939,13 @@ Personality should not live only in prose prompts. It should affect thresholds.
 Example profiles:
 
 ```text
-Goulart:
+Vasco:
   low threshold for public dominance
   low threshold for fast replies
   medium threshold for private plotting
   low tolerance for public disrespect
 
-Caio:
+Tomas:
   high social awareness
   high masking
   medium threshold for public replies
@@ -957,13 +957,13 @@ Giovanni:
   high threshold for conflict
   high probability of lurking
 
-Bruno:
+Dario:
   low threshold for exclusion anxiety
   medium threshold for confrontation
   high rumination
   high sensitivity to reply latency
 
-Matheus:
+Felipe:
   low threshold for private maneuvering
   high threshold for public drama
   high patience
@@ -1007,16 +1007,16 @@ This is where human behavior appears.
 Examples:
 
 ```text
-Bruno wants to ask why Caio ignored him.
+Dario wants to ask why Tomas ignored him.
 Inhibition says asking directly looks needy.
 He reacts with a sarcastic emoji instead.
 ```
 
 ```text
-Caio notices Bruno is upset.
+Tomas notices Dario is upset.
 Pressure says repair the relationship.
 Masking says stay calm and do not reveal you noticed.
-Caio replies later with a casual joke.
+Tomas replies later with a casual joke.
 ```
 
 ## Agent Mind
@@ -1170,8 +1170,8 @@ Example:
 
 ```text
 relationshipMemory:
-  person: Caio
-  belief: "Caio ignored me publicly while staying active elsewhere."
+  person: Tomas
+  belief: "Tomas ignored me publicly while staying active elsewhere."
   emotion: humiliation
   confidence: medium
   unresolved: true
@@ -1226,8 +1226,8 @@ Good recap style:
 
 ```text
 The room did not explode. It got quieter, which was worse.
-Bruno noticed Caio was still around, just not around for him.
-Matheus used the silence well. Goulart kept the public channel warm enough
+Dario noticed Tomas was still around, just not around for him.
+Felipe used the silence well. Vasco kept the public channel warm enough
 that nobody could accuse anyone of disappearing. By the end, everyone had
 a different version of what had happened.
 ```
@@ -1253,17 +1253,17 @@ Spectators should not be forced into a scoreboard view.
 Avoid leading with:
 
 ```text
-Bruno resentment: 0.82
-Caio masking: 0.91
-Goulart dominance: 0.77
+Dario resentment: 0.82
+Tomas masking: 0.91
+Vasco dominance: 0.77
 ```
 
 Prefer:
 
 ```text
-Bruno has started treating Caio's silence as deliberate.
-Caio noticed the shift but chose not to repair it yet.
-Matheus is moving through the gap.
+Dario has started treating Tomas's silence as deliberate.
+Tomas noticed the shift but chose not to repair it yet.
+Felipe is moving through the gap.
 ```
 
 Numbers can exist internally. The spectator experience should be social and narrative.
@@ -1574,10 +1574,10 @@ sequenceDiagram
 
 Practical effect:
 
-- Tick 13: Goulart and Bruno both write in `#geral`.
+- Tick 13: Vasco and Dario both write in `#geral`.
 - Neither message is a reply to the other.
-- Tick 14: Caio sees both and reacts to the awkward collision.
-- Tick 15: Bruno realizes Goulart was not ignoring him specifically; they were typing over each other.
+- Tick 14: Tomas sees both and reacts to the awkward collision.
+- Tick 15: Dario realizes Vasco was not ignoring him specifically; they were typing over each other.
 
 That is more human than a clean alternating reply loop.
 
@@ -1835,16 +1835,16 @@ Example:
 
 ```text
 Tick 21:
-  Goulart writes in #vip to Caio.
-  Bruno cannot see #vip.
-  Bruno sees Goulart stop replying in #geral.
+  Vasco writes in #vip to Tomas.
+  Dario cannot see #vip.
+  Dario sees Vasco stop replying in #geral.
 
 Tick 22:
-  Bruno's suspicion rises because Goulart is publicly absent.
-  Bruno writes in #geral: "funny how you two got quiet at the same time"
+  Dario's suspicion rises because Vasco is publicly absent.
+  Dario writes in #geral: "funny how you two got quiet at the same time"
 ```
 
-Bruno is not cheating. He is socially inferring from incomplete information.
+Dario is not cheating. He is socially inferring from incomplete information.
 
 ## Memory Architecture
 
@@ -1963,7 +1963,7 @@ Examples:
 
 - "More suspicious of private silence."
 - "More likely to use humor to deflect conflict."
-- "Less likely to respond immediately to Bruno."
+- "Less likely to respond immediately to Dario."
 - "More willing to create private channels."
 
 Do not let mutation turn a recognizable persona into random noise.
@@ -2006,55 +2006,55 @@ This prevents days from ending too early while still allowing dramatic days to c
 
 Five agents:
 
-- Goulart: fast cadence, high dominance, high arousal.
-- Caio: socially observant, medium cadence, high masking.
+- Vasco: fast cadence, high dominance, high arousal.
+- Tomas: socially observant, medium cadence, high masking.
 - Giovanni: morning-active, lower public frequency, high lurking.
-- Bruno: reactive to exclusion, medium-high suspicion.
-- Matheus: quieter, strategic, private-channel prone.
+- Dario: reactive to exclusion, medium-high suspicion.
+- Felipe: quieter, strategic, private-channel prone.
 
 ```text
 Day 1, Tick 01:
-  Due: Goulart, Giovanni
-  Goulart posts in #geral.
+  Due: Vasco, Giovanni
+  Vasco posts in #geral.
   Giovanni lurks and writes memory only.
 
 Tick 02:
-  Due: Caio
-  Caio reacts publicly, but internally notices Giovanni stayed quiet.
+  Due: Tomas
+  Tomas reacts publicly, but internally notices Giovanni stayed quiet.
 
 Tick 03:
-  Due: Bruno, Matheus
-  Bruno posts in #geral.
-  Matheus creates #vip-caio-matheus and invites Caio.
-  Bruno cannot see the private channel creation if permissions hide it.
+  Due: Dario, Felipe
+  Dario posts in #geral.
+  Felipe creates #vip-tomas-felipe and invites Tomas.
+  Dario cannot see the private channel creation if permissions hide it.
 
 Tick 04:
-  Due: Goulart, Caio
+  Due: Vasco, Tomas
   Both read state through Tick 03.
-  Goulart sees Bruno's message and replies publicly.
-  Caio writes privately in #vip-caio-matheus.
+  Vasco sees Dario's message and replies publicly.
+  Tomas writes privately in #vip-tomas-felipe.
   Neither sees the other's Tick 04 output yet.
 
 Tick 05:
-  Due: Bruno
-  Bruno sees Goulart replied publicly but Caio did not.
-  Bruno's socialPressure rises.
-  Bruno chooses silent treatment instead of posting.
+  Due: Dario
+  Dario sees Vasco replied publicly but Tomas did not.
+  Dario's socialPressure rises.
+  Dario chooses silent treatment instead of posting.
 
 Tick 06:
-  Due: Giovanni, Matheus
+  Due: Giovanni, Felipe
   Giovanni sees public weirdness and lurks again.
-  Matheus privately escalates with Caio.
+  Felipe privately escalates with Tomas.
 
 Tick 07:
-  Due: Goulart, Bruno
+  Due: Vasco, Dario
   Both post in #geral from the same Tick 06 snapshot.
   Their messages cross awkwardly.
 
 Tick 08:
-  Due: Caio
-  Caio sees the crossed messages and interprets Bruno as defensive.
-  Caio writes an inner_monologue_summary and does not reply.
+  Due: Tomas
+  Tomas sees the crossed messages and interprets Dario as defensive.
+  Tomas writes an inner_monologue_summary and does not reply.
 ```
 
 The visible chat looks messy, delayed, and socially loaded. The hidden state explains why.
@@ -2085,8 +2085,8 @@ The best spectator output is chapter-like:
 
 ```text
 Day 1 Recap:
-  The server split for the first time. Matheus created a private line to Caio,
-  while Bruno noticed only the silence it left behind. Goulart tried to dominate
+  The server split for the first time. Felipe created a private line to Tomas,
+  while Dario noticed only the silence it left behind. Vasco tried to dominate
   the public room, but his timing made him look defensive. Giovanni saw more
   than he said. By sleep, nobody had full information, but everyone had a theory.
 ```

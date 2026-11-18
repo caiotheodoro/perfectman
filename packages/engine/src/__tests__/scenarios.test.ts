@@ -16,8 +16,8 @@ import {
   createSeededRng,
   buildSimulationFixture,
   buildFivePersonaSeedFixture,
-  buildGoulartColdStartScenario,
-  buildBrunoCaioExclusionScenario,
+  buildVascoColdStartScenario,
+  buildDarioTomasExclusionScenario,
   buildPrivateChannelMotiveScenario,
   buildDelayedReplyScenario,
   buildNoOpInhibitionScenario,
@@ -211,36 +211,36 @@ describe("buildFivePersonaSeedFixture scenario", () => {
   });
 });
 
-// ── 3. buildGoulartColdStartScenario ─────────────────────────────────────────
+// ── 3. buildVascoColdStartScenario ─────────────────────────────────────────
 
-describe("buildGoulartColdStartScenario", () => {
-  it("goulart boredom initiative is above threshold", () => {
-    const s = buildGoulartColdStartScenario();
+describe("buildVascoColdStartScenario", () => {
+  it("vasco boredom initiative is above threshold", () => {
+    const s = buildVascoColdStartScenario();
 
-    expect(s.expectedSignals.goulartHasHighBoredomInitiative).toBe(true);
+    expect(s.expectedSignals.vascoHasHighBoredomInitiative).toBe(true);
     expect(s.expectedSignals.channelIsEmpty).toBe(true);
 
-    const boredomAcc = s.goulartState.initiativeAccumulators.find(
+    const boredomAcc = s.vascoState.initiativeAccumulators.find(
       a => a.source === "boredom_accumulator",
     );
     expect(boredomAcc).toBeDefined();
     expect(boredomAcc!.value).toBeGreaterThan(boredomAcc!.threshold);
   });
 
-  it("goulart engine step proceeds with initiative", () => {
-    const s = buildGoulartColdStartScenario();
+  it("vasco engine step proceeds with initiative", () => {
+    const s = buildVascoColdStartScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 1,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: s.goulartState,
-      persona: s.goulartPersona,
+      agentState: s.vascoState,
+      persona: s.vascoPersona,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.goulartState.relationalStates,
+      relationalStates: s.vascoState.relationalStates,
       worldSignals: { ...DEFAULT_WORLD, activeAgentCount: 1 },
-      rateLimitStatus: makeRateLimit("goulart"),
+      rateLimitStatus: makeRateLimit("vasco"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -259,7 +259,7 @@ describe("buildGoulartColdStartScenario", () => {
   });
 
   it("other agents are offline in cold-start scenario", () => {
-    const s = buildGoulartColdStartScenario();
+    const s = buildVascoColdStartScenario();
     expect(s.expectedSignals.otherAgentsOffline).toBe(true);
     for (const state of s.otherStates) {
       expect(state.presence).toBe("offline");
@@ -267,30 +267,30 @@ describe("buildGoulartColdStartScenario", () => {
   });
 });
 
-// ── 4. buildBrunoCaioExclusionScenario ───────────────────────────────────────
+// ── 4. buildDarioTomasExclusionScenario ───────────────────────────────────────
 
-describe("buildBrunoCaioExclusionScenario", () => {
-  it("bruno initial state has elevated fear and anxiety", () => {
-    const s = buildBrunoCaioExclusionScenario();
-    expect(s.agentStates.bruno.socialEmotions.fearOfExclusion).toBeGreaterThan(0);
-    expect(s.agentStates.bruno.socialEmotions.socialAnxiety).toBeGreaterThan(0);
+describe("buildDarioTomasExclusionScenario", () => {
+  it("dario initial state has elevated fear and anxiety", () => {
+    const s = buildDarioTomasExclusionScenario();
+    expect(s.agentStates.dario.socialEmotions.fearOfExclusion).toBeGreaterThan(0);
+    expect(s.agentStates.dario.socialEmotions.socialAnxiety).toBeGreaterThan(0);
   });
 
-  it("after engine step, bruno fear of exclusion increases due to being ignored", () => {
-    const s = buildBrunoCaioExclusionScenario();
-    const initialFear = s.agentStates.bruno.socialEmotions.fearOfExclusion;
+  it("after engine step, dario fear of exclusion increases due to being ignored", () => {
+    const s = buildDarioTomasExclusionScenario();
+    const initialFear = s.agentStates.dario.socialEmotions.fearOfExclusion;
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: s.agentStates.bruno,
-      persona: s.personas.bruno,
+      agentState: s.agentStates.dario,
+      persona: s.personas.dario,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.bruno.relationalStates,
+      relationalStates: s.agentStates.dario.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("bruno"),
+      rateLimitStatus: makeRateLimit("dario"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -300,26 +300,26 @@ describe("buildBrunoCaioExclusionScenario", () => {
     const result = runEngineStep(snapshot);
 
     // Fear of exclusion should rise (or at minimum not drop significantly)
-    // as caio replied to goulart while ignoring bruno's message
+    // as tomas replied to vasco while ignoring dario's message
     expect(result.updatedAgentState.socialEmotions.fearOfExclusion)
       .toBeGreaterThanOrEqual(initialFear);
     assertEmotionBounds(result.updatedAgentState);
   });
 
-  it("exclusion scenario events produce attention for bruno", () => {
-    const s = buildBrunoCaioExclusionScenario();
+  it("exclusion scenario events produce attention for dario", () => {
+    const s = buildDarioTomasExclusionScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: { ...s.agentStates.bruno, lastProcessedEventId: null },
-      persona: s.personas.bruno,
+      agentState: { ...s.agentStates.dario, lastProcessedEventId: null },
+      persona: s.personas.dario,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.bruno.relationalStates,
+      relationalStates: s.agentStates.dario.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("bruno"),
+      rateLimitStatus: makeRateLimit("dario"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -335,11 +335,11 @@ describe("buildBrunoCaioExclusionScenario", () => {
 // ── 5. buildPrivateChannelMotiveScenario ─────────────────────────────────────
 
 describe("buildPrivateChannelMotiveScenario", () => {
-  it("mariana has high affection and shame", () => {
+  it("lara has high affection and shame", () => {
     const s = buildPrivateChannelMotiveScenario();
-    expect(s.agentStates.mariana.socialEmotions.affection).toBeGreaterThan(0.5);
-    expect(s.agentStates.mariana.socialEmotions.shame).toBeGreaterThan(0.3);
-    expect(s.agentStates.mariana.socialEmotions.socialAnxiety).toBeGreaterThan(0.3);
+    expect(s.agentStates.lara.socialEmotions.affection).toBeGreaterThan(0.5);
+    expect(s.agentStates.lara.socialEmotions.shame).toBeGreaterThan(0.3);
+    expect(s.agentStates.lara.socialEmotions.socialAnxiety).toBeGreaterThan(0.3);
   });
 
   it("create_channel action is available and not blocked", () => {
@@ -349,13 +349,13 @@ describe("buildPrivateChannelMotiveScenario", () => {
       pulseIndex: 1,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: s.agentStates.mariana,
-      persona: s.personas.mariana,
+      agentState: s.agentStates.lara,
+      persona: s.personas.lara,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.mariana.relationalStates,
+      relationalStates: s.agentStates.lara.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("mariana"),
+      rateLimitStatus: makeRateLimit("lara"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -372,20 +372,20 @@ describe("buildPrivateChannelMotiveScenario", () => {
     assertEmotionBounds(result.updatedAgentState);
   });
 
-  it("marianas motivations include attraction or comfort", () => {
+  it("laras motivations include attraction or comfort", () => {
     const s = buildPrivateChannelMotiveScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 1,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: s.agentStates.mariana,
-      persona: s.personas.mariana,
+      agentState: s.agentStates.lara,
+      persona: s.personas.lara,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.mariana.relationalStates,
+      relationalStates: s.agentStates.lara.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("mariana"),
+      rateLimitStatus: makeRateLimit("lara"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -404,30 +404,30 @@ describe("buildPrivateChannelMotiveScenario", () => {
 // ── 6. buildDelayedReplyScenario ─────────────────────────────────────────────
 
 describe("buildDelayedReplyScenario", () => {
-  it("leo has initial social anxiety from scenario setup", () => {
+  it("renan has initial social anxiety from scenario setup", () => {
     const s = buildDelayedReplyScenario();
-    expect(s.agentStates.leo.socialEmotions.socialAnxiety).toBeGreaterThan(0);
-    expect(s.agentStates.leo.socialEmotions.fearOfExclusion).toBeGreaterThan(0);
+    expect(s.agentStates.renan.socialEmotions.socialAnxiety).toBeGreaterThan(0);
+    expect(s.agentStates.renan.socialEmotions.fearOfExclusion).toBeGreaterThan(0);
   });
 
-  it("delayed reply scenario events are visible to leo", () => {
+  it("delayed reply scenario events are visible to renan", () => {
     const s = buildDelayedReplyScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: s.currentPulseIndex,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: { ...s.agentStates.leo, lastProcessedEventId: null },
-      persona: s.personas.leo,
+      agentState: { ...s.agentStates.renan, lastProcessedEventId: null },
+      persona: s.personas.renan,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.leo.relationalStates,
+      relationalStates: s.agentStates.renan.relationalStates,
       worldSignals: {
         ...DEFAULT_WORLD,
         timeSinceLastPublicMessage: 240, // 4 minutes of silence
         channelMessageRatePerMinute: 0.25,
       },
-      rateLimitStatus: makeRateLimit("leo"),
+      rateLimitStatus: makeRateLimit("renan"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -436,9 +436,9 @@ describe("buildDelayedReplyScenario", () => {
 
     const result = runEngineStep(snapshot);
 
-    // Leo should see his own message in visible events
+    // Renan should see his own message in visible events
     expect(result.visibleEvents).toHaveLength(1);
-    expect(result.visibleEvents[0]!.actorId).toBe("leo");
+    expect(result.visibleEvents[0]!.actorId).toBe("renan");
     assertEmotionBounds(result.updatedAgentState);
   });
 
@@ -449,17 +449,17 @@ describe("buildDelayedReplyScenario", () => {
       pulseIndex: s.currentPulseIndex,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: { ...s.agentStates.leo, lastProcessedEventId: null },
-      persona: s.personas.leo,
+      agentState: { ...s.agentStates.renan, lastProcessedEventId: null },
+      persona: s.personas.renan,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.leo.relationalStates,
+      relationalStates: s.agentStates.renan.relationalStates,
       worldSignals: {
         ...DEFAULT_WORLD,
         timeSinceLastPublicMessage: 240,
         channelMessageRatePerMinute: 0.25,
       },
-      rateLimitStatus: makeRateLimit("leo"),
+      rateLimitStatus: makeRateLimit("renan"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -484,31 +484,31 @@ describe("buildDelayedReplyScenario", () => {
 // ── 7. buildNoOpInhibitionScenario ───────────────────────────────────────────
 
 describe("buildNoOpInhibitionScenario", () => {
-  it("bruno has overwhelming shame and humiliation in scenario", () => {
+  it("dario has overwhelming shame and humiliation in scenario", () => {
     const s = buildNoOpInhibitionScenario();
-    expect(s.agentStates.bruno.socialEmotions.shame).toBeGreaterThan(0.7);
-    expect(s.agentStates.bruno.socialEmotions.humiliation).toBeGreaterThan(0.5);
-    expect(s.agentStates.bruno.coreMood.valence).toBeLessThan(-0.5);
+    expect(s.agentStates.dario.socialEmotions.shame).toBeGreaterThan(0.7);
+    expect(s.agentStates.dario.socialEmotions.humiliation).toBeGreaterThan(0.5);
+    expect(s.agentStates.dario.coreMood.valence).toBeLessThan(-0.5);
   });
 
-  it("bruno's shame block exists and the decision honors the docs' rule (pressure vs inhibition)", () => {
+  it("dario's shame block exists and the decision honors the docs' rule (pressure vs inhibition)", () => {
     const s = buildNoOpInhibitionScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 4,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: s.agentStates.bruno,
-      persona: s.personas.bruno,
+      agentState: s.agentStates.dario,
+      persona: s.personas.dario,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.bruno.relationalStates,
+      relationalStates: s.agentStates.dario.relationalStates,
       worldSignals: {
         ...DEFAULT_WORLD,
         highArousalNearby: true,
         averageChannelArousal: 0.7,
       },
-      rateLimitStatus: makeRateLimit("bruno"),
+      rateLimitStatus: makeRateLimit("dario"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -519,7 +519,7 @@ describe("buildNoOpInhibitionScenario", () => {
 
     // The docs' rule: if strongestPressure > strongestInhibition → act (the
     // LLM then decides with the shame in front of it); otherwise the engine
-    // silences. A high-arousal shamed Bruno may ALSO snap back (provoke) —
+    // silences. A high-arousal shamed Dario may ALSO snap back (provoke) —
     // both are valid; the shame block must be present either way.
     const hasShameBlock = result.inhibitions.some(i => i.type === "shame_about_desire");
     expect(hasShameBlock).toBe(true);
@@ -539,13 +539,13 @@ describe("buildNoOpInhibitionScenario", () => {
       pulseIndex: 4,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: s.agentStates.bruno,
-      persona: s.personas.bruno,
+      agentState: s.agentStates.dario,
+      persona: s.personas.dario,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.bruno.relationalStates,
+      relationalStates: s.agentStates.dario.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("bruno"),
+      rateLimitStatus: makeRateLimit("dario"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -556,7 +556,7 @@ describe("buildNoOpInhibitionScenario", () => {
 
     if (result.decision.outcome === "no_op") {
       expect(result.noOpRecord).not.toBeNull();
-      expect(result.noOpRecord!.agentId).toBe("bruno");
+      expect(result.noOpRecord!.agentId).toBe("dario");
       expect(result.decision.privateMotiveSeed.length).toBeGreaterThan(0);
     }
     // (if memory_only or delay, noOpRecord may be null — that's fine)
@@ -566,34 +566,34 @@ describe("buildNoOpInhibitionScenario", () => {
 // ── 8. buildBiasedMemoryScenario ─────────────────────────────────────────────
 
 describe("buildBiasedMemoryScenario", () => {
-  it("goulart has both positive and negative memories of caio in scenario", () => {
+  it("vasco has both positive and negative memories of tomas in scenario", () => {
     const s = buildBiasedMemoryScenario();
-    const tones = s.goulartMemories.map(m => m.emotionalTone);
+    const tones = s.vascoMemories.map(m => m.emotionalTone);
     expect(tones).toContain("positive");
     expect(tones).toContain("negative");
-    expect(s.goulartMemories).toHaveLength(5);
+    expect(s.vascoMemories).toHaveLength(5);
   });
 
-  it("goulart negative mood setup is valid", () => {
+  it("vasco negative mood setup is valid", () => {
     const s = buildBiasedMemoryScenario();
-    expect(s.agentStates.goulart.coreMood.valence).toBeLessThan(-0.3);
-    expect(s.agentStates.goulart.socialEmotions.resentment).toBeGreaterThan(0);
+    expect(s.agentStates.vasco.coreMood.valence).toBeLessThan(-0.3);
+    expect(s.agentStates.vasco.socialEmotions.resentment).toBeGreaterThan(0);
   });
 
-  it("perception packet includes caio-related memories when caio triggers event", () => {
+  it("perception packet includes tomas-related memories when tomas triggers event", () => {
     const s = buildBiasedMemoryScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: { ...s.agentStates.goulart, lastProcessedEventId: null },
-      persona: s.personas.goulart,
+      agentState: { ...s.agentStates.vasco, lastProcessedEventId: null },
+      persona: s.personas.vasco,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.goulart.relationalStates,
+      relationalStates: s.agentStates.vasco.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("goulart"),
+      rateLimitStatus: makeRateLimit("vasco"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -602,11 +602,11 @@ describe("buildBiasedMemoryScenario", () => {
 
     const result = runEngineStep(snapshot);
 
-    // All 5 memories are about caio — should all be relevant
-    const memoriesAboutCaio = result.perceptionPacket.relevantMemories.filter(
-      m => m.subjectAgentIds.includes("caio"),
+    // All 5 memories are about tomas — should all be relevant
+    const memoriesAboutTomas = result.perceptionPacket.relevantMemories.filter(
+      m => m.subjectAgentIds.includes("tomas"),
     );
-    expect(memoriesAboutCaio.length).toBeGreaterThan(0);
+    expect(memoriesAboutTomas.length).toBeGreaterThan(0);
     // Bounded to 8 max
     expect(result.perceptionPacket.relevantMemories.length).toBeLessThanOrEqual(8);
     assertEmotionBounds(result.updatedAgentState);
@@ -614,7 +614,7 @@ describe("buildBiasedMemoryScenario", () => {
 
   it("keeps a salient old memory inside the 8-memory cap against fresher noise", () => {
     const s = buildBiasedMemoryScenario();
-    const template = s.goulartMemories[0]!;
+    const template = s.vascoMemories[0]!;
     const baseTime = template.createdAt;
 
     const openLoop = {
@@ -645,16 +645,16 @@ describe("buildBiasedMemoryScenario", () => {
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
       agentState: {
-        ...s.agentStates.goulart,
+        ...s.agentStates.vasco,
         lastProcessedEventId: null,
-        memories: [...s.goulartMemories, openLoop, ...freshNoise],
+        memories: [...s.vascoMemories, openLoop, ...freshNoise],
       },
-      persona: s.personas.goulart,
+      persona: s.personas.vasco,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.goulart.relationalStates,
+      relationalStates: s.agentStates.vasco.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("goulart"),
+      rateLimitStatus: makeRateLimit("vasco"),
       dt: 3,
       rng: createSeededRng(42),
       now: 1_700_000_000_000,
@@ -669,20 +669,20 @@ describe("buildBiasedMemoryScenario", () => {
     expect(selectedIds.filter(id => id.startsWith("mem_noise_")).length).toBeLessThan(10);
   });
 
-  it("goulart sees the caio trigger event", () => {
+  it("vasco sees the tomas trigger event", () => {
     const s = buildBiasedMemoryScenario();
 
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
       recentEventsWindow: s.committedEvents,
-      agentState: { ...s.agentStates.goulart, lastProcessedEventId: null },
-      persona: s.personas.goulart,
+      agentState: { ...s.agentStates.vasco, lastProcessedEventId: null },
+      persona: s.personas.vasco,
       channels: s.channels,
       channelMembership: s.memberships,
-      relationalStates: s.agentStates.goulart.relationalStates,
+      relationalStates: s.agentStates.vasco.relationalStates,
       worldSignals: DEFAULT_WORLD,
-      rateLimitStatus: makeRateLimit("goulart"),
+      rateLimitStatus: makeRateLimit("vasco"),
       dt: 3,
       rng: createSeededRng(42),
 
@@ -691,10 +691,10 @@ describe("buildBiasedMemoryScenario", () => {
 
     const result = runEngineStep(snapshot);
 
-    // The event from caio should be visible
-    const caioEvents = result.visibleEvents.filter(e => e.actorId === "caio");
-    expect(caioEvents.length).toBeGreaterThan(0);
-    // caio should be in involvedPeople
-    expect(result.perceptionPacket.involvedPeople).toContain("caio");
+    // The event from tomas should be visible
+    const tomasEvents = result.visibleEvents.filter(e => e.actorId === "tomas");
+    expect(tomasEvents.length).toBeGreaterThan(0);
+    // tomas should be in involvedPeople
+    expect(result.perceptionPacket.involvedPeople).toContain("tomas");
   });
 });

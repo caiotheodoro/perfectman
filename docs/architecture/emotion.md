@@ -184,7 +184,7 @@ interface MoodImpulse {
 | Rumination (existing resentment) | -0.05 | +0.05 | 0.2 |
 | Contagion (high-arousal nearby agent) | 0.0 | +0.08 | 0.15 |
 
-The `magnitude` is multiplied by persona-specific sensitivity before applying. Bruno's `exclusion_sensitivity = 1.8` means "excluded from private channel" hits at 0.7 * 1.8 = 1.26 (clamped to 1.0).
+The `magnitude` is multiplied by persona-specific sensitivity before applying. Dario's `exclusion_sensitivity = 1.8` means "excluded from private channel" hits at 0.7 * 1.8 = 1.26 (clamped to 1.0).
 
 ### Mood-Congruent Perception Bias
 
@@ -231,7 +231,7 @@ interface PersonaMoodConfig {
 }
 ```
 
-| Param | Goulart | Caio | Giovanni | Bruno | Matheus |
+| Param | Vasco | Tomas | Giovanni | Dario | Felipe |
 |-------|---------|------|----------|-------|---------|
 | baseline_valence | +0.3 | +0.1 | +0.05 | -0.05 | +0.15 |
 | baseline_arousal | 0.65 | 0.45 | 0.3 | 0.5 | 0.35 |
@@ -247,7 +247,7 @@ interface PersonaMoodConfig {
 | boredom_sensitivity | 1.5 | 0.7 | 0.4 | 0.8 | 0.6 |
 | intimacy_sensitivity | 0.4 | 0.9 | 0.7 | 1.1 | 0.8 |
 
-Goulart: volatile (inertia 0.08), wide rotation (pi/4), high reactivity (1.3). Bruno: highest reactivity (1.5), extreme exclusion sensitivity (1.8), low stability (0.4). Giovanni: most steady (stability 0.85, inertia 0.25), hardest to move. Caio: slow river (inertia 0.2, stability 0.8). Matheus: hard to read (stability 0.75, reactivity 0.6).
+Vasco: volatile (inertia 0.08), wide rotation (pi/4), high reactivity (1.3). Dario: highest reactivity (1.5), extreme exclusion sensitivity (1.8), low stability (0.4). Giovanni: most steady (stability 0.85, inertia 0.25), hardest to move. Tomas: slow river (inertia 0.2, stability 0.8). Felipe: hard to read (stability 0.75, reactivity 0.6).
 
 ---
 
@@ -460,7 +460,7 @@ def update_social_emotions(emotions, events, mood, persona, dt):
 
 ### Per-Persona Social Emotion Sensitivity
 
-| Emotion | Goulart | Caio | Giovanni | Bruno | Matheus |
+| Emotion | Vasco | Tomas | Giovanni | Dario | Felipe |
 |---------|---------|------|----------|-------|---------|
 | jealousy | 0.5 | 0.8 | 0.3 | 1.5 | 0.7 |
 | envy | 0.4 | 0.5 | 0.3 | 1.2 | 0.6 |
@@ -570,12 +570,12 @@ def process_interaction(subject, target_id, event, mood, social_emotions, person
     return delta
 ```
 
-Example: Caio ignores Bruno's message but reacts to Goulart's.
+Example: Tomas ignores Dario's message but reacts to Vasco's.
 
-- Bruno: fearOfExclusion=0.7, exclusion_sensitivity=1.8. "target_ignored_mention" fires at -0.05 * 1.8 = -0.09 trust. Resentment +0.08 * 1.5 (persona) * 1.5 (fear amplification) = +0.18. Massive delta.
-- Caio: was in a private channel. No relational event toward Bruno. Zero delta.
+- Dario: fearOfExclusion=0.7, exclusion_sensitivity=1.8. "target_ignored_mention" fires at -0.05 * 1.8 = -0.09 trust. Resentment +0.08 * 1.5 (persona) * 1.5 (fear amplification) = +0.18. Massive delta.
+- Tomas: was in a private channel. No relational event toward Dario. Zero delta.
 
-Bruno feels humiliated by something Caio did not intend. This asymmetry is emergent.
+Dario feels humiliated by something Tomas did not intend. This asymmetry is emergent.
 
 ### Memory-Emotion Feedback (Rumination)
 
@@ -847,8 +847,8 @@ Numeric state: V=-0.2, A=0.65, suspicion=0.6, fearOfExclusion=0.5
 Prompt: "You feel tense and slightly guarded. Not angry, but watchful.
          You notice a rising suspicion that things are happening without you."
 
-Numeric state: resentment toward Caio = 0.55, jealous_inspection = 0.6, fearOfLookingNeedy = 0.5
-Prompt: "You want to ask Caio what is going on, but something holds you back.
+Numeric state: resentment toward Tomas = 0.55, jealous_inspection = 0.6, fearOfLookingNeedy = 0.5
+Prompt: "You want to ask Tomas what is going on, but something holds you back.
          You do not want to look like you care too much."
 ```
 
@@ -913,7 +913,7 @@ interface AgentSeedState {
 }
 ```
 
-### Example Seed: Goulart
+### Example Seed: Vasco
 
 ```text
 coreMood: V=+0.3, A=0.7, stability=0.4, energy=0.8
@@ -927,16 +927,16 @@ personalityThresholds:
   cadence: responseDelay=[500,5000] (fast), morningBias=0.4, burstProb=0.5, silenceTolerance=3
 
 relationalEmotions:
-  toward Caio: trust=0.6, affection=0.5, suspicion=0.15, familiarity=0.8
-  toward Bruno: trust=0.5, affection=0.4, suspicion=0.1, familiarity=0.65
+  toward Tomas: trust=0.6, affection=0.5, suspicion=0.15, familiarity=0.8
+  toward Dario: trust=0.5, affection=0.4, suspicion=0.1, familiarity=0.65
   toward Giovanni: trust=0.5, affection=0.3, curiosity=0.15, familiarity=0.5
-  toward Matheus: trust=0.55, affection=0.35, suspicion=0.2, familiarity=0.55
+  toward Felipe: trust=0.55, affection=0.35, suspicion=0.2, familiarity=0.55
 
 memories:
-  relationship: "Caio observes but rarely commits first. People listen when he does."
-  relationship: "Bruno uses humor to deflect but takes things personally."
+  relationship: "Tomas observes but rarely commits first. People listen when he does."
+  relationship: "Dario uses humor to deflect but takes things personally."
   relationship: "Giovanni is quiet but solid. Hard to pull into conversation."
-  relationship: "Matheus plays it cool. Not sure what he is planning." (unresolved)
+  relationship: "Felipe plays it cool. Not sure what he is planning." (unresolved)
   self: "I am usually the one who keeps things alive."
   self: "People sometimes think I am aggressive when I am just direct."
   socialTheory: "Group goes quiet unless someone pushes. That someone is usually me."
@@ -945,7 +945,7 @@ initiativeAccumulators: boredom=0.25, statusHunger=0.3, curiosity=0.2
 presence: active
 ```
 
-### Example Seed: Bruno
+### Example Seed: Dario
 
 ```text
 coreMood: V=+0.1, A=0.4, stability=0.3, energy=0.5
@@ -959,19 +959,19 @@ personalityThresholds:
   cadence: responseDelay=[2000,15000], morningBias=0.3, burstProb=0.3, silenceTolerance=6
 
 relationalEmotions:
-  toward Caio: trust=0.55, affection=0.45, suspicion=0.2, desireForCloseness=0.5
-  toward Goulart: trust=0.5, affection=0.4, admiration=0.35, envy=0.2
+  toward Tomas: trust=0.55, affection=0.45, suspicion=0.2, desireForCloseness=0.5
+  toward Vasco: trust=0.5, affection=0.4, admiration=0.35, envy=0.2
   toward Giovanni: trust=0.5, affection=0.3, comfort=0.4
-  toward Matheus: trust=0.45, affection=0.3, suspicion=0.25
+  toward Felipe: trust=0.45, affection=0.3, suspicion=0.25
 
 memories:
-  relationship: "Caio is warm when he engages, but sometimes I wonder if he notices me." (unresolved)
-  relationship: "Goulart runs the room. Sometimes I feel like I am performing for his approval." (unresolved)
+  relationship: "Tomas is warm when he engages, but sometimes I wonder if he notices me." (unresolved)
+  relationship: "Vasco runs the room. Sometimes I feel like I am performing for his approval." (unresolved)
   relationship: "Giovanni is chill. Does not judge."
-  relationship: "Matheus keeps things private. Not always sure if I am included." (unresolved)
+  relationship: "Felipe keeps things private. Not always sure if I am included." (unresolved)
   self: "I make people laugh. That is how I stay relevant."
   self: "When I go quiet, people do not always check on me."
-  socialTheory: "Caio and Goulart have a tighter bond. I am on the edge of the inner circle." (unresolved)
+  socialTheory: "Tomas and Vasco have a tighter bond. I am on the edge of the inner circle." (unresolved)
 
 pendingIntentions: "Drop a joke early to set the tone." (urgency=low, source=habit)
 initiativeAccumulators: boredom=0.15, loneliness=0.2, affiliationHunger=0.35, ruminationIntensity=0.1
@@ -1114,26 +1114,26 @@ def update_accumulators(agent, world_state):
 Staggered arrival by personality:
 
 ```text
-Pulse 0: Goulart arrives (active)
-Pulse 2: Caio arrives (semi_active)
-Pulse 3: Bruno arrives (semi_active)
-Pulse 5: Matheus arrives (lurking)
+Pulse 0: Vasco arrives (active)
+Pulse 2: Tomas arrives (semi_active)
+Pulse 3: Dario arrives (semi_active)
+Pulse 5: Felipe arrives (lurking)
 Pulse 7: Giovanni arrives (lurking)
 ```
 
 Arrival emits `presence_changed` event visible to all agents already present.
 
-**Pulse 0-1: Goulart alone.** Seed boredom (0.25) + 1 pulse accumulation (0.15) = 0.40. Threshold = 0.3. Exceeded. Initiative fires. LLM receives: "You just opened the chat. No one else is here yet. You feel slightly bored and restless." Likely output: casual room-opener.
+**Pulse 0-1: Vasco alone.** Seed boredom (0.25) + 1 pulse accumulation (0.15) = 0.40. Threshold = 0.3. Exceeded. Initiative fires. LLM receives: "You just opened the chat. No one else is here yet. You feel slightly bored and restless." Likely output: casual room-opener.
 
-**Pulse 2-3: Caio and Bruno arrive.** They see Goulart's message via external event path. Caio notices with medium-high probability (ambientNotice=0.65 + familiarity boost). Bruno notices because exclusionSensitivity=0.9 primes awareness. If Caio replied to Goulart before Bruno spoke, Bruno's exclusion sensor activates mildly.
+**Pulse 2-3: Tomas and Dario arrive.** They see Vasco's message via external event path. Tomas notices with medium-high probability (ambientNotice=0.65 + familiarity boost). Dario notices because exclusionSensitivity=0.9 primes awareness. If Tomas replied to Vasco before Dario spoke, Dario's exclusion sensor activates mildly.
 
-**Pulse 5-7: Matheus and Giovanni arrive lurking.** Neither speaks. Matheus stores observations. Giovanni may acknowledge with emoji. Their publicSpeakingThresholds are high enough that initiative cannot fire yet.
+**Pulse 5-7: Felipe and Giovanni arrive lurking.** Neither speaks. Felipe stores observations. Giovanni may acknowledge with emoji. Their publicSpeakingThresholds are high enough that initiative cannot fire yet.
 
 **Pulse 8-15: First dynamics form.** 2-3 messages exist. Memory system has first entries. Relational emotions have first micro-updates. Initiative engine has non-seed data.
 
 Anti-patterns prevented:
 - "Everyone posts simultaneously" — staggered arrival + different thresholds
-- "Dead silence" — non-zero seed accumulators, Goulart's low boredom threshold
+- "Dead silence" — non-zero seed accumulators, Vasco's low boredom threshold
 - "Artificial introductions" — perception packet says "you see X said Y", not "introduce yourself"
 - "Everyone equally interested" — asymmetric relational seeds create differential attention
 - "Pleasantry loops" — unresolved seed memories create latent tension from pulse 1
@@ -1365,7 +1365,7 @@ If not reinforced for 80+ pulses, mutation decays at 0.02 per window toward base
 Narrative summaries in recaps, never to agents:
 
 ```text
-"Something shifted in Bruno this week. After being ignored by Caio five times,
+"Something shifted in Dario this week. After being ignored by Tomas five times,
 he no longer tries to engage directly. He has become more likely to use private
 channels and less likely to confront publicly."
 ```
@@ -1373,11 +1373,11 @@ channels and less likely to confront publicly."
 #### Example Mutation
 
 ```text
-Before: Bruno urgeToEscalate threshold=0.4, fearOfEscalating=0.3
-Trigger: 6 confrontations with Caio, all resulting in being ignored (accumulated_failure)
+Before: Dario urgeToEscalate threshold=0.4, fearOfEscalating=0.3
+Trigger: 6 confrontations with Tomas, all resulting in being ignored (accumulated_failure)
 Mutation: urgeToEscalate +0.10 (now 0.50), fearOfEscalating +0.08 (now 0.38),
           public_private_preference +0.10
-After: Bruno less likely to confront Caio publicly. More likely to vent privately.
+After: Dario less likely to confront Tomas publicly. More likely to vent privately.
        Still feels resentment, but expression changes.
 ```
 
@@ -1420,32 +1420,32 @@ critical_stagnation: critical
 
 Manual controls: force_memory_decay, inject_world_event, boost_boredom, reset_attention_weights, force_presence_change, trigger_gossip, apply_mutation, pause_auto_interventions, trigger_recap.
 
-### Example Scenario: Bruno-Caio Death Spiral
+### Example Scenario: Dario-Tomas Death Spiral
 
 ```text
 Pulse 100-150 (building):
-  Bruno sends 3 mentions to Caio. Caio ignores all 3.
-  Bruno resentment: 0.45 -> 0.58. Caio resentment: 0.30 -> 0.42.
-  Bruno rumination: 8 events, 2 new evidence events.
-  Bruno BDI drops: 0.45 -> 0.32.
+  Dario sends 3 mentions to Tomas. Tomas ignores all 3.
+  Dario resentment: 0.45 -> 0.58. Tomas resentment: 0.30 -> 0.42.
+  Dario rumination: 8 events, 2 new evidence events.
+  Dario BDI drops: 0.45 -> 0.32.
 
 Pulse 150 (detection):
-  FROZEN_PAIR(Bruno, Caio): RDV = 0.018
-  RUMINATION_SPIRAL(Bruno, target=Caio): ratio = 0.80
-  Bruno ERI = 0.04. Composite stagnation = 0.52 (approaching yellow).
+  FROZEN_PAIR(Dario, Tomas): RDV = 0.018
+  RUMINATION_SPIRAL(Dario, target=Tomas): ratio = 0.80
+  Dario ERI = 0.04. Composite stagnation = 0.52 (approaching yellow).
 
 Pulse 150 (intervention):
-  1. memory_decay on Bruno's 3 oldest hostile-Caio memories (intensity -15%)
-  2. attention_perturbation: Bruno attention to Giovanni +0.2, to Caio x0.8
-  3. gossip_catalyst: boost Matheus gossip motivation about Bruno-Caio
+  1. memory_decay on Dario's 3 oldest hostile-Tomas memories (intensity -15%)
+  2. attention_perturbation: Dario attention to Giovanni +0.2, to Tomas x0.8
+  3. gossip_catalyst: boost Felipe gossip motivation about Dario-Tomas
 
 Pulse 150-180 (recovery):
-  155: Bruno notices Giovanni for first time in 30 pulses
-  158: Bruno replies to Giovanni
-  162: Matheus tells Caio privately: "Bruno seems weird lately"
-  165: Caio, prompted by gossip, now has repair pressure +0.1
-  170: Bruno rumination_ratio drops to 0.55
-  175: Bruno-Giovanni 3-message exchange. BDI recovers to 0.38
+  155: Dario notices Giovanni for first time in 30 pulses
+  158: Dario replies to Giovanni
+  162: Felipe tells Tomas privately: "Dario seems weird lately"
+  165: Tomas, prompted by gossip, now has repair pressure +0.1
+  170: Dario rumination_ratio drops to 0.55
+  175: Dario-Giovanni 3-message exchange. BDI recovers to 0.38
   180: Stagnation score drops 0.52 -> 0.41. Spiral broken.
 
 No agent perceived system intervention.

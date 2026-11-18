@@ -11,7 +11,7 @@ describe("PromptBuilder", () => {
     channelId: "general",
     actorId: "agent-peer",
     type: "message_sent",
-    payload: { content: "o Example Friend tá sumido hoje né" },
+    payload: { content: "o Example Character tá sumido hoje né" },
     createdAt: Date.now(),
     pulseIndex: 12,
     sourceEventIds: [],
@@ -45,10 +45,10 @@ describe("PromptBuilder", () => {
 
   const input: AgentRuntimeInput = {
     simulationId: "sim-123",
-    agentId: "example-friend",
+    agentId: "example-character",
     personaConfig: {
-      id: "example-friend",
-      name: "Example Friend",
+      id: "example-character",
+      name: "Example Character",
       archetype: "careful-observer",
       writingStyle: "lowercase blunt",
       styleExamples: ["calmae"],
@@ -68,7 +68,7 @@ describe("PromptBuilder", () => {
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "example-friend",
+      agentId: "example-character",
       triggeringEvent: triggeringEvent,
       visibleContextEvents: [triggeringEvent, contextEvent],
       eventHandles: { e1: "evt-111", e2: "evt-222" },
@@ -78,7 +78,7 @@ describe("PromptBuilder", () => {
       relevantMemories: [
         {
           id: "mem-999",
-          agentId: "example-friend",
+          agentId: "example-character",
           simulationId: "sim-123",
           type: "relationship",
           subjectAgentIds: ["agent-peer"],
@@ -226,7 +226,7 @@ describe("PromptBuilder", () => {
   it("should verify that the prompt includes the triggering event and context", () => {
     const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
-    expect(prompt.user).toContain("o Example Friend tá sumido hoje né");
+    expect(prompt.user).toContain("o Example Character tá sumido hoje né");
     expect(prompt.user).toContain("verdade, deve tá ocupado");
     expect(prompt.user).toContain("agent-peer");
     expect(prompt.user).toContain("agent-peer");

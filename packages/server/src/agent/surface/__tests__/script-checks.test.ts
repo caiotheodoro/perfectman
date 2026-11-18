@@ -25,12 +25,12 @@ describe("length", () => {
   });
 
   it("cuts the line at a sentence boundary when the retry is still over, and does not retry a second time", async () => {
-    const r = await run([LONG, LONG.replace("Ian,", "Caio,")], input(QUIET));
+    const r = await run([LONG, LONG.replace("Omar,", "Tomas,")], input(QUIET));
     expect(r.calls).toBe(2);
     expect(r.seen).toEqual(["len_retry", "len_trimmed"]);
     expect(lengthOf(r.said)).toBeLessThanOrEqual(22);
     expect(r.said).toMatch(/[.!?…]$/);
-    expect(r.said.startsWith("Caio, você tá parado")).toBe(true);
+    expect(r.said.startsWith("Tomas, você tá parado")).toBe(true);
     expect(r.value.fallbackApplied).toBe(false);
   });
 

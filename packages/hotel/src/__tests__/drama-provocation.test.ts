@@ -12,7 +12,7 @@ import { A, B, C, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.js";
 
 describe("classifyHostility: a word list, pt-BR and English, no model", () => {
   it.each([
-    ["Goulart, você é um imbecil", "insult"],
+    ["Vasco, você é um imbecil", "insult"],
     ["Cala a boca, seu otário!", "insult"],
     ["VOCÊ É UMA IDIOTA", "insult"],
     ["what a loser", "insult"],
@@ -27,7 +27,7 @@ describe("classifyHostility: a word list, pt-BR and English, no model", () => {
     expect(classifyHostility(text)).toBe(kind);
   });
 
-  it.each(["Pode me passar o gelo?", "Bom dia, Caio. Tudo bem?", "A casa está uma bagunça.", "repete a pergunta, por favor", "Eu adoro esse lugar", "", undefined])("%s is not hostile", (text) => {
+  it.each(["Pode me passar o gelo?", "Bom dia, Tomas. Tudo bem?", "A casa está uma bagunça.", "repete a pergunta, por favor", "Eu adoro esse lugar", "", undefined])("%s is not hostile", (text) => {
     expect(classifyHostility(text)).toBeUndefined();
   });
 
@@ -51,7 +51,7 @@ const heard = (...refs: string[]): Listener[] => refs.map((ref) => ({ ref, heard
 describe("ProvocationLedger", () => {
   it("an insult at someone by name raises that someone's grievance toward the speaker by the gain, and nobody else's", () => {
     const { l } = ledger();
-    expect(l.note(line("p1", "Goulart, você é um imbecil", { mentioned: ["p2"], addressees: ["p2"] }), heard("p2", "p3"))).toBe("insult");
+    expect(l.note(line("p1", "Vasco, você é um imbecil", { mentioned: ["p2"], addressees: ["p2"] }), heard("p2", "p3"))).toBe("insult");
     expect(l.levelOf("p2", "p1")).toBe(DEFAULT_DRAMA_TUNING.provocation.gain.insult);
     expect(l.levelOf("p1", "p2")).toBe(0);
     expect(l.levelOf("p3", "p1")).toBe(0);
@@ -67,14 +67,14 @@ describe("ProvocationLedger", () => {
 
   it("a line that names someone is about that person even when it is said to another (behind their back): in the room but not within earshot is half of it", () => {
     const { l } = ledger();
-    l.note(line("p1", "o Goulart é um imbecil", { mentioned: ["p2"], addressees: ["p3"] }), [{ ref: "p2", heard: false }, { ref: "p3", heard: true }]);
+    l.note(line("p1", "o Vasco é um imbecil", { mentioned: ["p2"], addressees: ["p3"] }), [{ ref: "p2", heard: false }, { ref: "p3", heard: true }]);
     expect(l.levelOf("p2", "p1")).toBe(DEFAULT_DRAMA_TUNING.provocation.gain.insult * DEFAULT_DRAMA_TUNING.provocation.behindBack);
     expect(l.levelOf("p3", "p1")).toBe(0);
   });
 
   it("a person who is not in the room is told nothing", () => {
     const { l } = ledger();
-    expect(l.note(line("p1", "o Goulart é um imbecil", { mentioned: ["p2"] }), heard("p3"))).toBeUndefined();
+    expect(l.note(line("p1", "o Vasco é um imbecil", { mentioned: ["p2"] }), heard("p3"))).toBeUndefined();
     expect(l.levelOf("p2", "p1")).toBe(0);
   });
 

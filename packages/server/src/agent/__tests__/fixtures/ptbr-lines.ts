@@ -2,7 +2,7 @@
  * Lines the repetition guards are tested against.
  *
  * `PRODUCTION` holds the lines quoted from the 2026-11-10 hotel runs (pt-BR) that got through the older guard. Where the
- * exact text was not kept (the tail of Ian's second line, run 57's and run 53's tic lines) the lines are written in
+ * exact text was not kept (the tail of Omar's second line, run 57's and run 53's tic lines) the lines are written in
  * the same shape and say so.
  *
  * `NORMAL` is a corpus of distinct, ordinary pt-BR chat lines: accents (ã õ ç é ê), "KKKK", slang, ALL CAPS shouting,
@@ -10,18 +10,18 @@
  * a repeat of each other, so any guard that fires on a pair, a window or a single line is a false positive.
  */
 
-/** Run 56, Ian, 15:17:54. */
-export const IAN_FIRST = "Mamão, isso tá frio mesmo! Sente aí junto e vamos criar calor de conversa.";
-/** Run 56, Ian, 15:20:11: the same sentence "with a short tail" (the tail's exact words were not kept). */
-export const IAN_SECOND = `${IAN_FIRST} Bora, galera, ninguém vai ficar de fora.`;
-/** Run 56, Caio, 15:19:05 and again at 15:19:32. */
-export const CAIO_JOKE = "Se ele desse uma força, talvez dispensasse o cooper, KKKKK";
+/** Run 56, Omar, 15:17:54. */
+export const OMAR_FIRST = "Mamão, isso tá frio mesmo! Sente aí junto e vamos criar calor de conversa.";
+/** Run 56, Omar, 15:20:11: the same sentence "with a short tail" (the tail's exact words were not kept). */
+export const OMAR_SECOND = `${OMAR_FIRST} Bora, galera, ninguém vai ficar de fora.`;
+/** Run 56, Tomas, 15:19:05 and again at 15:19:32. */
+export const TOMAS_JOKE = "Se ele desse uma força, talvez dispensasse o cooper, KKKKK";
 
 /** Run 57, Pistolinha: the question in 5 of ~6 lines (the surrounding words are made up, the question is quoted). */
 export const PISTOLINHA = [
-  "Escuta, Caio, antes de abrir qualquer envelope eu preciso saber uma coisa: você já viu um pato de perto?",
+  "Escuta, Tomas, antes de abrir qualquer envelope eu preciso saber uma coisa: você já viu um pato de perto?",
   "Lasanha fechada não se abre assim, hein, e ninguém aqui me respondeu ainda. Você já viu um pato de perto?",
-  "E aí, Caio, deixa o cooper pra lá por um minuto e me diz com sinceridade, você já viu um pato de perto de verdade?",
+  "E aí, Tomas, deixa o cooper pra lá por um minuto e me diz com sinceridade, você já viu um pato de perto de verdade?",
   "Eu falei do envelope, mas antes me diz, porque isso muda tudo: você já viu um pato de perto?",
   "Calma, calma, ninguém aqui vai julgar ninguém, só me responde direito: você já viu um pato de perto?",
 ];
@@ -39,7 +39,7 @@ export const HELOISA = [
 export const DUZENTAS = ["Foram DUZENTAS pratas, eu paguei na hora.", "Duas mil pratas?"];
 
 /** Run 56 garbles. */
-export const GARBLED = ["Éduğunu, mano, fala sério.", "Eu tenho umapreciação enorme por você, Caio."];
+export const GARBLED = ["Éduğunu, mano, fala sério.", "Eu tenho umapreciação enorme por você, Tomas."];
 
 export const NORMAL: readonly string[] = [
   "Oi, gente! Cheguei atrasado de novo, desculpa aí.",
@@ -69,7 +69,7 @@ export const NORMAL: readonly string[] = [
   "Que absurdo! Esse bar tá mais caro a cada semana.",
   "Três reais num copo d'água, dá pra acreditar?",
   "Sério isso? Nem a água é de graça mais.",
-  "Eu sei que você está mentindo, Caio, a sua orelha fica vermelha.",
+  "Eu sei que você está mentindo, Tomas, a sua orelha fica vermelha.",
   "Minha orelha não fica vermelha, é o calor daqui.",
   "Calor nada, tá um frio de rachar lá fora.",
   "Vem cá, senta do meu lado e me conta tudo desde o começo.",
@@ -132,7 +132,7 @@ export const NORMAL: readonly string[] = [
   "O neto? Aquele magrinho de óculos escuros dentro do prédio?",
   "Ele mesmo, e anda gastando bastante pra quem ganha pouco.",
   "Isso não prova nada, ele pode ter ganhado na rifa.",
-  "Rifa de quê, Caio? Nunca vi rifa nesse prédio.",
+  "Rifa de quê, Tomas? Nunca vi rifa nesse prédio.",
   "Do clube de xadrez, tem um prêmio de quinhentos reais.",
   "Quinhentos reais não paga aquele relógio que ele usa.",
   "Pode ser um relógio falso, desses de camelô da esquina.",

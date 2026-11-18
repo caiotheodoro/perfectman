@@ -6,12 +6,12 @@ language: en
 settings:
   pulseIntervalMs: 3000
 channels:
-  - { id: studio, type: public_channel, name: studio, default: true, members: [iris, bruno, marcela] }
+  - { id: studio, type: public_channel, name: studio, default: true, members: [iris, dario, marcela] }
   - { id: iris_marcela, type: private_channel, name: iris+marcela, members: [iris, marcela], createdBy: iris }
 familiarity:
   iris:marcela: close_friends
-  iris:bruno: acquaintances
-  bruno:marcela: acquaintances
+  iris:dario: acquaintances
+  dario:marcela: acquaintances
 cast:
   - agentId: iris
     persona: iris.persona.md
@@ -19,9 +19,9 @@ cast:
     presence: active
     mood: { valence: -0.2, arousal: 0.6 }
     social: { desireForStatus: 0.7 }
-  - agentId: bruno
-    persona: bruno.persona.md
-    displayName: Bruno
+  - agentId: dario
+    persona: dario.persona.md
+    displayName: Dario
     mood: { valence: -0.1, arousal: 0.7 }
   - agentId: marcela
     persona: marcela.persona.md
@@ -29,7 +29,7 @@ cast:
     mood: { valence: -0.3, arousal: 0.35 }
 priorEvents:
   - type: message
-    actorId: bruno
+    actorId: dario
     channelId: studio
     pulseIndex: 0
     minutesAgo: 40
@@ -52,13 +52,13 @@ Somebody has to say the number out loud, and nobody wants to be the one who did.
 ## Agent: iris
 
 ### Hidden Objective
-Find out whether the dinner was arranged deliberately without Bruno, without
+Find out whether the dinner was arranged deliberately without Dario, without
 letting either of them see that it matters to her (resource: the_dinner)
-Constraint: never ask Bruno directly whether he was invited
+Constraint: never ask Dario directly whether he was invited
 Cost of exposure: she becomes the person who keeps score
 Breaking point: if Marcela says the dinner was nothing, twice
 
-## Agent: bruno
+## Agent: dario
 
 ### Hidden Objective
 Keep the dinner from being discussed at all, so nobody works out he was not

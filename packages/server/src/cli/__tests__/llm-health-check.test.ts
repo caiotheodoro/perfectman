@@ -130,7 +130,7 @@ describe("LLM health checks", () => {
     const config = baseConfig();
     config.agents.push({
       ...config.agents[0]!,
-      id: "bruno",
+      id: "dario",
     });
     const fetch = vi.fn().mockResolvedValue({
       ok: true,

@@ -40,7 +40,7 @@ export type FxSpec = {
 
 export const CAST: FxActor[] = [
   { ref: "p1", name: "Ana", avatar: -101 },
-  { ref: "p2", name: "Bruno", avatar: -102 },
+  { ref: "p2", name: "Dario", avatar: -102 },
   { ref: "p3", name: "Carla", avatar: -103 },
 ];
 
@@ -130,7 +130,7 @@ const FACES = ["smile", "neutral", "angry", "sad", "surprised"];
 /** A 4-minute scene with the shape the revamp wants: an accusation early, a build, a reversal, a slap at 3:00, an aftermath, varied acts, faces and camera. */
 export function goodScene(): FxSpec {
   const lines: FxLine[] = [
-    { tS: 4, ref: "p1", text: "You forged her signature on the will, Bruno, and I saw you do it." },
+    { tS: 4, ref: "p1", text: "You forged her signature on the will, Dario, and I saw you do it." },
     { tS: 11, ref: "p2", text: "Prove it. Show the table what you think you saw, Ana?" },
     { tS: 20, ref: "p1", text: "The ink was still wet when you left the study, the pen is in your coat." },
     { tS: 31, ref: "p3", text: "Stop. Both of you. Papa is not even cold yet." },
@@ -141,7 +141,7 @@ export function goodScene(): FxSpec {
     { tS: 100, ref: "p1", text: "I will never sign a thing you wrote, you liar, you cheated all of us." },
     { tS: 118, ref: "p3", text: "Then who forged it? Say it plainly, somebody say it plainly." },
     { tS: 140, ref: "p2", text: "It was you who held the pen, Carla, I saw you in the study." },
-    { tS: 160, ref: "p3", text: "You lied to us, Bruno. You lied to us all night." },
+    { tS: 160, ref: "p3", text: "You lied to us, Dario. You lied to us all night." },
     { tS: 178, ref: "p1", text: "Enough. Enough—" },
     { tS: 190, ref: "p2", text: "Is that why you came, to watch me fall?" },
     { tS: 215, ref: "p1", text: "I came because he asked me to. He said you would burn it all." },

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { BRUNO_PACK, CAIO_PACK, GOULART_PACK, LEO_PACK, MARIANA_PACK, SCRIPT_NORMS, lowNovelty, motifRepeat, nameKeysOf, noveltyFloor, lengthOf, lengthTargetFor } from "@perfectman/shared";
+import { DARIO_PACK, TOMAS_PACK, VASCO_PACK, RENAN_PACK, LARA_PACK, SCRIPT_NORMS, lowNovelty, motifRepeat, nameKeysOf, noveltyFloor, lengthOf, lengthTargetFor } from "@perfectman/shared";
 import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 import { PromptBuilder } from "../prompt-builder.js";
 import { lengthLine, lengthRetryNote, motifRetryNote, noveltyRetryNote, owedFor, owedNote, owedRetryNote, reactionFor, spokenLines } from "../script-guard.js";
 import { hotelInput, humanLine } from "./hotel-test-helpers.js";
-import { CAIO_JOKE, HELOISA, IAN_FIRST, IAN_SECOND, NORMAL, PISTOLINHA } from "./fixtures/ptbr-lines.js";
+import { TOMAS_JOKE, HELOISA, OMAR_FIRST, OMAR_SECOND, NORMAL, PISTOLINHA } from "./fixtures/ptbr-lines.js";
 import type { CommittedEvent } from "@perfectman/shared";
 
 describe("would the checks flag ordinary Portuguese chat?", () => {
@@ -30,7 +30,7 @@ describe("would the checks flag ordinary Portuguese chat?", () => {
   });
 
   it("flags none of the personas' own hand-written lines, said in a room of the others'", () => {
-    const authored = [BRUNO_PACK, CAIO_PACK, GOULART_PACK, LEO_PACK, MARIANA_PACK].flatMap((p) => p.styleExamples);
+    const authored = [DARIO_PACK, TOMAS_PACK, VASCO_PACK, RENAN_PACK, LARA_PACK].flatMap((p) => p.styleExamples);
     let flagged = 0;
     for (let i = 6; i < authored.length; i++) {
       const room = authored.slice(i - 6, i).map((text) => ({ speaker: "x", text }));
@@ -43,8 +43,8 @@ describe("would the checks flag ordinary Portuguese chat?", () => {
   it("does flag the production shapes: run 57's question in the room, run 56's sentence and joke", () => {
     const room = PISTOLINHA.slice(0, 3).map((text) => ({ speaker: "Pistolinha", text }));
     expect(motifRepeat(PISTOLINHA[3]!, room, new Set())?.said).toBe("pato de perto");
-    // Ian's own earlier sentence is what the novelty check reads (the actor's last 3 lines and the turn before), not the room's last 6.
-    expect(lowNovelty(IAN_SECOND, [{ speaker: "Ian", text: IAN_FIRST }, { speaker: "Caio", text: CAIO_JOKE }, { speaker: "Caio", text: CAIO_JOKE }], floor, { self: "Ian" })).toBeDefined();
+    // Omar's own earlier sentence is what the novelty check reads (the actor's last 3 lines and the turn before), not the room's last 6.
+    expect(lowNovelty(OMAR_SECOND, [{ speaker: "Omar", text: OMAR_FIRST }, { speaker: "Tomas", text: TOMAS_JOKE }, { speaker: "Tomas", text: TOMAS_JOKE }], floor, { self: "Omar" })).toBeDefined();
     expect(motifRepeat(HELOISA[3]!, HELOISA.slice(0, 3).map((text) => ({ speaker: "Heloísa", text })), new Set())).toBeUndefined();
   });
 });
@@ -78,9 +78,9 @@ describe("the room as the checks read it", () => {
   const ev = (id: string, actorId: string, name: string, content: string, extra: Record<string, unknown> = {}): CommittedEvent => ({ ...humanLine(content, name), id, actorId, payload: { content, senderName: name, ...extra } }) as CommittedEvent;
 
   it("lists public speech oldest first, marks the actor's own lines and leaves whispers out", () => {
-    const input = hotelInput([ev("e1", "ana", "Ana", "Bento, cadê a chave?"), ev("e2", "example-friend", "Ex", "Na gaveta."), ev("e3", "caco", "Caco", "Psiu.", { mode: "whisper" })]);
+    const input = hotelInput([ev("e1", "ana", "Ana", "Bento, cadê a chave?"), ev("e2", "example-character", "Ex", "Na gaveta."), ev("e3", "caco", "Caco", "Psiu.", { mode: "whisper" })]);
     const lines = spokenLines(input.perceptionPacket);
-    expect(lines.map((l) => [l.speaker, l.own])).toEqual([["Ana", false], ["Ex", input.agentId === "example-friend"]]);
+    expect(lines.map((l) => [l.speaker, l.own])).toEqual([["Ana", false], ["Ex", input.agentId === "example-character"]]);
   });
 
   it("finds a question owed by this actor once two lines have passed", () => {

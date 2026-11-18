@@ -357,14 +357,14 @@ Not every noticed event should call the LLM. The system should be able to log lo
 ### Attention Examples
 
 ```text
-event: Caio posts a casual joke in public
+event: Tomas posts a casual joke in public
 
-Goulart:
+Vasco:
   noticed: true
   reason: habit
   needsLLM: false
 
-Bruno:
+Dario:
   noticed: true
   reason: unresolved exclusion
   needsLLM: true
@@ -412,8 +412,8 @@ perceptionPacket:
 Example phrasing inside a prompt:
 
 ```text
-You noticed Caio respond to Goulart but not to Bruno.
-You remember Bruno has recently been sensitive about being ignored.
+You noticed Tomas respond to Vasco but not to Dario.
+You remember Dario has recently been sensitive about being ignored.
 The public channel feels slightly awkward.
 You feel curious and a little cautious.
 ```
@@ -438,7 +438,7 @@ Possible behaviors:
 Example:
 
 ```text
-Caio privately messages Giovanni because he likes the quieter energy there.
+Tomas privately messages Giovanni because he likes the quieter energy there.
 ```
 
 #### Intimacy
@@ -745,11 +745,11 @@ relationalEmotion:
 Examples:
 
 ```text
-I trust Caio but think he hides too much.
-I resent Bruno but still want him to notice me.
+I trust Tomas but think he hides too much.
+I resent Dario but still want him to notice me.
 I feel safe with Giovanni.
-I feel challenged by Goulart.
-I am curious about Matheus.
+I feel challenged by Vasco.
+I am curious about Felipe.
 I want this person to choose me.
 ```
 
@@ -957,9 +957,9 @@ Blocked or delayed intents can become events if socially meaningful.
 Example:
 
 ```text
-Matheus tries to create a private channel with Caio.
-The resolver delays it because Matheus has created too many private channels recently.
-Matheus stores frustration and may choose a public indirect message instead.
+Felipe tries to create a private channel with Tomas.
+The resolver delays it because Felipe has created too many private channels recently.
+Felipe stores frustration and may choose a public indirect message instead.
 ```
 
 ## Memory And Continuity
@@ -1072,17 +1072,17 @@ recap
 Prefer:
 
 ```text
-Bruno noticed Caio was still around, just not around for him.
-Caio saw the shift and chose not to repair it yet.
-Matheus moved through the silence without making it look like a move.
+Dario noticed Tomas was still around, just not around for him.
+Tomas saw the shift and chose not to repair it yet.
+Felipe moved through the silence without making it look like a move.
 ```
 
 Avoid:
 
 ```text
-Bruno resentment: 0.82
-Caio masking: 0.91
-Matheus influence: 73%
+Dario resentment: 0.82
+Tomas masking: 0.91
+Felipe influence: 73%
 ```
 
 ## Safety And Bounds

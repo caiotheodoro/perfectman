@@ -103,7 +103,7 @@ describe("scene stall", () => {
       i.perceptionPacket.body = { ...i.perceptionPacket.body!, drama: undefined as never };
     });
     expect(stallNoteFor(plain, "pt-BR")).toBeUndefined();
-    const aimed = dramaInput([...events.slice(0, -1), cast(8, "h:42", "Agent, o que você acha?", { untrusted: true, addresseeIds: ["example-friend"] })]);
+    const aimed = dramaInput([...events.slice(0, -1), cast(8, "h:42", "Agent, o que você acha?", { untrusted: true, addresseeIds: ["example-character"] })]);
     expect(stallNoteFor(aimed, "pt-BR")).toBeUndefined();
   });
 

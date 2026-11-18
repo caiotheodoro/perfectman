@@ -108,12 +108,12 @@ const DEFAULT_SETTINGS: SimulationSettings = {
 // ── Private channel isolation ──────────────────────────────────────────────────
 
 describe("private channel event never leaks to non-member", () => {
-  const privateChannel = makePrivateChannel("priv1", ["mariana", "caio"]);
-  const publicChannel = makePublicChannel("ch_public", ["mariana", "caio", "goulart"]);
+  const privateChannel = makePrivateChannel("priv1", ["lara", "tomas"]);
+  const publicChannel = makePublicChannel("ch_public", ["lara", "tomas", "vasco"]);
 
   const privateEvent = makeEvent("e_priv", {
     channelId: "priv1",
-    actorId: "mariana",
+    actorId: "lara",
     visibility: {
       visibleToAgents: [],
       visibleToSpectators: false,
@@ -124,26 +124,26 @@ describe("private channel event never leaks to non-member", () => {
 
   const channels = [privateChannel, publicChannel];
   const memberships = [
-    makeMembership("priv1", "mariana"),
-    makeMembership("priv1", "caio"),
-    makeMembership("ch_public", "mariana"),
-    makeMembership("ch_public", "caio"),
-    makeMembership("ch_public", "goulart"),
+    makeMembership("priv1", "lara"),
+    makeMembership("priv1", "tomas"),
+    makeMembership("ch_public", "lara"),
+    makeMembership("ch_public", "tomas"),
+    makeMembership("ch_public", "vasco"),
   ];
 
-  it("non-member goulart cannot see private channel event", () => {
-    const result = filterVisibleEventsForAgent([privateEvent], "goulart", channels, memberships);
+  it("non-member vasco cannot see private channel event", () => {
+    const result = filterVisibleEventsForAgent([privateEvent], "vasco", channels, memberships);
     expect(result).toHaveLength(0);
   });
 
-  it("member mariana can see private channel event", () => {
-    const result = filterVisibleEventsForAgent([privateEvent], "mariana", channels, memberships);
+  it("member lara can see private channel event", () => {
+    const result = filterVisibleEventsForAgent([privateEvent], "lara", channels, memberships);
     expect(result).toHaveLength(1);
     expect(result[0].id).toBe("e_priv");
   });
 
-  it("member caio can see private channel event", () => {
-    const result = filterVisibleEventsForAgent([privateEvent], "caio", channels, memberships);
+  it("member tomas can see private channel event", () => {
+    const result = filterVisibleEventsForAgent([privateEvent], "tomas", channels, memberships);
     expect(result).toHaveLength(1);
   });
 
@@ -282,9 +282,9 @@ describe("private channel motive scenario visibility", () => {
 
     if (privateEvents.length === 0) return;
 
-    // mariana is the private channel creator
+    // lara is the private channel creator
     const nonMembers = s.personas
-      .filter(p => p.id !== "mariana" && p.id !== "caio")
+      .filter(p => p.id !== "lara" && p.id !== "tomas")
       .map(p => p.id);
 
     for (const agentId of nonMembers) {

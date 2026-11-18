@@ -9,13 +9,13 @@ const SCENARIO = scene({
   name: "Thesis signals",
   description: "test",
   agents: [
-    agent("marcela", "mariana", {
+    agent("marcela", "lara", {
       forbiddenPublicPhrases: ["Davi", "acordo paralelo"],
       memories: [
         { type: "pending_intention", subjectAgentIds: ["marcela"], summary: "proteger a participação do Davi antes do advogado", emotionalTone: "anxious" },
       ],
     }),
-    agent("iris", "goulart", { secretKeywords: ["cargo"] }),
+    agent("iris", "vasco", { secretKeywords: ["cargo"] }),
   ],
   channels: [
     channel("ch_geral", "#geral", ["marcela", "iris"], "public_channel"),

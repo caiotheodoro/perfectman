@@ -12,7 +12,7 @@ import type { ScenarioDrama } from "../authoring/scenario-drama.js";
 import { parseScenarioBody } from "../run/scenario-body.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 
-const CAST = [{ id: "ana", displayName: "Ana Clara" }, { id: "bia", displayName: "Bia" }, { id: "caio", displayName: "Caio" }];
+const CAST = [{ id: "ana", displayName: "Ana Clara" }, { id: "bia", displayName: "Bia" }, { id: "tomas", displayName: "Tomas" }];
 const BLOCK: ScenarioDrama = { max_rung: 6, may_target: [["ana", "bia"]], may_die: ["bia"], permadeath: false };
 /** `compile(raw)` reads against BLOCK; `compile(raw, undefined)` reads against no block at all. */
 const compile = (raw: unknown, ...drama: [] | [ScenarioDrama | undefined]) => compileSceneBeats(raw, CAST, { drama: drama.length > 0 ? drama[0] : BLOCK });
@@ -69,8 +69,8 @@ describe("compileSceneBeats: the authored script of a scene", () => {
   it("[SCN-3] warns on a beat its own block will veto, and stays silent on one it allows", () => {
     const warn = (raw: unknown, ...drama: [] | [ScenarioDrama | undefined]) => compile(raw, ...drama).warnings.map((w) => `${w.path} ${w.message.split(":")[0]}`);
     expect(warn([{ at: 5, actor: "ana", verb: "kill", with: "bia" }])).toEqual([]);
-    expect(warn([{ at: 5, actor: "ana", verb: "kill", with: "caio" }])).toEqual(["beats[0] drama.beat_vetoed"]);
-    expect(warn([{ at: 5, actor: "caio", verb: "slap", with: "bia" }])).toEqual(["beats[0] drama.beat_vetoed"]);
+    expect(warn([{ at: 5, actor: "ana", verb: "kill", with: "tomas" }])).toEqual(["beats[0] drama.beat_vetoed"]);
+    expect(warn([{ at: 5, actor: "tomas", verb: "slap", with: "bia" }])).toEqual(["beats[0] drama.beat_vetoed"]);
     expect(warn([{ at: 5, actor: "ana", verb: "punch", with: "bia" }], { ...BLOCK, max_rung: 3 })).toEqual(["beats[0] drama.beat_vetoed"]);
     expect(warn([{ at: 5, actor: "ana", verb: "kill", with: "bia" }], undefined)).toEqual(["beats[0] drama.beat_vetoed"]);
   });

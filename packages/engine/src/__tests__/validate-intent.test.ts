@@ -26,7 +26,7 @@ const ZERO_SOCIAL: SocialEmotions = {
 
 function makeAgent(id = "a1"): AgentState {
   return {
-    agentId: id, simulationId: "sim1", personaId: "caio",
+    agentId: id, simulationId: "sim1", personaId: "tomas",
     presence: "active", coreMood: BASE_MOOD, socialEmotions: ZERO_SOCIAL,
     relationalStates: new Map(), memories: [], initiativeAccumulators: [],
     lastProcessedEventId: null, lastActionAt: null,

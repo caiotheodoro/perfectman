@@ -173,7 +173,7 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     expect(manifest.counters["llm_guard_repeat_own"]).toBeGreaterThan(0);
     expect(manifest.counters["llm_guard_garble"]).toBe(0);
   }, 30_000);
-  it("a model that fills channelTarget with an empty string still answers in the room, again and again (run 29: Leo mute for 40 s)", async () => {
+  it("a model that fills channelTarget with an empty string still answers in the room, again and again (run 29: Renan mute for 40 s)", async () => {
     let n = 0;
     llm = createServer((req, res) => {
       let body = "";

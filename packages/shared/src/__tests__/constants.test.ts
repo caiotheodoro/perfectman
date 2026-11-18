@@ -6,11 +6,11 @@ import {
 import {
   ALL_PERSONAS,
   getPersonaById,
-  GOULART,
-  BRUNO,
-  CAIO,
-  MARIANA,
-  LEO,
+  VASCO,
+  DARIO,
+  TOMAS,
+  LARA,
+  RENAN,
 } from "../constants/personas.js";
 import {
   EVENT_IMPULSE_TABLE,
@@ -90,11 +90,11 @@ describe("Personas", () => {
   });
 
   it("getPersonaById returns the correct persona and rejects unknown", () => {
-    expect(getPersonaById("goulart")).toBe(GOULART);
-    expect(getPersonaById("bruno")).toBe(BRUNO);
-    expect(getPersonaById("caio")).toBe(CAIO);
-    expect(getPersonaById("mariana")).toBe(MARIANA);
-    expect(getPersonaById("leo")).toBe(LEO);
+    expect(getPersonaById("vasco")).toBe(VASCO);
+    expect(getPersonaById("dario")).toBe(DARIO);
+    expect(getPersonaById("tomas")).toBe(TOMAS);
+    expect(getPersonaById("lara")).toBe(LARA);
+    expect(getPersonaById("renan")).toBe(RENAN);
     expect(getPersonaById("unknown")).toBeUndefined();
   });
 });

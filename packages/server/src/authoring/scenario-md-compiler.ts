@@ -6,7 +6,7 @@
  * familiarity, prior events) is YAML in the frontmatter; the scene's prose
  * (room context, mood, intro behavior) is markdown sections. Per-agent
  * overrides live under `## Agent: <id>` subsections, because that is where an
- * author naturally writes "…but Bruno walked in thinking it was just a chat".
+ * author naturally writes "…but Dario walked in thinking it was just a chat".
  */
 import { isValidStoryClockStart, type StoryClockConfig } from "../simulation/story-clock.js";
 import { parse as parseYaml } from "yaml";
@@ -288,7 +288,7 @@ function parseChannels(value: unknown, bag: DiagnosticBag, line: number): Channe
     bag.error("Scenario frontmatter has no `channels`.", {
       line,
       path: "channels",
-      hint: "Add at least one public channel, e.g. `channels: [{ id: geral, type: public_channel, name: geral, default: true, members: [ana, bruno] }]`.",
+      hint: "Add at least one public channel, e.g. `channels: [{ id: geral, type: public_channel, name: geral, default: true, members: [ana, dario] }]`.",
     });
     return [];
   }

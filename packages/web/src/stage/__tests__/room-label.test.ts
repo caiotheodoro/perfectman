@@ -8,7 +8,7 @@ import { roomLabel } from "../room-label.js";
 
 const AGENTS = [
   { id: "iris", displayName: "Iris" },
-  { id: "bruno", displayName: "Bruno" },
+  { id: "dario", displayName: "Dario" },
   { id: "marcela", displayName: "Marcela" },
 ];
 
@@ -39,9 +39,9 @@ describe("roomLabel", () => {
     const room = channel({
       type: "private_channel",
       name: "x",
-      memberAgentIds: ["iris", "bruno", "marcela"],
+      memberAgentIds: ["iris", "dario", "marcela"],
     });
-    expect(roomLabel(room, AGENTS)).toBe("Iris, Bruno and Marcela");
+    expect(roomLabel(room, AGENTS)).toBe("Iris, Dario and Marcela");
   });
 
   it("falls back to a description rather than showing an id with no members", () => {

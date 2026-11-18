@@ -1,11 +1,11 @@
 /**
  * 4-persona simulation scenario for the HTML snapshot viewer.
  *
- * Agents: Ana (observer), Bruno (observer), Carla (provocateur), Diego (strategist)
- * Channels: general (all 4), core-group (Ana+Bruno+Carla), ana-carla DM, bruno-diego DM
+ * Agents: Ana (observer), Dario (observer), Carla (provocateur), Diego (strategist)
+ * Channels: general (all 4), core-group (Ana+Dario+Carla), ana-carla DM, dario-diego DM
  *
  * Initial emotional seeds create genuine differential dynamics from pulse 1:
- * - Bruno: high fearOfExclusion + neediness (will feel Diego's exclusion from core-group)
+ * - Dario: high fearOfExclusion + neediness (will feel Diego's exclusion from core-group)
  * - Carla: high contempt + desireForStatus (confrontational, bored easily)
  * - Diego: high desireForStatus + envy (senses he's excluded from core-group)
  * - Ana: mild suspicion + latent desire for intimacy (careful but engaged)
@@ -51,14 +51,14 @@ export const AGENT_LLM_CONFIG: LLMConfig = USE_REAL_LLM ? QWEN3_CONFIG : DEFAULT
 
 export const SCENARIO = FRIENDS_COLD_OPEN;
 
-const ALL_AGENT_IDS = ["ana", "bruno", "carla", "diego"];
+const ALL_AGENT_IDS = ["ana", "dario", "carla", "diego"];
 
 const PAIR_FAMILIARITY: Record<string, PairFamiliarity> = {
-  "ana:bruno": "friends",
+  "ana:dario": "friends",
   "ana:carla": "acquaintances",
   "ana:diego": "acquaintances",
-  "bruno:carla": "acquaintances",
-  "bruno:diego": "acquaintances",
+  "dario:carla": "acquaintances",
+  "dario:diego": "acquaintances",
   "carla:diego": "acquaintances",
 };
 
@@ -84,7 +84,7 @@ const ANA_MOOD: CoreMood = {
   ...ZERO_MOOD, valence: 0.1, arousal: 0.4,
   circumplexRadius: 0.41,
 };
-const BRUNO_MOOD: CoreMood = {
+const DARIO_MOOD: CoreMood = {
   ...ZERO_MOOD, valence: -0.15, arousal: 0.28, stability: 0.55,
   circumplexRadius: 0.31,
 };
@@ -110,7 +110,7 @@ const ANA_SOCIAL: SocialEmotions = {
   ...ZERO_SOCIAL,
   suspicion: 0.3, affection: 0.25, desireForIntimacy: 0.35, socialAnxiety: 0.2,
 };
-const BRUNO_SOCIAL: SocialEmotions = {
+const DARIO_SOCIAL: SocialEmotions = {
   ...ZERO_SOCIAL,
   fearOfExclusion: 0.72, neediness: 0.45, desireForIntimacy: 0.55, socialAnxiety: 0.35,
 };
@@ -127,11 +127,11 @@ const DIEGO_SOCIAL: SocialEmotions = {
 
 const ANA_MEMORIES: InitialMemory[] = [
   { type: "episodic", subjectAgentIds: ["carla"], summary: "Carla disse algo cortante semana passada que ficou ecoando.", emotionalTone: "negative" },
-  { type: "relationship", subjectAgentIds: ["bruno"], summary: "Bruno parece distante ultimamente. Noto que ele some às vezes.", emotionalTone: "neutral" },
+  { type: "relationship", subjectAgentIds: ["dario"], summary: "Dario parece distante ultimamente. Noto que ele some às vezes.", emotionalTone: "neutral" },
   { type: "self", subjectAgentIds: [], summary: "Tenho me sentido pouco à vontade no grupo. Algo mudou.", emotionalTone: "negative" },
 ];
 
-const BRUNO_MEMORIES: InitialMemory[] = [
+const DARIO_MEMORIES: InitialMemory[] = [
   { type: "episodic", subjectAgentIds: ["carla", "diego"], summary: "Carla e Diego tiveram uma conversa separada que não me incluiu. Fiquei sabendo depois.", emotionalTone: "negative" },
   { type: "relationship", subjectAgentIds: ["ana"], summary: "Ana é a única que parece realmente me notar quando falo.", emotionalTone: "positive" },
   { type: "self", subjectAgentIds: [], summary: "Fico me perguntando se sou relevante nesse grupo.", emotionalTone: "negative" },
@@ -139,12 +139,12 @@ const BRUNO_MEMORIES: InitialMemory[] = [
 
 const CARLA_MEMORIES: InitialMemory[] = [
   { type: "episodic", subjectAgentIds: ["diego"], summary: "Diego foi passivo-agressivo comigo na última vez que a gente debateu. Ficou na minha cabeça.", emotionalTone: "negative" },
-  { type: "social_theory", subjectAgentIds: ["ana", "bruno"], summary: "Ana e Bruno têm uma dinâmica estranha — ela cuida dele demais.", emotionalTone: "neutral" },
+  { type: "social_theory", subjectAgentIds: ["ana", "dario"], summary: "Ana e Dario têm uma dinâmica estranha — ela cuida dele demais.", emotionalTone: "neutral" },
   { type: "self", subjectAgentIds: [], summary: "Esse grupo às vezes é entediante. Preciso cutucar pra viver.", emotionalTone: "neutral" },
 ];
 
 const DIEGO_MEMORIES: InitialMemory[] = [
-  { type: "episodic", subjectAgentIds: ["ana", "bruno", "carla"], summary: "Tive a sensação de que os três combinaram algo sem me chamar.", emotionalTone: "negative" },
+  { type: "episodic", subjectAgentIds: ["ana", "dario", "carla"], summary: "Tive a sensação de que os três combinaram algo sem me chamar.", emotionalTone: "negative" },
   { type: "relationship", subjectAgentIds: ["carla"], summary: "Carla me desafia sempre que pode. É uma forma de teste ou de dominância.", emotionalTone: "negative" },
   { type: "self", subjectAgentIds: [], summary: "Preciso me posicionar melhor nesse grupo. Estou ficando de fora das decisões.", emotionalTone: "negative" },
 ];
@@ -175,14 +175,14 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
       id: "general",
       type: "public_channel",
       name: "general",
-      memberAgentIds: ["ana", "bruno", "carla", "diego"],
+      memberAgentIds: ["ana", "dario", "carla", "diego"],
       default: true,
     },
     {
       id: "core-group",
       type: "private_channel",
       name: "core-group",
-      memberAgentIds: ["ana", "bruno", "carla"],
+      memberAgentIds: ["ana", "dario", "carla"],
     },
     {
       id: "ana-carla",
@@ -191,10 +191,10 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
       memberAgentIds: ["ana", "carla"],
     },
     {
-      id: "bruno-diego",
+      id: "dario-diego",
       type: "private_channel",
-      name: "bruno ↔ diego",
-      memberAgentIds: ["bruno", "diego"],
+      name: "dario ↔ diego",
+      memberAgentIds: ["dario", "diego"],
     },
   ],
   agents: [
@@ -223,7 +223,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
           conflict: ["não sei não", "acho que não é bem assim"],
         },
         relationshipBiases: {
-          bruno: { view: "Quiet but worth watching — perceptive.", warmth: "medium", trust: "high", likelyBehaviors: ["listens carefully"], triggers: ["exclusion"] },
+          dario: { view: "Quiet but worth watching — perceptive.", warmth: "medium", trust: "high", likelyBehaviors: ["listens carefully"], triggers: ["exclusion"] },
           carla: { view: "Too loud sometimes, but often right.", warmth: "medium", trust: "low", likelyBehaviors: ["provokes"], triggers: ["conflict"] },
           diego: { view: "Hard to read. Probably calculating.", warmth: "low", trust: "low", likelyBehaviors: ["postures"], triggers: ["status moves"] },
         },
@@ -237,21 +237,21 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
       initialMemories: ANA_MEMORIES,
     },
     {
-      id: "bruno",
+      id: "dario",
       presence: "active",
       persona: {
-        id: "bruno",
-        name: "Bruno",
+        id: "dario",
+        name: "Dario",
         archetype: "observer",
         writingStyle: "understated, careful, rarely uses punctuation",
         styleExamples: ["interessante", "acho que entendo", "hm"],
       },
       promptProfile: {
         ...GENERIC_PROMPT_PROFILE,
-        personaId: "bruno",
-        displayName: "Bruno",
+        personaId: "dario",
+        displayName: "Dario",
         language: "pt-BR",
-        identityFrame: "You are Bruno, quiet and deeply sensitive to being left out.",
+        identityFrame: "You are Dario, quiet and deeply sensitive to being left out.",
         coreTraits: ["Understated and sensitive.", "Easily hurt by exclusion."],
         voiceGuidelines: ["Use understated wording.", "Keep messages short and sometimes ambiguous."],
         styleExamples: {
@@ -269,10 +269,10 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         sourceRefs: { assessmentIds: [], lastCompiledAt: "snapshot-test" },
       },
       llm: AGENT_LLM_CONFIG,
-      initialCoreMood: BRUNO_MOOD,
-      initialSocialEmotions: BRUNO_SOCIAL,
-      relationalStates: buildRelationalStates("bruno", ALL_AGENT_IDS, PAIR_FAMILIARITY),
-      initialMemories: BRUNO_MEMORIES,
+      initialCoreMood: DARIO_MOOD,
+      initialSocialEmotions: DARIO_SOCIAL,
+      relationalStates: buildRelationalStates("dario", ALL_AGENT_IDS, PAIR_FAMILIARITY),
+      initialMemories: DARIO_MEMORIES,
     },
     {
       id: "carla",
@@ -300,7 +300,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         },
         relationshipBiases: {
           ana: { view: "Too careful sometimes — gets on my nerves, but I respect her.", warmth: "medium", trust: "medium", likelyBehaviors: ["hedges and qualifies"], triggers: ["indecision"] },
-          bruno: { view: "Sweet but fragile. I like him but he worries too much.", warmth: "high", trust: "medium", likelyBehaviors: ["withdraws when tense"], triggers: ["confrontation"] },
+          dario: { view: "Sweet but fragile. I like him but he worries too much.", warmth: "high", trust: "medium", likelyBehaviors: ["withdraws when tense"], triggers: ["confrontation"] },
           diego: { view: "Competitor. Always positioning. Watch your back.", warmth: "low", trust: "low", likelyBehaviors: ["postures for status"], triggers: ["status competition"] },
         },
         scenarioContext: makeScenarioContext(),
@@ -338,7 +338,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         },
         relationshipBiases: {
           ana: { view: "Perceptive. Could be an ally or a liability.", warmth: "medium", trust: "medium", likelyBehaviors: ["observes before acting"], triggers: ["alliances forming"] },
-          bruno: { view: "Easy to read. Useful as a sounding board.", warmth: "medium", trust: "medium", likelyBehaviors: ["follows the room"], triggers: ["social pressure"] },
+          dario: { view: "Easy to read. Useful as a sounding board.", warmth: "medium", trust: "medium", likelyBehaviors: ["follows the room"], triggers: ["social pressure"] },
           carla: { view: "Volatile but useful as cover. Unpredictable.", warmth: "low", trust: "low", likelyBehaviors: ["challenges directly"], triggers: ["status competition"] },
         },
         scenarioContext: makeScenarioContext(),

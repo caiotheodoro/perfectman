@@ -101,7 +101,7 @@ describe("run-metrics: demand loops", () => {
     expect(loop["demandLoops"][0]).toMatchObject({ speaker: "renato", turns: 3, from: 0, to: 80 });
     const slow = tool.computeMetrics([ask("renato", 0, "agora"), ask("renato", 100, "mesmo"), ask("renato", 200, "já")]);
     expect(slow["demandLoops"]).toEqual([]);
-    const three = tool.computeMetrics([ask("ana", 0, "agora"), ask("bia", 10, "agora"), ask("caio", 20, "agora")]);
+    const three = tool.computeMetrics([ask("ana", 0, "agora"), ask("bia", 10, "agora"), ask("tomas", 20, "agora")]);
     expect(three["demandLoops"]).toEqual([]);
   });
 });

@@ -10,18 +10,18 @@ import { Stage } from "../Stage.js";
 
 const AGENTS = [
   { id: "iris", displayName: "íris" },
-  { id: "bruno", displayName: "bruno" },
+  { id: "dario", displayName: "dario" },
   { id: "marcela", displayName: "marcela" },
 ];
 const IDS = AGENTS.map((a) => a.id).sort();
 const CHANNELS: LiveChannel[] = [
-  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "bruno", "marcela"] },
+  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "dario", "marcela"] },
 ];
 
 function beat(over: Partial<StageBeat> = {}): StageBeat {
   return {
     id: "b1", kind: "message", pulseIndex: 0, channelId: "geral", actorId: "iris", text: "hello",
-    audienceIds: [], participantIds: ["iris", "bruno", "marcela"], duration: 3, page: 0, ...over,
+    audienceIds: [], participantIds: ["iris", "dario", "marcela"], duration: 3, page: 0, ...over,
   };
 }
 
@@ -29,10 +29,10 @@ describe("Stage", () => {
   it("draws exactly the marks in the placement, not everyone in the beat", () => {
     const b = beat();
     const [placement] = placeBeats([b], AGENTS, CHANNELS);
-    const only = { ...placement!, marks: placement!.marks.filter((m) => m.agentId === "bruno") };
+    const only = { ...placement!, marks: placement!.marks.filter((m) => m.agentId === "dario") };
     const { container } = render(<Stage beat={b} placement={only} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
     expect(container.querySelectorAll(".stage__mark")).toHaveLength(1);
-    expect(container.textContent).toContain("bruno");
+    expect(container.textContent).toContain("dario");
     expect(container.querySelector(".stage__overflow")?.textContent).toContain("marcela");
   });
 
@@ -63,7 +63,7 @@ describe("Stage", () => {
     const b = beat({ channelId: "dm", participantIds: ["iris", "marcela"] });
     const [placement] = placeBeats([b], AGENTS, channels);
     const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={channels} ids={IDS} />);
-    expect(container.querySelector(".stage__shut-out")?.textContent).toContain("bruno");
+    expect(container.querySelector(".stage__shut-out")?.textContent).toContain("dario");
   });
 
   it("lists three shut-out people the way a sentence would", () => {
@@ -75,7 +75,7 @@ describe("Stage", () => {
     const b = beat({ channelId: "dm", participantIds: ["iris", "marcela"] });
     const [placement] = placeBeats([b], five, channels);
     const { container } = render(<Stage beat={b} placement={placement!} agents={five} channels={channels} ids={five.map((a) => a.id)} />);
-    expect(container.querySelector(".stage__shut-out")?.textContent).toBe("bruno, Dora and Eli cannot see this");
+    expect(container.querySelector(".stage__shut-out")?.textContent).toBe("dario, Dora and Eli cannot see this");
   });
 
   it("seats the idle room with nobody lit and no balloon", () => {
@@ -90,8 +90,8 @@ describe("Stage", () => {
     const [placement] = placeBeats([b], AGENTS, CHANNELS);
     expect(placement).toBeDefined();
     const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
-    expect(container.querySelector(".stage__shut-out")?.textContent).toBe("bruno cannot see this");
-    expect(container.querySelector('[data-agent-id="bruno"] .figure')?.getAttribute("data-gaze-x")).toBe("0");
+    expect(container.querySelector(".stage__shut-out")?.textContent).toBe("dario cannot see this");
+    expect(container.querySelector('[data-agent-id="dario"] .figure')?.getAttribute("data-gaze-x")).toBe("0");
     expect(container.querySelector('[data-agent-id="marcela"] .figure')?.getAttribute("data-gaze-x")).toBe("-1");
     expect(container.querySelector('[data-agent-id="iris"] .figure')?.getAttribute("data-gaze-x")).toBe("1");
   });
@@ -145,7 +145,7 @@ describe("Stage reactions", () => {
       [...container.querySelectorAll(".figure")].map((f) => [f.querySelector(".figure__name")?.textContent, f.getAttribute("data-face")]),
     );
     expect(faces["marcela"]).toBe("worried");
-    expect(faces["bruno"]).toBe("neutral");
+    expect(faces["dario"]).toBe("neutral");
   });
 });
 

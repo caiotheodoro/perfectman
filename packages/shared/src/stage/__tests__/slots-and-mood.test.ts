@@ -111,13 +111,13 @@ describe("character identity", () => {
   it("gives a character the same colour whatever order the list arrived in", () => {
     // The preset card lists persona files alphabetically; the stage lists
     // agents in the order the scenario cast them. Both must agree.
-    const card = ["bruno", "iris", "marcela"];
-    const stage = ["iris", "bruno", "marcela"];
+    const card = ["dario", "iris", "marcela"];
+    const stage = ["iris", "dario", "marcela"];
     for (const id of card) expect(chipIndexFor(id, card)).toBe(chipIndexFor(id, stage));
   });
 
   it("gives everyone in a normal cast a different colour", () => {
-    const cast = ["iris", "bruno", "marcela", "theo"];
+    const cast = ["iris", "dario", "marcela", "theo"];
     const chips = new Set(cast.map((id) => chipFor(chipIndexFor(id, cast))));
     expect(chips.size).toBe(cast.length);
   });

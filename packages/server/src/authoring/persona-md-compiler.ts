@@ -220,7 +220,7 @@ function parseRelationships(section: MdSection | undefined, bag: DiagnosticBag):
       bag.warn(`Relationship bullet is not \`agentId: description\` — ignored.`, {
         line: bullet.line,
         path: "relationshipBiases",
-        hint: "Write e.g. `- bruno: thinks he performs for the room`.",
+        hint: "Write e.g. `- dario: thinks he performs for the room`.",
       });
       continue;
     }

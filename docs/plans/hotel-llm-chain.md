@@ -459,13 +459,13 @@ What this repo cannot do: the start-modal's list (`GET models`) and its default 
 
 ## Seventh pass: repeats that got through (2026-11-10, `fix/repetition-guard`)
 
-Hotel runs 53 to 57 of 2026-11-10 (pt-BR, an 8B model, 3 actors) still had an actor saying the same sentence twice (Ian, 15:17:54 and 15:20:11), the same joke 27 s apart (Caio), one question in 5 of 6 lines (Pistolinha: "você já viu um pato de perto?"), a closing tic on nearly every line (Heloísa: "meu bem... não é, querido?"), a 90 s loop of "senta os dois / dois minutos / próximo passo", and corrupt tokens ("Éduğunu", "umapreciação"). The production event log was not available; the causes below are read from the code and measured on the lines quoted.
+Hotel runs 53 to 57 of 2026-11-10 (pt-BR, an 8B model, 3 actors) still had an actor saying the same sentence twice (Omar, 15:17:54 and 15:20:11), the same joke 27 s apart (Tomas), one question in 5 of 6 lines (Pistolinha: "você já viu um pato de perto?"), a closing tic on nearly every line (Heloísa: "meu bem... não é, querido?"), a 90 s loop of "senta os dois / dois minutos / próximo passo", and corrupt tokens ("Éduğunu", "umapreciação"). The production event log was not available; the causes below are read from the code and measured on the lines quoted.
 
 ### What covered, what did not
 
 | Mechanism | Covered | Gap (confirmed from the code unless marked) |
 | --- | --- | --- |
-| Own line vs `ownRecentUtterances` (12 lines), Jaccard 0.7 over word sets | an exact or near-exact repeat | a repeat whose changed tail is long: Ian's sentence plus 6 new words scores 0.67, plus 1 word 0.92 (measured); no check of word order, so an embedded question or a shared closing is invisible |
+| Own line vs `ownRecentUtterances` (12 lines), Jaccard 0.7 over word sets | an exact or near-exact repeat | a repeat whose changed tail is long: Omar's sentence plus 6 new words scores 0.67, plus 1 word 0.92 (measured); no check of word order, so an embedded question or a shared closing is invisible |
 | Room copy (`roomThreshold`) | a line of 3+ content words at 0.7 against the room's last 8 | same set measure; a copy with a few words changed passes |
 | A retry note, generic | "too close to something you already said" | never names the phrase, so a small model says it again |
 | After the retries, a person's question is answered with the repeat | a guest who asks twice gets an answer | the carve-out delivers any repeat to a line aimed at the actor, including a loop; likely for lines addressed to a guest (inferred) |

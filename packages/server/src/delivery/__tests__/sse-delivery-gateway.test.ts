@@ -22,31 +22,31 @@ function harness() {
 describe("SseDeliveryGateway channels", () => {
   it("tells the viewer when someone is added to a room", async () => {
     const { gateway, channels } = harness();
-    await gateway.createChannel("dm", "private_channel", ["rex"]);
-    await gateway.addMember("dm", "goulart");
+    await gateway.createChannel("dm", "private_channel", ["kiko"]);
+    await gateway.addMember("dm", "vasco");
     const last = channels().at(-1);
     expect(last?.id).toBe("dm");
-    expect(last?.memberAgentIds.sort()).toEqual(["goulart", "rex"]);
+    expect(last?.memberAgentIds.sort()).toEqual(["vasco", "kiko"]);
   });
 
   it("tells the viewer when someone leaves", async () => {
     const { gateway, channels } = harness();
-    await gateway.createChannel("dm", "private_channel", ["rex", "goulart"]);
-    await gateway.removeMember("dm", "rex");
-    expect(channels().at(-1)?.memberAgentIds).toEqual(["goulart"]);
+    await gateway.createChannel("dm", "private_channel", ["kiko", "vasco"]);
+    await gateway.removeMember("dm", "kiko");
+    expect(channels().at(-1)?.memberAgentIds).toEqual(["vasco"]);
   });
 
   it("merges members when the same room is announced twice", async () => {
     const { gateway, channels } = harness();
-    await gateway.createChannel("dm", "private_channel", ["rex"]);
-    await gateway.createChannel("dm", "private_channel", ["goulart"]);
-    expect(channels().at(-1)?.memberAgentIds.sort()).toEqual(["goulart", "rex"]);
+    await gateway.createChannel("dm", "private_channel", ["kiko"]);
+    await gateway.createChannel("dm", "private_channel", ["vasco"]);
+    expect(channels().at(-1)?.memberAgentIds.sort()).toEqual(["vasco", "kiko"]);
   });
 
   it("does not repeat a room whose members did not change", async () => {
     const { gateway, channels } = harness();
-    await gateway.createChannel("dm", "private_channel", ["rex"]);
-    await gateway.addMember("dm", "rex");
+    await gateway.createChannel("dm", "private_channel", ["kiko"]);
+    await gateway.addMember("dm", "kiko");
     expect(channels()).toHaveLength(1);
   });
 
@@ -64,7 +64,7 @@ describe("SseDeliveryGateway channels", () => {
 it("publishes immutable committed revisions before the pulse settles, then seals it", async () => {
   const { gateway, published } = harness();
   const event = (type: OperatorEvent["type"], data: NonNullable<OperatorEvent["data"]>): OperatorEvent => ({
-    type, data, agentId: "rex", simulationId: "s", pulseIndex: 0, createdAt: 1,
+    type, data, agentId: "kiko", simulationId: "s", pulseIndex: 0, createdAt: 1,
   });
   const frames = () => published.filter((m) => m.type === "pulse").map((m) => (m.data as { frame: LivePulseFrame }).frame);
 
@@ -73,20 +73,20 @@ it("publishes immutable committed revisions before the pulse settles, then seals
   }));
   expect(frames()).toHaveLength(0);
   await gateway.sendOperatorEvent(event("event_visibility", {
-    eventId: "first", eventType: "message_sent", actorId: "rex", channelId: "geral", content: "Committed first", visibleToAgents: ["rex"],
+    eventId: "first", eventType: "message_sent", actorId: "kiko", channelId: "geral", content: "Committed first", visibleToAgents: ["kiko"],
   }));
   const first = frames()[0];
-  expect(first).toMatchObject({ complete: false, revision: 1, thinking: { rex: { visibleContent: "A draft" } } });
+  expect(first).toMatchObject({ complete: false, revision: 1, thinking: { kiko: { visibleContent: "A draft" } } });
   expect(first?.messages.map((m) => m.eventId)).toEqual(["first"]);
 
   await gateway.sendOperatorEvent(event("agent_state_snapshot", {
     state: { coreMood: { valence: 0.4, arousal: 0.7 }, socialEmotions: { affection: 0.8 } },
   }));
   await gateway.sendOperatorEvent(event("event_visibility", {
-    eventId: "second", eventType: "message_sent", actorId: "rex", channelId: "geral", content: "Committed second", visibleToAgents: ["rex"],
+    eventId: "second", eventType: "message_sent", actorId: "kiko", channelId: "geral", content: "Committed second", visibleToAgents: ["kiko"],
   }));
   const final = gateway.commitPulse({ pulseIndex: 0, eventsCommitted: 2, agentsCalled: 1 });
-  expect(final).toMatchObject({ complete: true, revision: 4, emotions: { rex: { valence: 0.4, arousal: 0.7, top: [{ key: "affection", value: 0.8 }] } } });
+  expect(final).toMatchObject({ complete: true, revision: 4, emotions: { kiko: { valence: 0.4, arousal: 0.7, top: [{ key: "affection", value: 0.8 }] } } });
   expect(final.messages.map((m) => m.eventId)).toEqual(["first", "second"]);
   expect(first?.messages.map((m) => m.eventId)).toEqual(["first"]);
   expect(first?.emotions).toEqual({});

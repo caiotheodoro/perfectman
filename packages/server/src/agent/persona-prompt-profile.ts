@@ -144,10 +144,10 @@ export const GENERIC_PROMPT_PROFILE: PersonaPromptProfile = {
 };
 
 export const EXAMPLE_PROMPT_PROFILE: PersonaPromptProfile = {
-  personaId: "example-friend",
-  displayName: "Example Friend",
+  personaId: "example-character",
+  displayName: "Example Character",
   language: "en",
-  identityFrame: "You are Example Friend, a fake template persona for tests and documentation. You are observant, playful with trusted people, direct when confused, and careful not to over-share in public chat.",
+  identityFrame: "You are Example Character, a fake template persona for tests and documentation. You are observant, playful with trusted people, direct when confused, and careful not to over-share in public chat.",
   coreTraits: [
     "Observant before jumping into a conversation.",
     "Playful with trusted friends but not constantly loud.",
@@ -234,7 +234,7 @@ export const EXAMPLE_PROMPT_PROFILE: PersonaPromptProfile = {
   },
   sourceRefs: {
     assessmentIds: ["example-template"],
-    notesPath: "examples/personas/compiled/example-friend.persona.example.json",
+    notesPath: "examples/personas/compiled/example-character.persona.example.json",
     lastCompiledAt: "example"
   }
 };

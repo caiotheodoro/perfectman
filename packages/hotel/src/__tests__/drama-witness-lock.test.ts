@@ -13,7 +13,7 @@ import { actFrames } from "../testing/fake-drama.js";
 import { A, B, C, WIDE_BLOCK, makeRig } from "../testing/drama-rig.js";
 import { ManualClock } from "../testing/manual-clock.js";
 
-const REFS: Record<number, string> = { [-701]: "duda", [-702]: "rafa", [-703]: "gabi", [-704]: "leo", 9: "h:9" };
+const REFS: Record<number, string> = { [-701]: "duda", [-702]: "rafa", [-703]: "gabi", [-704]: "renan", 9: "h:9" };
 const T0 = 1_730_000_123_456;
 
 function setup() {

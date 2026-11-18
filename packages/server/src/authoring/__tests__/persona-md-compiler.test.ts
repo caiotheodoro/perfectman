@@ -48,7 +48,7 @@ describe("compilePersonaMarkdown — the golden fixture", () => {
 
   it("reads relationships as agentId → description", () => {
     expect(result.pack?.relationshipBiases).toEqual({
-      bruno: "Quando ele fica quieto você sente como uma mudança de clima.",
+      dario: "Quando ele fica quieto você sente como uma mudança de clima.",
       marcela: "A aprovação dela é a única que te desestabiliza.",
     });
   });
@@ -57,7 +57,7 @@ describe("compilePersonaMarkdown — the golden fixture", () => {
     expect(result.pack?.memorySeeds).toEqual([
       {
         type: "relationship",
-        subjectAgentIds: ["bruno"],
+        subjectAgentIds: ["dario"],
         summary: "Ele sumiu no fim da noite e eu só percebi de manhã.",
         emotionalTone: "guilt",
         confidence: 0.8,
@@ -99,7 +99,7 @@ describe("compilePersonaMarkdown — the golden fixture", () => {
   it("carries writingStyle and calibrationFrom, which have no PersonaPack slot", () => {
     expect(result).toMatchObject({
       writingStyle: "warm, quick, deflects with humor when cornered",
-      calibrationFrom: "caio",
+      calibrationFrom: "tomas",
     });
   });
 
@@ -165,7 +165,7 @@ describe("compilePersonaMarkdown — nothing fails silently", () => {
   });
 
   it("warns on a relationship bullet that is not `agentId: description`", () => {
-    const result = compile(`${base}## Relationships\n- bruno is annoying`);
+    const result = compile(`${base}## Relationships\n- dario is annoying`);
     expect(messages(result.diagnostics, "warning").join(" ")).toContain("agentId: description");
   });
 

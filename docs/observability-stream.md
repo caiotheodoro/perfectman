@@ -26,7 +26,7 @@ are unaffected.
 
 ### 4-Persona × 15-Pulse Bound
 
-The e2e 4-persona scenario (Ana, Bruno, Carla, Diego; 15 pulses) stays within:
+The e2e 4-persona scenario (Ana, Dario, Carla, Diego; 15 pulses) stays within:
 
 - **~60 `agent_state_snapshot`** events (4 agents × 15 pulses, exactly 1 per agent per pulse)
 - **≤ ~60 `action_intent`** events (LLM-called agents only; uncalled agents emit none)

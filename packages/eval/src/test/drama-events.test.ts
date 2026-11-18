@@ -48,8 +48,8 @@ describe("extractDramaEvents on real run 7 frames", () => {
 
   it("reads gestures and expressions once each, preferring the command's richer name over the echo's", () => {
     const acts = of(events, "body_act").filter((e) => e.act === "gesture" || e.act === "expression");
-    const leo = acts.filter((e) => e.actor === "person-4");
-    expect(leo.map((e) => [e.act, e.name, e.atMs])).toEqual([
+    const renan = acts.filter((e) => e.actor === "person-4");
+    expect(renan.map((e) => [e.act, e.name, e.atMs])).toEqual([
       ["gesture", "wave", 38_466],
       ["expression", "smile", 38_467],
       ["expression", "expression", 53_764],

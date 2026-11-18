@@ -1,12 +1,12 @@
 /**
  * buildNoOpInhibitionScenario
- * Bruno witnesses Goulart mock him publicly (high humiliation event).
+ * Dario witnesses Vasco mock him publicly (high humiliation event).
  * Shame + fear + high social anxiety produce overwhelming inhibition.
  * Engine should yield no_op with a meaningful private motive seed.
  *
  * Expected engine signals:
- * - bruno.socialEmotions.shame > 0.7
- * - bruno.socialEmotions.humiliation elevated
+ * - dario.socialEmotions.shame > 0.7
+ * - dario.socialEmotions.humiliation elevated
  * - decision.outcome = "no_op"
  * - decision.noOpReason involves shame/inhibition
  * - decision.privateMotiveSeed is non-empty (tells story of why silent)
@@ -20,7 +20,7 @@ import type {
   PersonaConfig,
   CommittedEvent,
 } from "../index.js";
-import { BRUNO, GOULART, CAIO } from "../constants/personas.js";
+import { DARIO, VASCO, TOMAS } from "../constants/personas.js";
 import {
   makeSimulation,
   makePublicChannel,
@@ -34,12 +34,12 @@ export type NoOpInhibitionScenario = {
   simulation: Simulation;
   channels: Channel[];
   memberships: ChannelMembership[];
-  personas: { bruno: PersonaConfig; goulart: PersonaConfig; caio: PersonaConfig };
-  agentStates: { bruno: AgentState; goulart: AgentState; caio: AgentState };
-  /** The humiliating exchange bruno witnessed */
+  personas: { dario: PersonaConfig; vasco: PersonaConfig; tomas: PersonaConfig };
+  agentStates: { dario: AgentState; vasco: AgentState; tomas: AgentState };
+  /** The humiliating exchange dario witnessed */
   committedEvents: CommittedEvent[];
   expectedSignals: {
-    brunoShouldNoOp: boolean;
+    darioShouldNoOp: boolean;
     shameIsOverwhelming: boolean;
     privateMotiveSeedIsNonEmpty: boolean;
   };
@@ -52,21 +52,21 @@ export function buildNoOpInhibitionScenario(): NoOpInhibitionScenario {
   const simulation = makeSimulation(
     simulationId,
     "No-Op Inhibition",
-    ["goulart", "bruno", "caio"],
+    ["vasco", "dario", "tomas"],
     [channelId],
   );
 
-  const channel = makePublicChannel(channelId, simulationId, "#geral", ["goulart", "bruno", "caio"]);
-  const memberships = membershipFor(channelId, ["goulart", "bruno", "caio"]);
+  const channel = makePublicChannel(channelId, simulationId, "#geral", ["vasco", "dario", "tomas"]);
+  const memberships = membershipFor(channelId, ["vasco", "dario", "tomas"]);
 
-  const goulartState = makeAgentState("goulart", simulationId, "goulart");
-  const caioState = makeAgentState("caio", simulationId, "caio");
+  const vascoState = makeAgentState("vasco", simulationId, "vasco");
+  const tomasState = makeAgentState("tomas", simulationId, "tomas");
 
-  // Bruno: overwhelmed after public humiliation
-  const brunoState = makeAgentState(
-    "bruno",
+  // Dario: overwhelmed after public humiliation
+  const darioState = makeAgentState(
+    "dario",
     simulationId,
-    "bruno",
+    "dario",
     { valence: -0.8, arousal: 0.7, stability: 0.2, energy: 0.3 },
     {
       shame: 0.85,            // dominant
@@ -77,8 +77,8 @@ export function buildNoOpInhibitionScenario(): NoOpInhibitionScenario {
     },
     new Map([
       [
-        "goulart",
-        makeRelationalState("goulart", {
+        "vasco",
+        makeRelationalState("vasco", {
           trust: -0.3,
           resentment: 0.6,
           threat: 0.5,
@@ -87,23 +87,23 @@ export function buildNoOpInhibitionScenario(): NoOpInhibitionScenario {
         }),
       ],
       [
-        "caio",
-        makeRelationalState("caio", { trust: 0.3, affection: 0.3, comfort: 0.4 }),
+        "tomas",
+        makeRelationalState("tomas", { trust: 0.3, affection: 0.3, comfort: 0.4 }),
       ],
     ]),
   );
 
-  // Goulart mocked Bruno publicly; Caio laughed/reacted
+  // Vasco mocked Dario publicly; Tomas laughed/reacted
   const e1 = makeCommittedEvent(
-    simulationId, channelId, "goulart", "message_sent",
-    { content: "kkkk bruno você não manda nem em você mesmo" },
+    simulationId, channelId, "vasco", "message_sent",
+    { content: "kkkk dario você não manda nem em você mesmo" },
     3,
     { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public_channel" },
   );
   e1.emotionalSalience = "high";
 
   const e2 = makeCommittedEvent(
-    simulationId, channelId, "caio", "reaction_sent",
+    simulationId, channelId, "tomas", "reaction_sent",
     { emoji: "😂", targetEventId: e1.id },
     3,
   );
@@ -112,11 +112,11 @@ export function buildNoOpInhibitionScenario(): NoOpInhibitionScenario {
     simulation,
     channels: [channel],
     memberships,
-    personas: { bruno: BRUNO, goulart: GOULART, caio: CAIO },
-    agentStates: { bruno: brunoState, goulart: goulartState, caio: caioState },
+    personas: { dario: DARIO, vasco: VASCO, tomas: TOMAS },
+    agentStates: { dario: darioState, vasco: vascoState, tomas: tomasState },
     committedEvents: [e1, e2],
     expectedSignals: {
-      brunoShouldNoOp: true,
+      darioShouldNoOp: true,
       shameIsOverwhelming: true,
       privateMotiveSeedIsNonEmpty: true,
     },

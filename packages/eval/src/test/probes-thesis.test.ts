@@ -11,14 +11,14 @@ function be(kind: BehavioralEvent["kind"], agentId: string, pulseIndex: number, 
 
 describe("act-share-max", () => {
   it("is the largest per-agent share of content turns", () => {
-    const events = [be("post", "iris", 1), be("post", "iris", 2), be("reply", "iris", 3), be("post", "bruno", 4), be("react", "bruno", 5)];
-    expect(actShareMax(events, ["iris", "bruno", "theo"])).toBeCloseTo(0.75);
+    const events = [be("post", "iris", 1), be("post", "iris", 2), be("reply", "iris", 3), be("post", "dario", 4), be("react", "dario", 5)];
+    expect(actShareMax(events, ["iris", "dario", "theo"])).toBeCloseTo(0.75);
     expect(actShareMax([], ["iris"])).toBe(0);
   });
 
   it("is reported by runAllProbes with an upper band", () => {
-    const events = [be("post", "iris", 1), be("post", "bruno", 2)];
-    const result = runAllProbes({ events, agentIds: ["iris", "bruno"], totalPulses: 2, fallbackCount: 0, totalLLMCalls: 2 })
+    const events = [be("post", "iris", 1), be("post", "dario", 2)];
+    const result = runAllProbes({ events, agentIds: ["iris", "dario"], totalPulses: 2, fallbackCount: 0, totalLLMCalls: 2 })
       .find(p => p.probe === "act-share-max");
     expect(result?.measured).toBe(0.5);
     expect(PROBE_BANDS["act-share-max"]).toEqual([0, 0.5]);
@@ -29,7 +29,7 @@ describe("noop-meaningfulness", () => {
   it("does not count an engine-authored motive as meaningful", () => {
     const events = [
       be("silence", "iris", 1, { privateContent: "Fallback applied: No JSON object found in response", engineAuthored: true }),
-      be("silence", "bruno", 2, { privateContent: "melhor deixar ela se expor sozinha" }),
+      be("silence", "dario", 2, { privateContent: "melhor deixar ela se expor sozinha" }),
     ];
     expect(noOpMeaningfulness(events)).toBe(0.5);
   });

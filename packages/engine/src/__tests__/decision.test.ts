@@ -8,7 +8,7 @@ import type {
   InitiativeAccumulator,
   DecisionContext,
 } from "@perfectman/shared";
-import { CAIO, GOULART, BRUNO, createSeededRng } from "@perfectman/shared";
+import { TOMAS, VASCO, DARIO, createSeededRng } from "@perfectman/shared";
 import { resolveDecision } from "../decision/resolve-decision.js";
 import {
   updateInitiativeAccumulators,
@@ -35,7 +35,7 @@ function makeAgent(id = "a1", overrides?: Partial<AgentState>): AgentState {
   return {
     agentId: id,
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: BASE_MOOD,
     socialEmotions: ZERO_SOCIAL,
@@ -94,13 +94,13 @@ function ctx(overrides: Partial<DecisionContext> = {}): DecisionContext {
 // --- resolveDecision ---
 describe("resolveDecision", () => {
   it("no pressures + no initiative → no_op", () => {
-    const result = resolveDecision([], [], makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision([], [], makeAgent(), TOMAS, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("no_op");
     expect(result.needsLLM).toBe(false);
   });
 
   it("no pressures + initiative proceed → act with LLM", () => {
-    const result = resolveDecision([], [], makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: true, pulseIndex: 1 }));
+    const result = resolveDecision([], [], makeAgent(), TOMAS, ctx({ hasNewEvents: false, initiativeProceed: true, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
     expect(result.needsLLM).toBe(true);
     expect(result.initiativeProceed).toBe(true);
@@ -108,7 +108,7 @@ describe("resolveDecision", () => {
 
   it("pressure with no inhibition → act with LLM", () => {
     const pressures = [makePressure("urge_to_message", "medium")];
-    const result = resolveDecision(pressures, [], makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision(pressures, [], makeAgent(), TOMAS, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
     expect(result.needsLLM).toBe(true);
   });
@@ -116,9 +116,9 @@ describe("resolveDecision", () => {
   it("strong inhibition >= pressure → delay or no_op on a quiet pulse; a new event turns the hold into a voiced-hold consult (D-62)", () => {
     const pressures = [makePressure("urge_to_message", "low")];
     const inhibitions = [makeInhibition("strategic_patience_hold", "medium")];
-    const quiet = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
+    const quiet = resolveDecision(pressures, inhibitions, makeAgent(), TOMAS, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(["delay", "no_op"]).toContain(quiet.outcome);
-    const consulted = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
+    const consulted = resolveDecision(pressures, inhibitions, makeAgent(), TOMAS, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(consulted.outcome).toBe("act");
     expect(consulted.holdSuggested).toBe(true);
   });
@@ -126,13 +126,13 @@ describe("resolveDecision", () => {
   it("strategic_patience_hold inhibition → delay outcome on a quiet pulse", () => {
     const pressures = [makePressure("urge_to_message", "low")];
     const inhibitions = [makeInhibition("strategic_patience_hold", "high")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision(pressures, inhibitions, makeAgent(), TOMAS, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("delay");
   });
 
   it("overwhelming shame withdrawal alone → memory_only", () => {
     const pressures = [makePressure("urge_to_withdraw", "overwhelming")];
-    const result = resolveDecision(pressures, [], makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision(pressures, [], makeAgent(), TOMAS, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("memory_only");
     expect(result.needsLLM).toBe(false);
   });
@@ -140,7 +140,7 @@ describe("resolveDecision", () => {
   it("high pressure > inhibition → act; an outranked urge under a delay-favoring inhibition is a voiced hold only on a salient pulse (ADR-0017)", () => {
     const pressures = [makePressure("urge_to_provoke", "high")];
     const inhibitions = [makeInhibition("conflict_avoidance", "low")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), GOULART, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision(pressures, inhibitions, makeAgent(), VASCO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
 
     // ADR-0017 voiced hold: strategic patience over a medium urge still
@@ -149,17 +149,17 @@ describe("resolveDecision", () => {
     const held = [makePressure("urge_to_message", "medium")];
     const patience = [makeInhibition("strategic_patience_hold", "medium")];
     const base = { hasNewEvents: true, salientForeignEvent: true, initiativeProceed: false, pulseIndex: 3 };
-    const voiced = resolveDecision(held, patience, makeAgent(), CAIO, ctx(base));
+    const voiced = resolveDecision(held, patience, makeAgent(), TOMAS, ctx(base));
     expect(voiced.outcome).toBe("act");
     expect(voiced.needsLLM).toBe(true);
     expect(voiced.holdSuggested).toBe(true);
     expect(voiced.privateMotiveSeed).toBe("hold-strategic_patience_hold");
     // Never on the pulse after an act (P1), never without new events, never
     // inside the voice refractory. A non-salient new event is enough (D-62).
-    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, justActed: true })).outcome).toBe("delay");
-    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, salientForeignEvent: false })).outcome).toBe("act");
-    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, salientForeignEvent: false, hasNewEvents: false })).outcome).toBe("delay");
-    const quiet = resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, voicedHoldRecently: true }));
+    expect(resolveDecision(held, patience, makeAgent(), TOMAS, ctx({ ...base, justActed: true })).outcome).toBe("delay");
+    expect(resolveDecision(held, patience, makeAgent(), TOMAS, ctx({ ...base, salientForeignEvent: false })).outcome).toBe("act");
+    expect(resolveDecision(held, patience, makeAgent(), TOMAS, ctx({ ...base, salientForeignEvent: false, hasNewEvents: false })).outcome).toBe("delay");
+    const quiet = resolveDecision(held, patience, makeAgent(), TOMAS, ctx({ ...base, voicedHoldRecently: true }));
     expect(quiet.outcome).toBe("delay");
     expect(quiet.needsLLM).toBe(false);
     expect(quiet.holdSuggested).toBeUndefined();
@@ -167,7 +167,7 @@ describe("resolveDecision", () => {
 
   it("privateMotiveSeed is set", () => {
     const pressures = [makePressure("urge_to_message", "medium")];
-    const result = resolveDecision(pressures, [], makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision(pressures, [], makeAgent(), TOMAS, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.privateMotiveSeed.length).toBeGreaterThan(0);
   });
 });
@@ -184,13 +184,13 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
 
   it("returns 17 accumulators for all sources", () => {
     const agent = makeAgent();
-    const result = updateInitiativeAccumulators([], ZERO_ACTIONS, agent, CAIO, 0, false);
+    const result = updateInitiativeAccumulators([], ZERO_ACTIONS, agent, TOMAS, 0, false);
     expect(result).toHaveLength(17);
   });
 
   it("cold_start_bootstrap starts with non-zero value", () => {
     const agent = makeAgent();
-    const result = updateInitiativeAccumulators([], ZERO_ACTIONS, agent, CAIO, 0, false);
+    const result = updateInitiativeAccumulators([], ZERO_ACTIONS, agent, TOMAS, 0, false);
     const bootstrap = result.find(a => a.source === "cold_start_bootstrap");
     expect(bootstrap?.value).toBeGreaterThan(0);
   });
@@ -199,7 +199,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     const agent = makeAgent();
     let accumulators: InitiativeAccumulator[] = [];
     for (let i = 0; i < 10; i++) {
-      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
     }
     const boredom = accumulators.find(a => a.source === "boredom_accumulator");
     expect(boredom?.value).toBeGreaterThan(0);
@@ -210,11 +210,11 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     let accumulators: InitiativeAccumulator[] = [];
     // Build up
     for (let i = 0; i < 10; i++) {
-      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
     }
     const beforeAct = accumulators[0]!.value;
     // Act
-    accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, 10, true);
+    accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, 10, true);
     const afterAct = accumulators[0]!.value;
     expect(afterAct).toBeLessThan(beforeAct);
   });
@@ -222,10 +222,10 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
   it("passive decay: a silent pulse relaxes every accumulator that is above its fixed point", () => {
     const agent = makeAgent();
     const saturated: InitiativeAccumulator[] = (
-      updateInitiativeAccumulators([], ZERO_ACTIONS, agent, CAIO, 0, false)
+      updateInitiativeAccumulators([], ZERO_ACTIONS, agent, TOMAS, 0, false)
     ).map(a => ({ ...a, value: 0.9 }));
 
-    const next = updateInitiativeAccumulators(saturated, ZERO_ACTIONS, agent, CAIO, 1, false);
+    const next = updateInitiativeAccumulators(saturated, ZERO_ACTIONS, agent, TOMAS, 1, false);
 
     for (const acc of next) {
       if (acc.source === "cold_start_bootstrap") {
@@ -241,7 +241,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     const agent = makeAgent();
     let accumulators: InitiativeAccumulator[] = [];
     for (let i = 0; i < 100; i++) {
-      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
     }
     // cold_start_bootstrap is passive-decay exempt (its 0.30 threshold sits
     // below the 0.4*energy ceiling); every other source relaxes below 1.0.
@@ -260,7 +260,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     let accumulators: InitiativeAccumulator[] = [];
     let prev: Map<string, number> | null = null;
     for (let i = 0; i < 40; i++) {
-      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
       const current = new Map(accumulators.map(a => [a.source, a.value]));
       if (prev) {
         for (const [source, value] of current) {
@@ -282,7 +282,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
       let accumulators: InitiativeAccumulator[] = [];
       let proceeded = false;
       for (let i = 0; i < 2; i++) {
-        accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+        accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
         const candidates = scoreInitiativeCandidates(accumulators, i, null);
         if (candidates.find(c => c.source === "cold_start_bootstrap")!.proceed) proceeded = true;
       }
@@ -294,7 +294,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     const agent = makeAgent();
     let accumulators: InitiativeAccumulator[] = [];
     for (let i = 0; i < 30; i++) {
-      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
     }
     for (const acc of accumulators) {
       expect(acc.value).toBeGreaterThanOrEqual(0);
@@ -306,7 +306,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     const agent = makeAgent();
     let accumulators: InitiativeAccumulator[] = [];
     for (let i = 0; i < 5; i++) {
-      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, TOMAS, i, false);
     }
     const candidates = scoreInitiativeCandidates(accumulators, 5, null);
     const bootstrap = candidates.find(c => c.source === "cold_start_bootstrap");
@@ -317,7 +317,7 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
 
   it("scoreInitiativeCandidates takes 3 args and still gates on arrivalPulse as the third", () => {
     expect(scoreInitiativeCandidates.length).toBe(3);
-    const accumulators = updateInitiativeAccumulators([], ZERO_ACTIONS, makeAgent(), CAIO, 0, false)
+    const accumulators = updateInitiativeAccumulators([], ZERO_ACTIONS, makeAgent(), TOMAS, 0, false)
       .map(a => ({ ...a, value: 0.99 }));
     const beforeArrival = scoreInitiativeCandidates(accumulators, 2, 5);
     const afterArrival = scoreInitiativeCandidates(accumulators, 6, 5);
@@ -353,7 +353,7 @@ describe("applyRumination", () => {
   it("does not ruminate when new events present", () => {
     const agent = makeAgent();
     const rng = createSeededRng(42);
-    const result = applyRumination(agent, CAIO, ZERO_DELTA, rng, 10, true);
+    const result = applyRumination(agent, TOMAS, ZERO_DELTA, rng, 10, true);
     expect(result.emotionDelta.ruminationApplied).toBe(false);
   });
 
@@ -376,7 +376,7 @@ describe("applyRumination", () => {
     let ruminatedAtLeastOnce = false;
     for (let seed = 0; seed < 20; seed++) {
       const rng = createSeededRng(seed);
-      const result = applyRumination(agent, BRUNO, ZERO_DELTA, rng, seed * 10, false);
+      const result = applyRumination(agent, DARIO, ZERO_DELTA, rng, seed * 10, false);
       if (result.emotionDelta.ruminationApplied) {
         ruminatedAtLeastOnce = true;
         break;
@@ -405,7 +405,7 @@ describe("applyRumination", () => {
     let intensified = false;
     for (let seed = 0; seed < 30 && !intensified; seed++) {
       const rng = createSeededRng(seed);
-      const result = applyRumination(agent, BRUNO, ZERO_DELTA, rng, seed * 10, false);
+      const result = applyRumination(agent, DARIO, ZERO_DELTA, rng, seed * 10, false);
       if (result.emotionDelta.ruminationApplied) {
         const newRes = result.updatedRelationalStates.get("other")?.resentment ?? 0;
         expect(newRes).toBeGreaterThanOrEqual(resentmentVal);
@@ -423,7 +423,7 @@ describe("applyRumination", () => {
     let ruminatedPulse = -1;
     for (let seed = 0; seed < 30; seed++) {
       const rng = createSeededRng(seed);
-      const result = applyRumination(baseAgent, BRUNO, ZERO_DELTA, rng, seed * 10, false);
+      const result = applyRumination(baseAgent, DARIO, ZERO_DELTA, rng, seed * 10, false);
       if (result.emotionDelta.ruminationApplied) {
         ruminatedPulse = seed * 10;
         break;
@@ -437,7 +437,7 @@ describe("applyRumination", () => {
       });
       // Try again at pulse+1 (within cooldown)
       const rng2 = createSeededRng(0);
-      const result2 = applyRumination(agentAfterRumination, BRUNO, ZERO_DELTA, rng2, ruminatedPulse + 1, false);
+      const result2 = applyRumination(agentAfterRumination, DARIO, ZERO_DELTA, rng2, ruminatedPulse + 1, false);
       expect(result2.emotionDelta.ruminationApplied).toBe(false);
     }
   });

@@ -8,7 +8,7 @@
  */
 import { createHash } from "node:crypto";
 import { describe, it, expect } from "vitest";
-import { buildBrunoCaioExclusionScenario } from "@perfectman/shared";
+import { buildDarioTomasExclusionScenario } from "@perfectman/shared";
 import { SimulationHarness } from "./harness.js";
 
 const PULSES = 8;
@@ -18,7 +18,7 @@ const PRE_INTEGRATION_EVENT_COUNT = 41;
 
 describe("sequential pulse parity (no hotel options)", () => {
   it("a seeded mock scenario commits the same events as before the hotel integration", async () => {
-    const scenario = buildBrunoCaioExclusionScenario();
+    const scenario = buildDarioTomasExclusionScenario();
     const harness = await SimulationHarness.create({
       simulation: { ...scenario.simulation, seed: 424242 },
       channels: scenario.channels,

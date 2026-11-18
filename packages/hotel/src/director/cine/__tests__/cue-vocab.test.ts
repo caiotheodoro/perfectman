@@ -75,7 +75,7 @@ describe("what the Director can emit", () => {
     r.world.moods.set("duda", { valence: -0.8, arousal: 0.3 });
     r.world.moods.set("rafa", { valence: -0.6, arousal: 0.9 });
     r.world.moods.set("gabi", { valence: 0.7, arousal: 0.5, affection: 0.9 });
-    r.world.moods.set("leo", { valence: 0.1, arousal: 0.2 });
+    r.world.moods.set("renan", { valence: 0.1, arousal: 0.2 });
     r.director.start();
     const beat = async (fn: () => void, ms = 12_000): Promise<void> => {
       fn();
@@ -84,19 +84,19 @@ describe("what the Director can emit", () => {
     await r.clock.advance(5000);
     await beat(() => r.say("duda", "Será que ele vai voltar algum dia?", "say", "rafa"));
     await beat(() => r.say("rafa", "NÃO ACREDITO NISSO!!", "shout", "duda"));
-    await beat(() => r.say("leo", "Alguém aí na cozinha, ou só eu?", "say", "gabi"));
+    await beat(() => r.say("renan", "Alguém aí na cozinha, ou só eu?", "say", "gabi"));
     await beat(() => {
       r.exec.send([{ agentId: "gabi", cmd: "gesture", a: "laugh" }]);
       r.exec.send([{ agentId: "gabi", cmd: "gesture", a: "laugh" }]);
     });
     await beat(() => r.exec.sendThought("duda", "Eu não devia ter vindo."));
-    await beat(() => r.exec.send([{ agentId: "gabi", cmd: "pair", kind: "kiss", with: "leo", pair: "k1" }]));
-    await beat(() => r.exec.send([{ agentId: "gabi", cmd: "pair", kind: "hug", with: "leo", pair: "k2" }]));
+    await beat(() => r.exec.send([{ agentId: "gabi", cmd: "pair", kind: "kiss", with: "renan", pair: "k1" }]));
+    await beat(() => r.exec.send([{ agentId: "gabi", cmd: "pair", kind: "hug", with: "renan", pair: "k2" }]));
     await beat(() => {
       r.exec.send([{ agentId: "duda", cmd: "move_room", to: "13" }]);
       r.world.move("duda", 13);
     });
-    await beat(() => r.say("duda", "Cheguei na cozinha.", "say", "leo"));
+    await beat(() => r.say("duda", "Cheguei na cozinha.", "say", "renan"));
     await beat(() => r.director.noteObject({ room: 13, tile: [3, 3], label: "Um copo cai", sfx: "slide whistle" }));
     await beat(() => r.director.noteObject({ room: 13, tile: [2, 2], sfx: "kaboom" }));
     await Promise.all([r.director.stop("completed", true), r.clock.advance(60_000)]);

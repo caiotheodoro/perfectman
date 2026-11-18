@@ -14,7 +14,7 @@ const listeners = [
   { ref: "duda", ...at(3) },
   { ref: "rafa", ...at(8) },
   { ref: "gabi", ...at(12) },
-  { ref: "leo", ...at(30) },
+  { ref: "renan", ...at(30) },
 ];
 
 describe("hearing by distance (D29, D44)", () => {
@@ -28,7 +28,7 @@ describe("hearing by distance (D29, D44)", () => {
   });
 
   it("whisper reaches the target only; bystanders within 2 tiles notice, with no text", () => {
-    const l = [{ ref: "duda", ...at(3) }, { ref: "rafa", ...at(2) }, { ref: "gabi", ...at(1, 5) }, { ref: "leo", ...at(3, 4) }];
+    const l = [{ ref: "duda", ...at(3) }, { ref: "rafa", ...at(2) }, { ref: "gabi", ...at(1, 5) }, { ref: "renan", ...at(3, 4) }];
     expect(computeHearing({ tile: [0, 4], mode: "whisper", target: "duda" }, l).hearing).toEqual({ duda: "clear", rafa: "notice", gabi: "notice" });
   });
 });

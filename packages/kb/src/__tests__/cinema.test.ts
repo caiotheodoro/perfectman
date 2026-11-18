@@ -152,7 +152,7 @@ describe("parsers", () => {
     expect(scenes[0]!.events[2]).toMatchObject({ kind: "speech", speaker: "ANNA", text: "Did you eat?" });
   });
   it("reads transcript lines and cuts a scene at a change of place", () => {
-    const lines = ["(Mona stands at the window.)", "MONA: Where were you?", "LEO: Out. (He drops the keys.)", "(Later, at the diner, the two sit apart.)", "MONA: Say it.", "LEO: There is nothing to say."];
+    const lines = ["(Mona stands at the window.)", "MONA: Where were you?", "RENAN: Out. (He drops the keys.)", "(Later, at the diner, the two sit apart.)", "MONA: Say it.", "RENAN: There is nothing to say."];
     const scenes = parseSummScreen(lines, "t/ep1");
     expect(scenes).toHaveLength(2);
     expect(scenes[0]!.events.filter((e) => e.kind === "speech")).toHaveLength(2);

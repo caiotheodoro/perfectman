@@ -6,12 +6,12 @@ language: pt-BR
 settings:
   pulseIntervalMs: 3000
 channels:
-  - { id: geral, type: public_channel, name: geral, default: true, members: [iris, bruno, marcela] }
+  - { id: geral, type: public_channel, name: geral, default: true, members: [iris, dario, marcela] }
   - { id: iris_marcela, type: private_channel, name: iris+marcela, members: [iris, marcela], createdBy: iris }
 familiarity:
   iris:marcela: close_friends
-  iris:bruno: acquaintances
-  bruno:marcela: strangers
+  iris:dario: acquaintances
+  dario:marcela: strangers
 cast:
   - agentId: iris
     persona: iris.persona.md
@@ -19,13 +19,13 @@ cast:
     presence: active
     mood: { valence: -0.2, arousal: 0.6 }
     social: { desireForStatus: 0.7 }
-  - agentId: bruno
-    persona: bruno
+  - agentId: dario
+    persona: dario
   - agentId: marcela
-    persona: bruno
+    persona: dario
 priorEvents:
   - type: message
-    actorId: bruno
+    actorId: dario
     channelId: geral
     pulseIndex: 0
     minutesAgo: 40
@@ -54,10 +54,10 @@ alguém mais tá pensando no que aconteceu no sábado?
 ### Hidden Objective
 Descobrir se o jantar foi deliberado, sem parecer magoada (resource: o_convite)
 Constraint: Não pode admitir que ficou sabendo pelo story da Marcela.
-Cost Of Exposure: Perde a confiança do Bruno.
+Cost Of Exposure: Perde a confiança do Dario.
 Breaking Point: Se alguém disser que ela está exagerando.
 
-## Agent: bruno
+## Agent: dario
 ### Room Context
 Mesma sala, mas você entrou achando que era só um papo.
 ### Hidden Objective

@@ -29,7 +29,7 @@ function makeAgent(id: string, moodOverride?: Partial<CoreMood>): AgentState {
   return {
     agentId: id,
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: { ...BASE_MOOD, ...moodOverride },
     socialEmotions: ZERO_SOCIAL,

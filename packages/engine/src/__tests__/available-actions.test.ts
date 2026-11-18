@@ -29,7 +29,7 @@ function makeAgent(overrides?: Partial<AgentState>): AgentState {
   return {
     agentId: "a1",
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: DEFAULT_MOOD,
     socialEmotions: ZERO_SOCIAL,

@@ -8,7 +8,7 @@ import type { LiveChannel, LiveMessage, LivePulseFrame, LiveThinking } from "../
 import { priorEventsToBeats, pulseToBeats, toRecordedEmotion, type BeatContext } from "../live-to-beats.js";
 
 const CHANNELS: LiveChannel[] = [
-  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "bruno", "marcela"] },
+  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "dario", "marcela"] },
   { id: "dm", name: "iris+marcela", type: "private_channel", memberAgentIds: ["iris", "marcela"] },
 ];
 const CONTEXT: BeatContext = { channels: CHANNELS, defaultChannelId: "geral" };
@@ -40,7 +40,7 @@ describe("pulseToBeats — what was said", () => {
     // indistinguishable from one addressed to every member individually.
     const [beat] = pulseToBeats(frame({ messages: [message()] }), CONTEXT);
     expect(beat?.audienceIds).toEqual([]);
-    expect(beat?.participantIds).toEqual(["iris", "bruno", "marcela"]);
+    expect(beat?.participantIds).toEqual(["iris", "dario", "marcela"]);
   });
 
   it("carries a restricted audience through untouched", () => {
@@ -93,7 +93,7 @@ describe("pulseToBeats — what was not said", () => {
       iris: thinking({ agentId: "iris", intentType: "send_message" }), marcela: thinking(),
     } });
     const first = pulseToBeats(partial, CONTEXT);
-    const grown = { ...partial, messages: [...partial.messages, message({ eventId: "e2", actorId: "bruno" })] };
+    const grown = { ...partial, messages: [...partial.messages, message({ eventId: "e2", actorId: "dario" })] };
     const next = pulseToBeats(grown, CONTEXT);
     const complete = pulseToBeats({ ...grown, complete: true }, CONTEXT);
     expect(first.map((beat) => beat.kind)).toEqual(["message", "aside"]);
@@ -202,7 +202,7 @@ describe("pulseToBeats — reactions", () => {
   it("only includes people in the room", () => {
     const emotions = { marcela: { valence: 0, arousal: 0, top: [{ key: "calm", value: 1 }] } };
     const [beat] = pulseToBeats(
-      frame({ messages: [message({ channelId: "dm", actorId: "iris" })], emotions: { ...emotions, bruno: emotions.marcela } }),
+      frame({ messages: [message({ channelId: "dm", actorId: "iris" })], emotions: { ...emotions, dario: emotions.marcela } }),
       CONTEXT,
     );
     expect(Object.keys(beat?.reactions ?? {})).toEqual(["marcela"]);

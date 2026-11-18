@@ -20,8 +20,8 @@ const PROMPT: BuiltPrompt = {
 
 function makePack(seed: MemorySeed): PersonaPack {
   return {
-    personaId: "bruno",
-    displayName: "Bruno",
+    personaId: "dario",
+    displayName: "Dario",
     archetype: "observer",
     identityFrame: "x",
     voiceGuidelines: [],

@@ -153,14 +153,14 @@ describe("progress and question debt", () => {
 describe("adapters", () => {
   it("reads speech and body events of a hotel run, leaving the host's notes out", () => {
     const turns = turnsFromEvents([
-      { type: "message_sent", actorId: "ian", createdAt: 10, payload: { content: "Oi, gente.", senderName: "Ian" } },
+      { type: "message_sent", actorId: "omar", createdAt: 10, payload: { content: "Oi, gente.", senderName: "Omar" } },
       { type: "message_sent", actorId: "host", createdAt: 11, payload: { content: "steer" } },
-      { type: "body_arrived", actorId: "caio", createdAt: 12 },
-      { type: "no_op_recorded", actorId: "caio", createdAt: 13 },
+      { type: "body_arrived", actorId: "tomas", createdAt: 12 },
+      { type: "no_op_recorded", actorId: "tomas", createdAt: 13 },
     ]);
     expect(turns).toEqual([
-      { speaker: "Ian", text: "Oi, gente.", kind: "say", atMs: 10 },
-      { speaker: "caio", text: "", kind: "act", actKind: "move", atMs: 12 },
+      { speaker: "Omar", text: "Oi, gente.", kind: "say", atMs: 10 },
+      { speaker: "tomas", text: "", kind: "act", actKind: "move", atMs: 12 },
     ]);
   });
 

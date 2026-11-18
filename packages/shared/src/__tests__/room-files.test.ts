@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { roomFiles } from "../live/room-files.js";
 
-const people = ["Duda", "Rafa", "Gabi", "Leo"].map((name) => ({ name, role: "connector" as const, goal: "Pass the night." }));
+const people = ["Duda", "Rafa", "Gabi", "Renan"].map((name) => ({ name, role: "connector" as const, goal: "Pass the night." }));
 const examplesOf = (text: string): string[] => (text.split("## Style Examples\n")[1] ?? "").split("\n\n")[0]!.split("\n").map((l) => l.replace(/^- /, ""));
 
 describe("roomFiles style examples", () => {

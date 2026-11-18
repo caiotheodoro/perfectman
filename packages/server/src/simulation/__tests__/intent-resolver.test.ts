@@ -216,7 +216,7 @@ describe("IntentResolver", () => {
         unresolved: true,
       }],
     });
-    const result = await resolver.resolve(intent, { ...ctx(), agentNames: { agent_2: "Bruno", agent_3: "Íris" } });
+    const result = await resolver.resolve(intent, { ...ctx(), agentNames: { agent_2: "Dario", agent_3: "Íris" } });
     const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
     expect(memoryEvent?.payload["subjectAgentIds"]).toEqual(["agent_3", "agent_2"]);
     // ACTION_EMOTIONS: warmth 0.3 and curiousApproach 0.3 tie; the first wins.
@@ -240,7 +240,7 @@ describe("IntentResolver", () => {
       }],
     });
     const flat = { ...ACTION_EMOTIONS, warmth: 0.1, curiousApproach: 0.1 };
-    const result = await resolver.resolve(intent, { ...ctx(), actionEmotions: flat, agentNames: { agent_2: "Bruno" } });
+    const result = await resolver.resolve(intent, { ...ctx(), actionEmotions: flat, agentNames: { agent_2: "Dario" } });
     const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
     expect(memoryEvent?.payload["subjectAgentIds"]).toEqual([]);
     expect(memoryEvent?.payload["memoryType"]).toBe("self");

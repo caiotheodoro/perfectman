@@ -96,7 +96,7 @@ function findLastIndex<T>(items: readonly T[], pred: (x: T) => boolean): number 
 const percentile = (sorted: readonly number[], p: number): number =>
   sorted.length === 0 ? 0 : sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))]!;
 
-const NAMES = ["Duda", "Rafa", "Gabi", "Leo", "Nina", "Caio", "Bia", "Theo", "Lia", "Ravi", "Maya", "Davi"];
+const NAMES = ["Duda", "Rafa", "Gabi", "Renan", "Nina", "Tomas", "Bia", "Theo", "Lia", "Ravi", "Maya", "Davi"];
 const DELAY: [number, number] = [800, 4000];
 /** The arbiter's quiet window at the default scenario energy (10 s). */
 const QUIET_WINDOW_MS = 10_000;

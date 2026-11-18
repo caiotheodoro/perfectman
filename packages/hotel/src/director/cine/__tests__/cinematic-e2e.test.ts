@@ -12,31 +12,31 @@ const WHITELIST = new Set(["hud", "card", "lower_third", "caption", "thought", "
 /** What the engine produces, pulse by pulse: two rooms, four people. */
 const SCRIPT: Beat[][] = [
   [
-    (r) => r.say("duda", "Rafa, você viu o que aconteceu com o Leo ontem?", "say", "rafa"),
+    (r) => r.say("duda", "Rafa, você viu o que aconteceu com o Renan ontem?", "say", "rafa"),
     (r) => r.say("rafa", "Vi. Ele saiu da festa sem falar com ninguém.", "say", "duda"),
     (r) => r.exec.sendThought("rafa", "Eu sei bem por que ele saiu."),
-    (r) => r.say("gabi", "Leo! Finalmente você chegou, a cozinha estava vazia!", "shout", "leo"),
-    (r) => r.say("leo", "Calma, Gabi, eu só vim pegar um café.", "say", "gabi"),
+    (r) => r.say("gabi", "Renan! Finalmente você chegou, a cozinha estava vazia!", "shout", "renan"),
+    (r) => r.say("renan", "Calma, Gabi, eu só vim pegar um café.", "say", "gabi"),
   ],
   [
     (r) => r.say("duda", "Será que a gente deveria ir lá falar com ele? Eu me sinto mal por não ter dito nada na hora, sabe, ele parecia tão sozinho.", "say", "rafa"),
     (r) => r.exec.send([{ agentId: "gabi", cmd: "gesture", a: "laugh" }]),
-    (r) => r.say("leo", "Você fala demais, sabia?", "say", "gabi"),
-    (r) => r.say("gabi", "E você escuta de menos!", "say", "leo"),
+    (r) => r.say("renan", "Você fala demais, sabia?", "say", "gabi"),
+    (r) => r.say("gabi", "E você escuta de menos!", "say", "renan"),
   ],
   [
     (r) => {
       r.exec.send([{ agentId: "duda", cmd: "move_room", to: "13" }]);
       r.world.move("duda", 13);
     },
-    (r) => r.say("duda", "Leo, podemos conversar um minuto?", "say", "leo"),
-    (r) => r.say("leo", "Agora? Logo agora?", "say", "duda"),
-    (r) => r.exec.send([{ agentId: "gabi", cmd: "pair", kind: "hug", with: "leo", pair: "k1" }]),
+    (r) => r.say("duda", "Renan, podemos conversar um minuto?", "say", "renan"),
+    (r) => r.say("renan", "Agora? Logo agora?", "say", "duda"),
+    (r) => r.exec.send([{ agentId: "gabi", cmd: "pair", kind: "hug", with: "renan", pair: "k1" }]),
     (r) => r.say("rafa", "Ué, todo mundo sumiu. Vou ficar aqui sozinho então.", "say"),
   ],
   [
-    (r) => r.say("leo", "Tá bom, mas só um minuto, o café está esfriando.", "say", "duda"),
-    (r) => r.say("duda", "Obrigada. Eu só queria saber se você está bem.", "say", "leo"),
+    (r) => r.say("renan", "Tá bom, mas só um minuto, o café está esfriando.", "say", "duda"),
+    (r) => r.say("duda", "Obrigada. Eu só queria saber se você está bem.", "say", "renan"),
     (r) => r.say("rafa", "Alguém aí? Alô?", "say"),
   ],
 ];
@@ -77,7 +77,7 @@ describe("a scripted cinematic scene: 2 rooms, 4 actors", () => {
     await film(r);
     const said = r.spoken().map((d) => (d.cmd.cmd === "chat" ? `${d.cmd.agentId}:${d.cmd.text.slice(0, 6)}` : ""));
     expect(said).toHaveLength(13);
-    expect(said.filter((s) => s.startsWith("duda:"))).toEqual(["duda:Rafa, ", "duda:Será q", "duda:Leo, p", "duda:Obriga"]);
+    expect(said.filter((s) => s.startsWith("duda:"))).toEqual(["duda:Rafa, ", "duda:Será q", "duda:Renan, p", "duda:Obriga"]);
 
     const track = r.director.track.sorted();
     const cuts = track.filter((e): e is Extract<TrackEntry, { k: "cut" }> => e.k === "cut");
@@ -121,7 +121,7 @@ describe("a scripted cinematic scene: 2 rooms, 4 actors", () => {
     for (const k of ["thought", "lower_third", "sfx", "cut_fx", "caption", "card"]) expect(kinds.has(k as never)).toBe(true);
     const lowers = r.frames().flatMap((f) => (f.ui.k === "lower_third" ? [f.ui.name] : []));
     expect(new Set(lowers).size).toBe(lowers.length);
-    expect(lowers.sort()).toEqual(["Duda", "Gabi", "Leo", "Rafa"]);
+    expect(lowers.sort()).toEqual(["Duda", "Gabi", "Renan", "Rafa"]);
   });
 
   it("is replayable: the JSONL track gives back the same metrics (D39)", async () => {

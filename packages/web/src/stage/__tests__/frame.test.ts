@@ -10,7 +10,7 @@ import { frameFor, frameLabel } from "../Frame.js";
 
 const AGENTS = [
   { id: "iris", displayName: "íris" },
-  { id: "bruno", displayName: "bruno" },
+  { id: "dario", displayName: "dario" },
   { id: "marcela", displayName: "marcela" },
 ];
 const IDS = AGENTS.map((a) => a.id);
@@ -56,7 +56,7 @@ describe("frameFor", () => {
   it("signs two identical pictures the same and two different speakers differently", () => {
     const a = frame(beat({ id: "x" }));
     const b = frame(beat({ id: "y" }));
-    const c = frame(beat({ id: "z", actorId: "bruno" }));
+    const c = frame(beat({ id: "z", actorId: "dario" }));
     expect(a.sig).toBe(b.sig);
     expect(a.sig).not.toBe(c.sig);
   });
@@ -71,7 +71,7 @@ describe("frameLabel", () => {
   it("says who did what where, for a reader who cannot see the picture", () => {
     expect(frameLabel(beat(), AGENTS, CHANNELS[0])).toBe("íris speaks in geral");
     expect(frameLabel(beat({ kind: "silence", actorId: "marcela" }), AGENTS, CHANNELS[0])).toBe("marcela says nothing");
-    expect(frameLabel(beat({ kind: "aside", actorId: "bruno" }), AGENTS, CHANNELS[0])).toBe("what bruno was after");
+    expect(frameLabel(beat({ kind: "aside", actorId: "dario" }), AGENTS, CHANNELS[0])).toBe("what dario was after");
     expect(frameLabel(beat({ kind: "event", stageAction: { kind: "leave", agentIds: [] } }), AGENTS, CHANNELS[0])).toBe("íris leaves geral");
   });
 });

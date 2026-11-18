@@ -99,7 +99,7 @@ export function makeAgentState(agentId: string, simulationId: string): AgentStat
   return {
     agentId,
     simulationId,
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: { ...BASE_MOOD },
     socialEmotions: { ...ZERO_SOCIAL },

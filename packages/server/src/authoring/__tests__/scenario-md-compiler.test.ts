@@ -26,7 +26,7 @@ describe("compileScenarioMarkdown — the golden fixture", () => {
         id: "geral",
         type: "public_channel",
         name: "geral",
-        memberAgentIds: ["iris", "bruno", "marcela"],
+        memberAgentIds: ["iris", "dario", "marcela"],
         default: true,
       },
       {
@@ -42,8 +42,8 @@ describe("compileScenarioMarkdown — the golden fixture", () => {
   it("reads the familiarity matrix", () => {
     expect(scenario?.familiarity).toEqual({
       "iris:marcela": "close_friends",
-      "iris:bruno": "acquaintances",
-      "bruno:marcela": "strangers",
+      "iris:dario": "acquaintances",
+      "dario:marcela": "strangers",
     });
   });
 
@@ -69,8 +69,8 @@ describe("compileScenarioMarkdown — the golden fixture", () => {
   it("attaches `## Agent:` overrides to the matching cast member", () => {
     const iris = scenario?.cast.find((c) => c.agentId === "iris");
     expect(iris?.hostStartingMessage).toBe("alguém mais tá pensando no que aconteceu no sábado?");
-    const bruno = scenario?.cast.find((c) => c.agentId === "bruno");
-    expect(bruno?.roomContext).toContain("achando que era só um papo");
+    const dario = scenario?.cast.find((c) => c.agentId === "dario");
+    expect(dario?.roomContext).toContain("achando que era só um papo");
   });
 
   it("parses a hidden objective, its inline resource and its labelled fields", () => {
@@ -79,14 +79,14 @@ describe("compileScenarioMarkdown — the golden fixture", () => {
       description: "Descobrir se o jantar foi deliberado, sem parecer magoada",
       scarceResourceId: "o_convite",
       constraint: "Não pode admitir que ficou sabendo pelo story da Marcela.",
-      costOfExposure: "Perde a confiança do Bruno.",
+      costOfExposure: "Perde a confiança do Dario.",
       breakingPoint: "Se alguém disser que ela está exagerando.",
     });
   });
 
   it("reads per-agent seed memories", () => {
-    const bruno = scenario?.cast.find((c) => c.agentId === "bruno");
-    expect(bruno?.memorySeeds).toEqual([
+    const dario = scenario?.cast.find((c) => c.agentId === "dario");
+    expect(dario?.memorySeeds).toEqual([
       {
         type: "episodic",
         subjectAgentIds: ["iris"],
@@ -102,7 +102,7 @@ describe("compileScenarioMarkdown — the golden fixture", () => {
     expect(scenario?.priorEvents).toEqual([
       {
         type: "message",
-        actorId: "bruno",
+        actorId: "dario",
         channelId: "geral",
         pulseIndex: 0,
         minutesAgo: 40,

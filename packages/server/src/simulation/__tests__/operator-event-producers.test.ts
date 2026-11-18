@@ -109,7 +109,7 @@ describe("hasOperatorEmission discriminates operator events from committed event
       const event: SimulationEvent = {
         simulationId: "sim-1",
         channelId: "general",
-        actorId: "leo",
+        actorId: "renan",
         type: "llm_failure",
         payload: { reason: "provider error" },
         sourceEventIds: [],
@@ -125,7 +125,7 @@ describe("hasOperatorEmission discriminates operator events from committed event
       const op: OperatorEvent = {
         type: "llm_failure",
         simulationId: "sim-1",
-        agentId: "leo",
+        agentId: "renan",
         pulseIndex: 3,
         detail: "LLM provider execution failed",
         createdAt: 0,

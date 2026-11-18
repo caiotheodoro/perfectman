@@ -14,15 +14,15 @@ describe("aggregateSignalsByKind (#42)", () => {
   it("groups pass/fail counts per kind", () => {
     const agg = aggregateSignalsByKind([
       outcome("emotion_rises", true),
-      outcome("emotion_rises", false, "bruno.jealousy = 0.1 (min 0.5)"),
-      outcome("emotion_rises", false, "no state for caio"),
+      outcome("emotion_rises", false, "dario.jealousy = 0.1 (min 0.5)"),
+      outcome("emotion_rises", false, "no state for tomas"),
       outcome("event_committed", true),
     ]);
     expect(agg["emotion_rises"]).toEqual({
       passed: 1,
       total: 3,
       passRate: 1 / 3,
-      failExamples: ["bruno.jealousy = 0.1 (min 0.5)", "no state for caio"],
+      failExamples: ["dario.jealousy = 0.1 (min 0.5)", "no state for tomas"],
     });
     expect(agg["event_committed"]).toEqual({
       passed: 1,

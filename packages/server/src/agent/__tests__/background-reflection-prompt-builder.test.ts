@@ -8,12 +8,12 @@ import type { BuiltPrompt } from "../agent-runtime.types.js";
 function memory(overrides: Partial<Memory> = {}): Memory {
   return {
     id: "mem-1",
-    agentId: "goulart",
+    agentId: "vasco",
     simulationId: "sim",
     type: "relationship",
-    subjectAgentIds: ["bruno"],
+    subjectAgentIds: ["dario"],
     sourceEventIds: [],
-    summary: "bruno me ignorou de propósito",
+    summary: "dario me ignorou de propósito",
     emotionalTone: "resentful",
     confidence: 0.8,
     intensity: 0,
@@ -31,10 +31,10 @@ const availableActions = [
 function input(memories: Memory[] = []): AgentRuntimeInput {
   return {
     simulationId: "sim-123",
-    agentId: "goulart",
+    agentId: "vasco",
     personaConfig: {
-      id: "goulart",
-      name: "Goulart",
+      id: "vasco",
+      name: "Vasco",
       archetype: "provocateur",
       writingStyle: "lowercase blunt",
       styleExamples: [],
@@ -54,7 +54,7 @@ function input(memories: Memory[] = []): AgentRuntimeInput {
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "goulart",
+      agentId: "vasco",
       triggeringEvent: null,
       visibleContextEvents: [],
       eventHandles: {},
@@ -133,7 +133,7 @@ describe("BackgroundReflectionPromptBuilder", () => {
       input([memory(), memory({ id: "mem-2", summary: "resolved thing", unresolved: false })]),
       profile,
     );
-    expect(built.user).toContain("bruno me ignorou de propósito");
+    expect(built.user).toContain("dario me ignorou de propósito");
     expect(built.user).not.toContain("resolved thing");
     expect(built.user).toContain("You feel tense and watched");
   });

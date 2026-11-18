@@ -67,9 +67,9 @@ export class PersonaLoader {
 /**
  * A scenario re-skin of a pack: the pack supplies temperament, voice and
  * relationship texture; the scene supplies the name and the cast. Without
- * it the pack's own friends leak into a room they were never in (a goulart
- * playing "Íris" once tagged `@caio @leo` in a scene with neither) and the
- * prompt says "Display Name: Goulart" under a room context that says
+ * it the pack's own friends leak into a room they were never in (a vasco
+ * playing "Íris" once tagged `@tomas @renan` in a scene with neither) and the
+ * prompt says "Display Name: Vasco" under a room context that says
  * "Você é Íris".
  */
 export type PersonaReskin = {
@@ -123,8 +123,8 @@ export function personaPackToProfile(pack: PersonaPack, reskin?: PersonaReskin):
   };
 
   // The bias map is keyed by scene id, but its prose was still the pack's
-  // ("Mariana barely reacts to you…"): in a real read the band called Bea
-  // "mariana" and Kai "caio" — names nobody in the scene has. The prose
+  // ("Lara barely reacts to you…"): in a real read the band called Bea
+  // "lara" and Kai "tomas" — names nobody in the scene has. The prose
   // goes through the same rename; a view that names a peer outside the
   // cast is dropped with it.
   const biases: Record<string, import("./persona-prompt-profile.js").RelationshipPromptBias> = {};

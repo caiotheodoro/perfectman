@@ -7,11 +7,11 @@ import type { CoreMood, SocialEmotions } from "../emotion/emotion.types.js";
  * These are calibrated constants — do not mutate at runtime.
  */
 
-// ── Persona 1: Goulart ───────────────────────────────────────────────────────
+// ── Persona 1: Vasco ───────────────────────────────────────────────────────
 // Archetype: The Provocateur. Loud, irreverent, drives conflict. High arousal,
 // often in the "tense/excited" range. Low stability. Quick to resentment.
 
-const GOULART_SOCIAL_SENSITIVITIES: Record<string, number> = {
+const VASCO_SOCIAL_SENSITIVITIES: Record<string, number> = {
   jealousy:            0.6,
   envy:                0.5,
   humiliation:         1.8, // very reactive to being embarrassed
@@ -29,9 +29,9 @@ const GOULART_SOCIAL_SENSITIVITIES: Record<string, number> = {
   desireForIntimacy:   0.5,
 };
 
-export const GOULART: PersonaConfig = {
-  id: "goulart",
-  name: "Goulart",
+export const VASCO: PersonaConfig = {
+  id: "vasco",
+  name: "Vasco",
   archetype: "provocateur",
   writingStyle: "blunt, sarcastic, uses lowercase, occasional all-caps for emphasis, short punchy messages",
   styleExamples: [
@@ -56,16 +56,16 @@ export const GOULART: PersonaConfig = {
   conflictSensitivity:  1.8,   // loves/drives conflict
   boredomSensitivity:   1.4,
   intimacySensitivity:  0.5,
-  socialSensitivities:  GOULART_SOCIAL_SENSITIVITIES,
+  socialSensitivities:  VASCO_SOCIAL_SENSITIVITIES,
 };
 
-// ── Persona 2: Bruno ─────────────────────────────────────────────────────────
+// ── Persona 2: Dario ─────────────────────────────────────────────────────────
 // Archetype: The Observer. Quiet, resentful when ignored, prone to envy.
 // Low arousal baseline. Bottles up social emotions. Slow to act but intense
 // when triggered.
 
-const BRUNO_SOCIAL_SENSITIVITIES: Record<string, number> = {
-  jealousy:            1.8, // high — especially toward Caio
+const DARIO_SOCIAL_SENSITIVITIES: Record<string, number> = {
+  jealousy:            1.8, // high — especially toward Tomas
   envy:                2.0,
   humiliation:         1.5,
   pride:               0.8,
@@ -82,9 +82,9 @@ const BRUNO_SOCIAL_SENSITIVITIES: Record<string, number> = {
   desireForIntimacy:   1.7,
 };
 
-export const BRUNO: PersonaConfig = {
-  id: "bruno",
-  name: "Bruno",
+export const DARIO: PersonaConfig = {
+  id: "dario",
+  name: "Dario",
   archetype: "observer",
   writingStyle: "understated, careful word choice, rarely uses punctuation, sometimes edits messages to soften them",
   styleExamples: [
@@ -107,15 +107,15 @@ export const BRUNO: PersonaConfig = {
   conflictSensitivity:  0.6,
   boredomSensitivity:   0.8,
   intimacySensitivity:  1.9,
-  socialSensitivities:  BRUNO_SOCIAL_SENSITIVITIES,
+  socialSensitivities:  DARIO_SOCIAL_SENSITIVITIES,
 };
 
-// ── Persona 3: Caio ──────────────────────────────────────────────────────────
+// ── Persona 3: Tomas ──────────────────────────────────────────────────────────
 // Archetype: The Connector. Socially warm, tries to include everyone, moderates
 // tension. High valence, moderate arousal. Prone to anxiety when conflict
 // escalates.
 
-const CAIO_SOCIAL_SENSITIVITIES: Record<string, number> = {
+const TOMAS_SOCIAL_SENSITIVITIES: Record<string, number> = {
   jealousy:            0.3,
   envy:                0.2,
   humiliation:         0.9,
@@ -133,9 +133,9 @@ const CAIO_SOCIAL_SENSITIVITIES: Record<string, number> = {
   desireForIntimacy:   1.8,
 };
 
-export const CAIO: PersonaConfig = {
-  id: "caio",
-  name: "Caio",
+export const TOMAS: PersonaConfig = {
+  id: "tomas",
+  name: "Tomas",
   archetype: "connector",
   writingStyle: "warm, uses emojis sparingly but meaningfully, asks questions, mirrors others' tone",
   styleExamples: [
@@ -158,14 +158,14 @@ export const CAIO: PersonaConfig = {
   conflictSensitivity:  1.4,
   boredomSensitivity:   0.7,
   intimacySensitivity:  1.5,
-  socialSensitivities:  CAIO_SOCIAL_SENSITIVITIES,
+  socialSensitivities:  TOMAS_SOCIAL_SENSITIVITIES,
 };
 
-// ── Persona 4: Mariana ───────────────────────────────────────────────────────
+// ── Persona 4: Lara ───────────────────────────────────────────────────────
 // Archetype: The Strategist. Calculated, uses silence as a tool, builds and
 // maintains status through selective engagement. High stability, medium arousal.
 
-const MARIANA_SOCIAL_SENSITIVITIES: Record<string, number> = {
+const LARA_SOCIAL_SENSITIVITIES: Record<string, number> = {
   jealousy:            0.8,
   envy:                0.7,
   humiliation:         1.2,
@@ -183,9 +183,9 @@ const MARIANA_SOCIAL_SENSITIVITIES: Record<string, number> = {
   desireForIntimacy:   0.6,
 };
 
-export const MARIANA: PersonaConfig = {
-  id: "mariana",
-  name: "Mariana",
+export const LARA: PersonaConfig = {
+  id: "lara",
+  name: "Lara",
   archetype: "strategist",
   writingStyle: "precise, no typos, uses punctuation correctly, occasional dry wit, rarely uses exclamation marks",
   styleExamples: [
@@ -208,14 +208,14 @@ export const MARIANA: PersonaConfig = {
   conflictSensitivity:  0.9,
   boredomSensitivity:   0.6,
   intimacySensitivity:  0.7,
-  socialSensitivities:  MARIANA_SOCIAL_SENSITIVITIES,
+  socialSensitivities:  LARA_SOCIAL_SENSITIVITIES,
 };
 
-// ── Persona 5: Léo ───────────────────────────────────────────────────────────
+// ── Persona 5: Renan ───────────────────────────────────────────────────────────
 // Archetype: The Enthusiast. Emotionally open, easily moved, talks fast, gets
 // distracted. High energy, high reactivity, low stability.
 
-const LEO_SOCIAL_SENSITIVITIES: Record<string, number> = {
+const RENAN_SOCIAL_SENSITIVITIES: Record<string, number> = {
   jealousy:            0.5,
   envy:                0.4,
   humiliation:         0.8,
@@ -233,9 +233,9 @@ const LEO_SOCIAL_SENSITIVITIES: Record<string, number> = {
   desireForIntimacy:   2.0,
 };
 
-export const LEO: PersonaConfig = {
-  id: "leo",
-  name: "Léo",
+export const RENAN: PersonaConfig = {
+  id: "renan",
+  name: "Renan",
   archetype: "enthusiast",
   writingStyle: "rapid-fire messages, lots of ellipses, reacts to everything, uses memes references, corrects own messages with follow-up",
   styleExamples: [
@@ -258,10 +258,10 @@ export const LEO: PersonaConfig = {
   conflictSensitivity:  0.8,
   boredomSensitivity:   1.8,
   intimacySensitivity:  1.6,
-  socialSensitivities:  LEO_SOCIAL_SENSITIVITIES,
+  socialSensitivities:  RENAN_SOCIAL_SENSITIVITIES,
 };
 
-export const ALL_PERSONAS: readonly PersonaConfig[] = [GOULART, BRUNO, CAIO, MARIANA, LEO];
+export const ALL_PERSONAS: readonly PersonaConfig[] = [VASCO, DARIO, TOMAS, LARA, RENAN];
 
 export function getPersonaById(id: string): PersonaConfig | undefined {
   return ALL_PERSONAS.find(p => p.id === id);

@@ -34,8 +34,8 @@ describe("parallel editing (D38)", () => {
 
   it("follows a character through a door, and cuts away from a room that has held the screen too long", () => {
     const here = line("duda", "oi", { room: 12, salience: 0.5 });
-    const there = line("leo", "ei", { room: 13, salience: 0.5 });
-    expect(selectNext([here, there], 0, ctx({ followRef: "leo" }))).toBe(there);
+    const there = line("renan", "ei", { room: 13, salience: 0.5 });
+    expect(selectNext([here, there], 0, ctx({ followRef: "renan" }))).toBe(there);
     expect(selectNext([here, there], 0, ctx({ roomSince: 60_000 - DEFAULT_CINE.maxRoomHoldMs - 1 }))).toBe(there);
   });
 

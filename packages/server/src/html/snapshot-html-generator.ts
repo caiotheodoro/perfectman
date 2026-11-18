@@ -97,7 +97,7 @@ const CSS = `
   --text3:    #3a3a78;
   --accent:   #5050c8;
   --ana:      #4da8ff;
-  --bruno:    #4ddb88;
+  --dario:    #4ddb88;
   --carla:    #ff5540;
   --diego:    #ffaa30;
   --font-mono: 'Courier New', 'Consolas', 'Lucida Console', monospace;
@@ -246,7 +246,7 @@ body { display: flex; flex-direction: column; }
   flex-shrink: 0;
 }
 .msg-sender.ana   { color: var(--ana); }
-.msg-sender.bruno { color: var(--bruno); }
+.msg-sender.dario { color: var(--dario); }
 .msg-sender.carla { color: var(--carla); }
 .msg-sender.diego { color: var(--diego); }
 
@@ -291,7 +291,7 @@ body { display: flex; flex-direction: column; }
   font-family: var(--font-mono); font-size: 10px; font-weight: 700; flex-shrink: 0;
 }
 .dream-agent-name.ana   { color: #2a6499; }
-.dream-agent-name.bruno { color: #2a7050; }
+.dream-agent-name.dario { color: #2a7050; }
 .dream-agent-name.carla { color: #7a2e26; }
 .dream-agent-name.diego { color: #7a5820; }
 .dream-text-content {
@@ -322,14 +322,14 @@ body { display: flex; flex-direction: column; }
 }
 .agent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .agent-dot.ana   { background: var(--ana); }
-.agent-dot.bruno { background: var(--bruno); }
+.agent-dot.dario { background: var(--dario); }
 .agent-dot.carla { background: var(--carla); }
 .agent-dot.diego { background: var(--diego); }
 .agent-mini-name {
   font-family: var(--font-mono); font-size: 11px; font-weight: 700;
 }
 .agent-mini-name.ana   { color: var(--ana); }
-.agent-mini-name.bruno { color: var(--bruno); }
+.agent-mini-name.dario { color: var(--dario); }
 .agent-mini-name.carla { color: var(--carla); }
 .agent-mini-name.diego { color: var(--diego); }
 .agent-mini-arch { font-size: 9px; color: var(--text3); }
@@ -446,7 +446,7 @@ const AGENT_NAMES = DATA.agentNames;
 const AGENT_ARCHETYPES = DATA.agentArchetypes;
 const CHANNELS = DATA.channels;
 
-const AGENT_COLORS = {ana:'#4da8ff',bruno:'#4ddb88',carla:'#ff5540',diego:'#ffaa30'};
+const AGENT_COLORS = {ana:'#4da8ff',dario:'#4ddb88',carla:'#ff5540',diego:'#ffaa30'};
 const POSITIVE_EMOS = new Set(['pride','affection','admiration','desireForIntimacy']);
 const NEGATIVE_EMOS = new Set(['jealousy','envy','humiliation','shame','resentment','suspicion','contempt','neediness','socialAnxiety','fearOfExclusion']);
 

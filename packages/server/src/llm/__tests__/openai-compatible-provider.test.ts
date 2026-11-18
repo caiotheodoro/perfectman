@@ -22,10 +22,10 @@ describe("OpenAiCompatibleProvider", () => {
 
   const baseInput: AgentRuntimeInput = {
     simulationId: "sim-123",
-    agentId: "goulart",
+    agentId: "vasco",
     personaConfig: {
-      id: "goulart",
-      name: "Goulart",
+      id: "vasco",
+      name: "Vasco",
       archetype: "provocateur",
       writingStyle: "lowercase blunt",
       styleExamples: [],
@@ -45,7 +45,7 @@ describe("OpenAiCompatibleProvider", () => {
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "goulart",
+      agentId: "vasco",
       triggeringEvent: null,
       visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [],
       involvedPeople: [],

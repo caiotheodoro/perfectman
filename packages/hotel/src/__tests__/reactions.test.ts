@@ -10,12 +10,12 @@ import { actFrames } from "../testing/fake-drama.js";
 import { agentState, person } from "../testing/fixtures.js";
 import { ManualClock } from "../testing/manual-clock.js";
 
-const REFS: Record<number, string> = { [-701]: "duda", [-702]: "rafa", [-703]: "gabi", [-704]: "leo", [-705]: "bia", [-706]: "caro", 9: "h:9" };
+const REFS: Record<number, string> = { [-701]: "duda", [-702]: "rafa", [-703]: "gabi", [-704]: "renan", [-705]: "bia", [-706]: "caro", 9: "h:9" };
 const ZERO_ACT: ActionEmotions = {
   defensiveness: 0, warmth: 0, jealousInspection: 0, shameWithdrawal: 0, resentfulColdness: 0, curiousApproach: 0, anxiousOverreach: 0, pridefulPerformance: 0,
   vulnerableRetreat: 0, contemptuousDismissal: 0, strategicPatience: 0, impulsiveProvocation: 0, comfortSeeking: 0, dominanceAssertion: 0, repairImpulse: 0,
 };
-const TILES: Record<string, [number, number]> = { duda: [3, 3], rafa: [4, 3], gabi: [6, 4], leo: [3, 6], bia: [8, 8], caro: [2, 7] };
+const TILES: Record<string, [number, number]> = { duda: [3, 3], rafa: [4, 3], gabi: [6, 4], renan: [3, 6], bia: [8, 8], caro: [2, 7] };
 const present = (ref: string): Presence | undefined => (TILES[ref] ? person(ref, TILES[ref]) : undefined);
 
 const debt = (over: Partial<OwedDebt> = {}): OwedDebt => ({ actId: "a1", verb: "slap", who: "gabi", role: "witness", actor: "duda", target: "rafa", dueInMs: 3000, receivedAt: 1000, at: 5000, ...over });
@@ -65,7 +65,7 @@ describe("reactions the planner may give in place of the table's (REA-3)", () =>
 
   it("[REA-4] six witnesses who feel exactly the same still do not react in unison: the seeded variety changes what or when", () => {
     const seen = new Set<string>();
-    for (const who of ["gabi", "leo", "bia", "caro", "rafa", "duda"]) {
+    for (const who of ["gabi", "renan", "bia", "caro", "rafa", "duda"]) {
       const r = choose(debt({ who }));
       seen.add(`${verbOf(r)}@${r?.delayMs}`);
     }
@@ -74,7 +74,7 @@ describe("reactions the planner may give in place of the table's (REA-3)", () =>
   });
 
   it("[REA-1] a planner reaction goes out before the table's earliest witness step and well inside the deadline", () => {
-    for (const who of ["gabi", "leo", "bia", "caro"]) {
+    for (const who of ["gabi", "renan", "bia", "caro"]) {
       const w = choose(debt({ who }));
       expect(w?.delayMs).toBeGreaterThanOrEqual(150);
       expect(w?.delayMs).toBeLessThan(600);
@@ -84,7 +84,7 @@ describe("reactions the planner may give in place of the table's (REA-3)", () =>
   });
 });
 
-function rig(own: string[] = ["duda", "rafa", "gabi", "leo", "bia", "caro"], rels: Record<string, Parameters<typeof agentState>[0]> = {}) {
+function rig(own: string[] = ["duda", "rafa", "gabi", "renan", "bia", "caro"], rels: Record<string, Parameters<typeof agentState>[0]> = {}) {
   const clock = new ManualClock(50_000);
   const sent: Array<{ at: number; cmd: PlannedCommand }> = [];
   const ledger = new ActLedger({ refOf: (id) => REFS[id] ?? `h:${id}`, near: () => [], now: () => clock.now(), hooks: { beat: (f, owed) => sched.onBeat(f, owed) } });
@@ -107,8 +107,8 @@ describe("the reaction scheduler: obligations from act_beat.owed only (REA-1, RE
     const { clock, sent, feed } = rig();
     feed(slap().slice(0, 2));
     await clock.advance(2999);
-    const mine = sent.filter((s) => s.cmd.agentId === "gabi" || s.cmd.agentId === "leo");
-    expect(mine.map((s) => s.cmd.agentId).sort()).toEqual(["gabi", "leo"]);
+    const mine = sent.filter((s) => s.cmd.agentId === "gabi" || s.cmd.agentId === "renan");
+    expect(mine.map((s) => s.cmd.agentId).sort()).toEqual(["gabi", "renan"]);
     expect(mine.every((s) => s.cmd.owed === true && s.at - 50_000 < 600)).toBe(true);
   });
 
@@ -139,7 +139,7 @@ describe("the reaction scheduler: obligations from act_beat.owed only (REA-1, RE
     feed(frames.slice(0, 3));
     await clock.advance(3000);
     expect(sent.some((s) => s.cmd.agentId === "gabi")).toBe(false);
-    expect(sent.some((s) => s.cmd.agentId === "leo")).toBe(true);
+    expect(sent.some((s) => s.cmd.agentId === "renan")).toBe(true);
   });
 
   it("[REA-10] a witness that died or left before its turn is dropped: the planner stops waiting on it", async () => {
@@ -148,7 +148,7 @@ describe("the reaction scheduler: obligations from act_beat.owed only (REA-1, RE
     ledger.onGone("gabi");
     await clock.advance(3000);
     expect(sent.some((s) => s.cmd.agentId === "gabi")).toBe(false);
-    expect(sent.some((s) => s.cmd.agentId === "leo")).toBe(true);
+    expect(sent.some((s) => s.cmd.agentId === "renan")).toBe(true);
   });
 
   it("[REA-9] a scene cut or an act_done ends the wait: the timers of a closed act fire nothing", async () => {
@@ -161,11 +161,11 @@ describe("the reaction scheduler: obligations from act_beat.owed only (REA-1, RE
   });
 
   it("[REA-3] role variety from the relationships: the friend of the victim and the one who fears the aggressor do not do the same thing", async () => {
-    const { clock, sent, feed } = rig(undefined, { gabi: { rel: { duda: { threat: 0.9 } } }, leo: { rel: { rafa: { affection: 0.9, comfort: 0.9 } } } });
+    const { clock, sent, feed } = rig(undefined, { gabi: { rel: { duda: { threat: 0.9 } } }, renan: { rel: { rafa: { affection: 0.9, comfort: 0.9 } } } });
     feed(slap().slice(0, 2));
     await clock.advance(3000);
     const verbBy = new Map(sent.flatMap((x) => (x.cmd.cmd === "act" ? [[x.cmd.agentId, x.cmd.verb] as const] : [])));
     expect(verbBy.get("gabi")).toBe("recoil");
-    expect(verbBy.get("leo")).toBe("freeze_gasp");
+    expect(verbBy.get("renan")).toBe("freeze_gasp");
   });
 });

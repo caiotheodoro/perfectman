@@ -49,10 +49,10 @@ describe("scenarioToConfig — persona re-skin", () => {
     expect(iris.promptProfile.displayName).toBe("Íris");
     expect(iris.promptProfile.identityFrame).toContain("Íris");
     const peers = Object.keys(iris.promptProfile.relationshipBiases).sort();
-    expect(peers).toEqual(["bruno", "marcela", "theo"]);
+    expect(peers).toEqual(["dario", "marcela", "theo"]);
     // Iris's scene seeds no memories of its own, so the pack's unresolved
-    // lines stay; Bruno's scene does, so his are replaced.
-    const bruno = config.agents.find(a => a.id === "bruno")!;
-    expect(bruno.promptProfile.emotionalPatterns).toEqual([]);
+    // lines stay; Dario's scene does, so his are replaced.
+    const dario = config.agents.find(a => a.id === "dario")!;
+    expect(dario.promptProfile.emotionalPatterns).toEqual([]);
   });
 });

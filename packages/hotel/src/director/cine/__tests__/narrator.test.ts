@@ -6,11 +6,11 @@ import type { NarratorLlm, NarratorRequest, SceneBrief } from "../narrator.js";
 const brief: SceneBrief = {
   kind: "scene",
   roomName: "Cozinha",
-  cast: [{ name: "Gabi", role: "performer" }, { name: "Leo" }],
+  cast: [{ name: "Gabi", role: "performer" }, { name: "Renan" }],
   lines: [{ name: "Gabi", text: "Cheguei!" }],
 };
 
-const GOOD = JSON.stringify({ title: "Pão de queijo", subtitle: "uma tarde na cozinha", captions: ["Gabi chega com o cheiro de café.", "Leo finge que não viu."], idle: ["A chaleira apita sozinha."] });
+const GOOD = JSON.stringify({ title: "Pão de queijo", subtitle: "uma tarde na cozinha", captions: ["Gabi chega com o cheiro de café.", "Renan finge que não viu."], idle: ["A chaleira apita sozinha."] });
 
 function setup(llm?: NarratorLlm, lang: "pt-BR" | "en" = "pt-BR") {
   const clock = new ManualClock();
@@ -21,16 +21,16 @@ function setup(llm?: NarratorLlm, lang: "pt-BR" | "en" = "pt-BR") {
 describe("fallback text", () => {
   it("is deterministic pt-BR by default, naming the room and who is in it", () => {
     const fb = fallbackNarration(brief, "pt-BR");
-    expect(fb).toMatchObject({ title: "Cozinha", subtitle: "com Gabi e Leo", source: "fallback" });
-    expect(fb.captions).toEqual(["Gabi e Leo se encontram em Cozinha."]);
-    expect(fallbackNarration({ ...brief, kind: "title", premise: "Sexta no lounge" }, "en")).toMatchObject({ title: "Sexta no lounge", subtitle: "Gabi and Leo" });
+    expect(fb).toMatchObject({ title: "Cozinha", subtitle: "com Gabi e Renan", source: "fallback" });
+    expect(fb.captions).toEqual(["Gabi e Renan se encontram em Cozinha."]);
+    expect(fallbackNarration({ ...brief, kind: "title", premise: "Sexta no lounge" }, "en")).toMatchObject({ title: "Sexta no lounge", subtitle: "Gabi and Renan" });
   });
 
   it("serves every card without a model at all", () => {
     const { narrator } = setup();
     narrator.begin(13, brief);
-    expect(narrator.card(13, "scene")).toEqual({ title: "Cozinha", subtitle: "com Gabi e Leo" });
-    expect(narrator.caption(13, "scene")).toBe("Gabi e Leo se encontram em Cozinha.");
+    expect(narrator.card(13, "scene")).toEqual({ title: "Cozinha", subtitle: "com Gabi e Renan" });
+    expect(narrator.caption(13, "scene")).toBe("Gabi e Renan se encontram em Cozinha.");
     expect(narrator.caption(13, "scene")).toBeUndefined();
     expect(narrator.calls).toBe(0);
   });
@@ -40,7 +40,7 @@ describe("the room the film opens in", () => {
   it("serves its scene aside from the opening card's pass, naming the whole cast though nobody has walked in", () => {
     const { narrator } = setup();
     narrator.begin(12, { kind: "title", roomName: "Quarto", premise: "Sexta no lounge", cast: brief.cast, lines: [] });
-    expect(narrator.caption(12, "scene")).toBe("Gabi e Leo se encontram em Quarto.");
+    expect(narrator.caption(12, "scene")).toBe("Gabi e Renan se encontram em Quarto.");
     expect(narrator.caption(12, "scene")).toBeUndefined();
     // only that room: another room with no card of its own has no aside
     expect(narrator.caption(13, "scene")).toBeUndefined();
@@ -56,7 +56,7 @@ describe("the model pass", () => {
     await clock.advance(10);
     expect(calls).toHaveLength(1);
     expect(narrator.card(13, "scene")).toEqual({ title: "Pão de queijo", subtitle: "uma tarde na cozinha" });
-    expect([narrator.caption(13, "scene"), narrator.caption(13, "scene"), narrator.caption(13, "scene")]).toEqual(["Gabi chega com o cheiro de café.", "Leo finge que não viu.", undefined]);
+    expect([narrator.caption(13, "scene"), narrator.caption(13, "scene"), narrator.caption(13, "scene")]).toEqual(["Gabi chega com o cheiro de café.", "Renan finge que não viu.", undefined]);
     expect(narrator.caption(13, "idle")).toBe("A chaleira apita sozinha.");
   });
 
@@ -109,11 +109,11 @@ describe("the model pass", () => {
 const TRAILING_COMMAS = [
   "{",
   '  "title": "Sexta no bar",',
-  '  "subtitle": "Gabi e Leo",',
-  '  "captions": ["Gabi chega ao bar.", "Leo observa de longe.",],',
+  '  "subtitle": "Gabi e Renan",',
+  '  "captions": ["Gabi chega ao bar.", "Renan observa de longe.",],',
   '  "idle": ["O bar fica em silêncio.", "Alguém desvia o olhar.",],',
   "}",
-  '["Gabi chega ao bar.", "Leo observa de longe."]',
+  '["Gabi chega ao bar.", "Renan observa de longe."]',
   "",
 ].join("\n");
 
@@ -124,8 +124,8 @@ describe("a model reply that is almost JSON", () => {
     const { narrator, clock } = setup(async () => TRAILING_COMMAS);
     narrator.begin(13, brief);
     await clock.advance(10);
-    expect(narrator.card(13, "scene")).toEqual({ title: "Sexta no bar", subtitle: "Gabi e Leo" });
-    expect([narrator.caption(13, "scene"), narrator.caption(13, "scene"), narrator.caption(13, "scene")]).toEqual(["Gabi chega ao bar.", "Leo observa de longe.", undefined]);
+    expect(narrator.card(13, "scene")).toEqual({ title: "Sexta no bar", subtitle: "Gabi e Renan" });
+    expect([narrator.caption(13, "scene"), narrator.caption(13, "scene"), narrator.caption(13, "scene")]).toEqual(["Gabi chega ao bar.", "Renan observa de longe.", undefined]);
     expect(narrator.caption(13, "idle")).toBe("O bar fica em silêncio.");
     expect([narrator.calls, narrator.repaired, narrator.fallbacks]).toEqual([1, 1, 0]);
   });
@@ -135,7 +135,7 @@ describe("a model reply that is almost JSON", () => {
     const repaired = parseNarrationReply(TRAILING_COMMAS, fb);
     expect(clean?.repaired).toBe(false);
     expect(repaired?.repaired).toBe(true);
-    expect(repaired?.narration.captions).toEqual(["Gabi chega ao bar.", "Leo observa de longe."]);
+    expect(repaired?.narration.captions).toEqual(["Gabi chega ao bar.", "Renan observa de longe."]);
     expect(repaired?.narration.source).toBe("llm");
   });
 

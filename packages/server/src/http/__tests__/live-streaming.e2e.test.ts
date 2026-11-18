@@ -83,7 +83,7 @@ it("streams an earlier agent's committed line while the next agent's provider re
         kind: "markdown", scenario: { filename: "dinner.scenario.md", text: FIXTURE },
         personas: [
           { filename: "iris.persona.md", text: persona },
-          { filename: "bruno.persona.md", text: persona.replace("personaId: iris", "personaId: bruno") },
+          { filename: "dario.persona.md", text: persona.replace("personaId: iris", "personaId: dario") },
         ],
       },
       llm: { providerType: "openai-compatible", modelName: "local-fixture", baseUrl: `http://127.0.0.1:${address.port}/v1` },

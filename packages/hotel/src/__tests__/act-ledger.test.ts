@@ -5,7 +5,7 @@ import { feedFrames } from "../testing/drama-feed.js";
 import { actFrames, dramaStateFrame, helloDrama, sceneCutFrames } from "../testing/fake-drama.js";
 import { ManualClock } from "../testing/manual-clock.js";
 
-const REFS: Record<number, string> = { [-701]: "duda", [-702]: "rafa", [-703]: "gabi", [-704]: "leo", 9: "h:9" };
+const REFS: Record<number, string> = { [-701]: "duda", [-702]: "rafa", [-703]: "gabi", [-704]: "renan", 9: "h:9" };
 const IDS = Object.fromEntries(Object.entries(REFS).map(([id, ref]) => [ref, Number(id)]));
 const T0 = 1_730_000_123_456;
 
@@ -50,7 +50,7 @@ describe("act ledger: the sidecar half of the act lock (REA-9)", () => {
     const calm = setup();
     calm.feed(actFrames({ actId: "a3", verb: "glare", actor: -704, with: -703, outcome: "landed", at: T0 }).slice(0, 1));
     expect(calm.ledger.lockOf("gabi")).toBeUndefined();
-    expect(calm.ledger.lockOf("leo")?.why).toBe("initiator");
+    expect(calm.ledger.lockOf("renan")?.why).toBe("initiator");
   });
 
   it("[REA-9] holds every owed reactor from act_beat until act_done, and tells the planner what it owes and until when", () => {
@@ -79,7 +79,7 @@ describe("act ledger: the sidecar half of the act lock (REA-9)", () => {
     const frames = slapOnRafa({ reactions: [{ who: -703, role: "witness", reaction: "freeze_gasp" }, { who: -704, role: "witness", reaction: "cmd:face", source: "planner" }] });
     feed(frames.slice(0, 4));
     expect(ledger.owedOf("gabi")).toEqual([]);
-    expect(ledger.owedOf("leo")).toEqual([]);
+    expect(ledger.owedOf("renan")).toEqual([]);
     expect(ledger.owedOf("rafa")).toHaveLength(1);
     expect(ledger.lockOf("gabi")?.why).toBe("owed");
   });
@@ -90,7 +90,7 @@ describe("act ledger: the sidecar half of the act lock (REA-9)", () => {
     ledger.onGone("gabi");
     expect(ledger.owedOf("gabi")).toEqual([]);
     expect(ledger.lockOf("gabi")).toBeUndefined();
-    expect(ledger.owedOf("leo")).toHaveLength(1);
+    expect(ledger.owedOf("renan")).toHaveLength(1);
   });
 
   it("[REA-10] reports a debt that was still open at act_done, from the frame's owed_missed", () => {
@@ -98,7 +98,7 @@ describe("act ledger: the sidecar half of the act lock (REA-9)", () => {
     const frames = slapOnRafa();
     const done = frames[frames.length - 1] as Extract<HotelFrame, { t: "act_done" }>;
     feed([...frames.slice(0, -1), { ...done, owed_missed: [{ who: -704, role: "witness" }] }]);
-    expect(events).toContain("missed:leo:a1");
+    expect(events).toContain("missed:renan:a1");
     expect(events).toContain("done:a1");
   });
 
@@ -117,9 +117,9 @@ describe("act ledger: the sidecar half of the act lock (REA-9)", () => {
   });
 
   it("[TBL-11] a slap's tableau holds every actor in reach until act_done, never a human, and a witness who is already owed keeps its own lock", () => {
-    const { ledger, feed } = setup({ duda: ["gabi", "leo", "h:9"] });
+    const { ledger, feed } = setup({ duda: ["gabi", "renan", "h:9"] });
     feed(slapOnRafa().slice(0, 2));
-    expect(ledger.lockOf("leo")?.why).toBe("owed");
+    expect(ledger.lockOf("renan")?.why).toBe("owed");
     feed(actFrames({ actId: "a2", verb: "faint", actor: -703, outcome: "landed", at: T0 + 20_000, witnesses: [-701], owed: [{ who: -701, role: "witness" }] }).slice(0, 2));
     expect(ledger.lockOf("h:9")).toBeUndefined();
   });

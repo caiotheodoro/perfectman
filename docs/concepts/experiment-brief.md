@@ -28,7 +28,7 @@
 
 ### Selected Participants for AI Models
 
-- Final participant list: Goulart, Caio J, Giovanni, Bruno, Matheus
+- Final participant list: Vasco, Tomas J, Giovanni, Dario, Felipe
 - Selection criteria based on active server presence and sufficient interaction history for model training
 - André explicitly excluded due to insufficient interaction data for meaningful personality modeling
 - Personality descriptions authored through peer input system:

@@ -15,7 +15,7 @@ describe("IntentParser structural repair", () => {
   it("coerces visibleContent: null to undefined (model quirk) on non-content actions", () => {
     const raw = JSON.stringify({
       id: "i1",
-      actorId: "goulart",
+      actorId: "vasco",
       intentType: "no_op",
       personTargets: null,
       visibleContent: null,
@@ -23,7 +23,7 @@ describe("IntentParser structural repair", () => {
       emotionDrivers: null,
       motivationDrivers: null,
     });
-    const result = IntentParser.parse(raw, "goulart", ACTIONS);
+    const result = IntentParser.parse(raw, "vasco", ACTIONS);
     expect(result.fallbackApplied).toBe(false);
     expect(result.intent.intentType).toBe("no_op");
     expect(result.intent.visibleContent).toBeUndefined();
@@ -34,7 +34,7 @@ describe("IntentParser structural repair", () => {
   it("falls back when send_message ends up without content after null coercion (#39)", () => {
     const raw = JSON.stringify({
       id: "i1",
-      actorId: "goulart",
+      actorId: "vasco",
       intentType: "send_message",
       personTargets: null,
       visibleContent: null,
@@ -42,7 +42,7 @@ describe("IntentParser structural repair", () => {
       emotionDrivers: null,
       motivationDrivers: null,
     });
-    const result = IntentParser.parse(raw, "goulart", ACTIONS);
+    const result = IntentParser.parse(raw, "vasco", ACTIONS);
     expect(result.fallbackApplied).toBe(true);
     expect(result.intent.intentType).toBe("no_op");
     expect(result.errorDetail).toContain("visibleContent must not be empty");
@@ -50,32 +50,32 @@ describe("IntentParser structural repair", () => {
 
   it("defaults missing memoryWrites", () => {
     const raw = JSON.stringify({
-      actorId: "bruno",
+      actorId: "dario",
       intentType: "no_op",
       privateMotiveSummary: "melhor ficar quieto",
     });
-    const result = IntentParser.parse(raw, "bruno", []);
+    const result = IntentParser.parse(raw, "dario", []);
     expect(result.fallbackApplied).toBe(false);
     expect(result.intent.memoryWrites).toEqual([]);
     expect(typeof result.intent.id).toBe("string");
   });
 
   it("still falls back on truly invalid output", () => {
-    const result = IntentParser.parse("isso não é json", "bruno", []);
+    const result = IntentParser.parse("isso não é json", "dario", []);
     expect(result.fallbackApplied).toBe(true);
   });
 
   it("treats a blank channelTarget as no target, so the line stays on the actor's own channel", () => {
     for (const blank of ["", "   "]) {
       const raw = JSON.stringify({
-        actorId: "goulart",
+        actorId: "vasco",
         intentType: "send_message",
         visibleContent: "oi, tudo bem?",
         channelTarget: blank,
         personTargets: [],
         privateMotiveSummary: "quero puxar assunto",
       });
-      const result = IntentParser.parse(raw, "goulart", ACTIONS);
+      const result = IntentParser.parse(raw, "vasco", ACTIONS);
       expect(result.fallbackApplied).toBe(false);
       expect(result.intent.channelTarget).toBeUndefined();
     }

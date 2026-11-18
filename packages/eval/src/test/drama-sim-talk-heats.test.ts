@@ -2,7 +2,7 @@
  * What a cast says heats the ladder (errata P7). Production runs 56 and 57 (2026-11-10) held a screamed insult and a bet and no act: the engine's relational rules do not read
  * what was said, so a cast that only talks never gave the director's motive gate (LAD-6) a grievance, and the model's own acts were refused as `motive` and `grievance`.
  * Here the cast starts cold (no seed, no authored resentment), the scene has no `drama` block (the conservative default), the model only talks, and the lines are the
- * ones of the evidence: Caio tells Goulart he is an imbecile, Goulart says to say it to his face, a 200 pesos bet. The only way an act can start is the director's own beat,
+ * ones of the evidence: Tomas tells Vasco he is an imbecile, Vasco says to say it to his face, a 200 pesos bet. The only way an act can start is the director's own beat,
  * and the only thing that can have moved it is the ledger. One hostile line gets at most a glare or an insult; a shove needs more; never a punch or a kill; nothing at a
  * human; nothing under `drama: off`.
  */
@@ -17,7 +17,7 @@ import { probeReport } from "../embodiment/sim-report.js";
 const startedOf = (events: readonly DramaEvent[]): ActStartedEvent[] => events.filter((e): e is ActStartedEvent => e.kind === "act_started");
 const verbsOf = (r: SimResult): string[] => startedOf(r.events).map((e) => e.verb);
 
-const NAMES = ["Caio", "Goulart", "Bruno", "Marina"] as const;
+const NAMES = ["Tomas", "Vasco", "Dario", "Marina"] as const;
 
 /** A cold cast of `n` of the four: no seeded resentment, no prior events, the default drama block of a scene that wrote none. */
 function cold(n: 3 | 4, o: Partial<SimConfig> = {}): SimConfig {
@@ -36,16 +36,16 @@ function cold(n: 3 | 4, o: Partial<SimConfig> = {}): SimConfig {
   };
 }
 
-/** The evidence's talk: Caio at Goulart (an insult, a bet), Goulart at Caio (say it to my face), and so on, one line every ~12 s from 8 s in. */
+/** The evidence's talk: Tomas at Vasco (an insult, a bet), Vasco at Tomas (say it to my face), and so on, one line every ~12 s from 8 s in. */
 const HEATED: NonNullable<SimConfig["dialogue"]> = [
-  { atMs: 8_000, actor: "person-1", to: "person-2", text: "Goulart, você é um imbecil, todo mundo sabe." },
-  { atMs: 20_000, actor: "person-2", to: "person-1", text: "Caio, chamou eu de imbecil pelas costas? Repete na minha cara." },
-  { atMs: 32_000, actor: "person-1", to: "person-2", text: "Aposto 200 pesos que você não tem coragem, Goulart, seu covarde." },
-  { atMs: 44_000, actor: "person-2", to: "person-1", text: "Caio, seu palhaço, vou te arrebentar." },
-  { atMs: 56_000, actor: "person-1", to: "person-2", text: "Goulart, você é patético, hahaha." },
-  { atMs: 68_000, actor: "person-2", to: "person-1", text: "Caio, cala a boca, seu otário." },
-  { atMs: 80_000, actor: "person-1", to: "person-2", text: "Goulart, lixo." },
-  { atMs: 92_000, actor: "person-2", to: "person-1", text: "Caio, você vai pagar por isso." },
+  { atMs: 8_000, actor: "person-1", to: "person-2", text: "Vasco, você é um imbecil, todo mundo sabe." },
+  { atMs: 20_000, actor: "person-2", to: "person-1", text: "Tomas, chamou eu de imbecil pelas costas? Repete na minha cara." },
+  { atMs: 32_000, actor: "person-1", to: "person-2", text: "Aposto 200 pesos que você não tem coragem, Vasco, seu covarde." },
+  { atMs: 44_000, actor: "person-2", to: "person-1", text: "Tomas, seu palhaço, vou te arrebentar." },
+  { atMs: 56_000, actor: "person-1", to: "person-2", text: "Vasco, você é patético, hahaha." },
+  { atMs: 68_000, actor: "person-2", to: "person-1", text: "Tomas, cala a boca, seu otário." },
+  { atMs: 80_000, actor: "person-1", to: "person-2", text: "Vasco, lixo." },
+  { atMs: 92_000, actor: "person-2", to: "person-1", text: "Tomas, você vai pagar por isso." },
 ];
 
 describe("a cold cast that only talks, scene with no drama block", () => {
@@ -73,12 +73,12 @@ describe("a cold cast that only talks, scene with no drama block", () => {
     const first = acts[0]!;
     expect(first.actor).toBe("person-2");
     expect(["glare", "insult"]).toContain(first.verb);
-    // Goulart's first beat comes after Caio's first line (8 s) and before his own reply could have been a second provocation of him (the next hostile line aimed at him, 32 s).
+    // Vasco's first beat comes after Tomas's first line (8 s) and before his own reply could have been a second provocation of him (the next hostile line aimed at him, 32 s).
     expect(first.atMs).toBeGreaterThan(8_000);
     expect(first.atMs).toBeLessThanOrEqual(32_000);
     const shove = acts.find((e) => e.verb === "shove");
     if (shove) {
-      // The second hostile line aimed at Goulart is at 32 s.
+      // The second hostile line aimed at Vasco is at 32 s.
       expect(shove.atMs).toBeGreaterThan(32_000);
       expect(acts.findIndex((e) => e.verb === "insult" && e.atMs < shove.atMs)).toBeGreaterThanOrEqual(0);
     }
@@ -99,8 +99,8 @@ describe("a cold cast that only talks, scene with no drama block", () => {
 
   it("a line that is not hostile moves nobody", () => {
     const calm: SimConfig["dialogue"] = [
-      { atMs: 8_000, actor: "person-1", to: "person-2", text: "Goulart, você pode me passar o gelo?" },
-      { atMs: 20_000, actor: "person-2", to: "person-1", text: "Claro, Caio, aqui está." },
+      { atMs: 8_000, actor: "person-1", to: "person-2", text: "Vasco, você pode me passar o gelo?" },
+      { atMs: 20_000, actor: "person-2", to: "person-1", text: "Claro, Tomas, aqui está." },
     ];
     const r = runDramaSim(cold(3, { dialogue: calm }));
     expect(verbsOf(r)).toEqual([]);
@@ -111,14 +111,14 @@ describe("a cold cast that only talks, scene with no drama block", () => {
     const only = { max_rung: 4, may_target: [["person-2", "person-1"] as [string, string]], may_die: [], permadeath: false };
     const talk: SimConfig["dialogue"] = [
       ...HEATED,
-      // Bruno insults Marina and Marina insults Bruno: not a pair of the block, so nothing is raised.
+      // Dario insults Marina and Marina insults Dario: not a pair of the block, so nothing is raised.
       { atMs: 10_000, actor: "person-3", to: "person-4", text: "Marina, você é uma idiota." },
-      { atMs: 25_000, actor: "person-4", to: "person-3", text: "Bruno, seu babaca." },
+      { atMs: 25_000, actor: "person-4", to: "person-3", text: "Dario, seu babaca." },
       { atMs: 40_000, actor: "person-3", to: "person-4", text: "Marina, você é uma idiota." },
     ];
     const r = runDramaSim(cold(4, { dialogue: talk, drama: only }));
     const actors = new Set(startedOf(r.events).map((e) => e.actor));
-    // Goulart (person-2) may target Caio (person-1) in this block; Caio may not target Goulart; Bruno and Marina may target nobody.
+    // Vasco (person-2) may target Tomas (person-1) in this block; Tomas may not target Vasco; Dario and Marina may target nobody.
     expect([...actors].every((a) => a === "person-2")).toBe(true);
     expect(actors.has("person-2")).toBe(true);
   });
@@ -126,13 +126,13 @@ describe("a cold cast that only talks, scene with no drama block", () => {
   it("never toward a human: a human who insults the cast raises nothing, and an act never lands on them", () => {
     const humans = [{ id: 9, name: "Ana", tile: [7, 4] as [number, number], optIn: true }];
     const talk: SimConfig["dialogue"] = [
-      { atMs: 8_000, actor: "person-1", to: "person-2", text: "Goulart, você é um imbecil." },
+      { atMs: 8_000, actor: "person-1", to: "person-2", text: "Vasco, você é um imbecil." },
       { atMs: 20_000, actor: "person-1", text: "Ana, você é uma idiota e uma covarde." },
       { atMs: 32_000, actor: "person-1", text: "Ana, seu lixo." },
     ];
     const r = runDramaSim(cold(3, { dialogue: talk, humans }));
     for (const e of startedOf(r.events)) expect(e.with?.startsWith("h:") ?? false, `${e.verb} aimed at a human`).toBe(false);
-    // Only the line at Goulart is counted.
+    // Only the line at Vasco is counted.
     expect(r.counters["grievance_raised"]).toBe(1);
   });
 

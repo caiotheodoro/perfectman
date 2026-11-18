@@ -635,7 +635,7 @@ describe("Math utils", () => {
 
 describe("AgentStateSchema — pressure discharge map", () => {
   it("accepts a state with and without pressureDischargedAt", () => {
-    const base = makeFixtureAgentState("a1", "sim", "caio");
+    const base = makeFixtureAgentState("a1", "sim", "tomas");
     expect(AgentStateSchema.parse(base).pressureDischargedAt).toBeUndefined();
     const parsed = AgentStateSchema.parse({ ...base, pressureDischargedAt: { urge_to_provoke: 3 } });
     expect(parsed.pressureDischargedAt).toEqual({ urge_to_provoke: 3 });

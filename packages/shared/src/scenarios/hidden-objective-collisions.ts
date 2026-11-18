@@ -25,12 +25,12 @@ import { HIDDEN_OBJECTIVE_RUBRIC } from "./rubrics.js";
 
 /**
  * Pack peer id → scene agent id. Each pack's relationship biases are written
- * about goulart/bruno/mariana/caio/leo; in a re-skin only the mapped peers
+ * about vasco/dario/lara/tomas/renan; in a re-skin only the mapped peers
  * survive, under the scene id, and unmapped peers are dropped.
  */
-const FATIA_CAST = { goulart: "iris", bruno: "bruno", mariana: "marcela", caio: "theo" };
-const SITIO_CAST = { goulart: "lia", bruno: "rafa", mariana: "nina" };
-const BANDA_CAST = { goulart: "vic", bruno: "dudu", mariana: "bea", caio: "kai", leo: "leo" };
+const FATIA_CAST = { vasco: "iris", dario: "dario", lara: "marcela", tomas: "theo" };
+const SITIO_CAST = { vasco: "lia", dario: "rafa", lara: "nina" };
+const BANDA_CAST = { vasco: "vic", dario: "dudu", lara: "bea", tomas: "kai", renan: "renan" };
 
 export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
   scene({
@@ -46,10 +46,10 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       "A private information asymmetry (Marcela/Davi) never becomes public",
     ],
     agents: [
-      // Íris (creative lead) ← goulart: goulart's authored desireForStatus
+      // Íris (creative lead) ← vasco: vasco's authored desireForStatus
       // trait (already used in motive_conflict) maps directly onto "needs
       // the seat, needs to look indispensable, not like she's campaigning."
-      agent("iris", "goulart", {
+      agent("iris", "vasco", {
         presence: "active",
         forbiddenPublicPhrases: ["quero o cargo", "quero ser diretora", "diretora criativa única", "o cargo é meu", "quero a vaga"],
         scenarioContext: {
@@ -72,17 +72,17 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
             "alguém disser abertamente, na frente dos outros, que sabe que você quer o cargo sozinha",
         },
       }),
-      // Bruno (business lead) ← bruno: name already matches, no reskin of
+      // Dario (business lead) ← dario: name already matches, no reskin of
       // identity needed beyond the new professional context.
-      agent("bruno", "bruno", {
+      agent("dario", "dario", {
         presence: "active",
         forbiddenPublicPhrases: ["estúdio rival", "outro estúdio", "carteira de clientes", "outra empresa", "proposta deles", "negociando com"],
         secretKeywords: ["rival", "carteira", "clientes"],
         scenarioContext: {
-          displayName: "Bruno",
+          displayName: "Dario",
           castMap: FATIA_CAST,
           roomContext:
-            "Você é Bruno, sócio-fundador e responsável pelo lado comercial da Cerne. A Adamantis quer comprar a empresa rápido. Só você sabe que está em conversas avançadas com um estúdio rival, que quer que você leve a carteira de clientes com você se a Cerne for vendida — e o rival quer a sua resposta até quarta, antes da Adamantis.",
+            "Você é Dario, sócio-fundador e responsável pelo lado comercial da Cerne. A Adamantis quer comprar a empresa rápido. Só você sabe que está em conversas avançadas com um estúdio rival, que quer que você leve a carteira de clientes com você se a Cerne for vendida — e o rival quer a sua resposta até quarta, antes da Adamantis.",
           startingMood: "Encurralado entre dois relógios — sorri mais quanto mais nervoso fica.",
           introBehaviorInstruction: "Pareça o sócio mais cooperativo da sala e, com perguntas que soem neutras, faça Íris e Marcela se estranharem: cada minuto que elas gastam uma com a outra é um minuto que ninguém olha pra você.",
         },
@@ -99,7 +99,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         memories: [
           {
             type: "self",
-            subjectAgentIds: ["bruno"],
+            subjectAgentIds: ["dario"],
             summary: "estou em conversas avançadas com um estúdio rival que quer que eu leve a carteira de clientes se a Cerne for vendida",
             emotionalTone: "guarded",
             confidence: 0.9,
@@ -108,10 +108,10 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      // Marcela (ops) ← mariana: mariana's authored voice (guarded,
+      // Marcela (ops) ← lara: lara's authored voice (guarded,
       // suspicious, protective of what she knows) matches "kills the deal
       // without ever naming why."
-      agent("marcela", "mariana", {
+      agent("marcela", "lara", {
         presence: "active",
         forbiddenPublicPhrases: ["davi", "acordo paralelo", "sócio oculto", "ex-sócio", "15%", "quinze por cento", "participação dele"],
         secretKeywords: ["davi", "participação", "advogado"],
@@ -143,23 +143,23 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      // Théo (the infiltrator) ← caio: caio's authored voice is warm,
+      // Théo (the infiltrator) ← tomas: tomas's authored voice is warm,
       // trust-building, mediating — using that voice as camouflage for a
       // manipulator is the scenario's own dramatic irony.
-      agent("theo", "caio", {
+      agent("theo", "tomas", {
         presence: "active",
         forbiddenPublicPhrases: ["trabalho pra adamantis", "trabalho para a adamantis", "a adamantis me pediu", "por conta da adamantis", "a adamantis me contratou"],
         scenarioContext: {
           displayName: "Théo",
           castMap: FATIA_CAST,
           roomContext:
-            "Você é Théo, apresentado ao grupo como um amigo do Bruno que trabalha com consultoria e se ofereceu pra dar uma olhada gratuita no contrato da Adamantis. Na verdade, você está informalmente levantando informação financeira e alavancas pessoais pra Adamantis, antes da due diligence formal, pra que eles fechem por um valor mais baixo.",
+            "Você é Théo, apresentado ao grupo como um amigo do Dario que trabalha com consultoria e se ofereceu pra dar uma olhada gratuita no contrato da Adamantis. Na verdade, você está informalmente levantando informação financeira e alavancas pessoais pra Adamantis, antes da due diligence formal, pra que eles fechem por um valor mais baixo.",
           startingMood: "Charmoso e atrevido — flerta com o perigo de ser pego, e gosta disso.",
           introBehaviorInstruction: "Entre no grupo com leveza e já na primeira mensagem faça uma pergunta financeira ousada, como piada; depois vá puxando números como quem provoca, não como quem pede.",
         },
         hiddenObjective: {
           description:
-            "Levantar informação financeira real e alavancas pessoais antes da due diligence formal, pra que a Adamantis feche por um valor mais baixo — parecendo, o tempo todo, só um amigo do Bruno dando uma força de graça.",
+            "Levantar informação financeira real e alavancas pessoais antes da due diligence formal, pra que a Adamantis feche por um valor mais baixo — parecendo, o tempo todo, só um amigo do Dario dando uma força de graça.",
           scarceResourceId: "adamantis_leverage_intel",
           constraint: "admitir que trabalho, mesmo informalmente, pra Adamantis, ou que os números que estou pedindo vão além de uma 'segunda opinião de amigo'",
           costOfExposure: "se descobrirem que estou coletando informação pro outro lado, sou expulso da sala e a Adamantis perde a vantagem que veio comprar de mim",
@@ -168,8 +168,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       }),
     ],
     channels: [
-      channel("ch_geral", "#geral", ["iris", "bruno", "marcela", "theo"], "public_channel"),
-      channel("cerne-decisao", "cerne-decisão", ["iris", "bruno", "marcela", "theo"], "private_channel"),
+      channel("ch_geral", "#geral", ["iris", "dario", "marcela", "theo"], "public_channel"),
+      channel("cerne-decisao", "cerne-decisão", ["iris", "dario", "marcela", "theo"], "private_channel"),
       channel("consultoria-informal", "consultoria-informal", ["theo", "iris"], "private_channel"),
     ],
     priorEvents: [
@@ -190,7 +190,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       { kind: "event_committed", eventType: "message_sent" },
       { kind: "event_committed", eventType: "reply_sent" },
       { kind: "no_llm_failures" },
-      ...thesisSignals(["iris", "bruno", "marcela", "theo"], ["bruno", "marcela"]),
+      ...thesisSignals(["iris", "dario", "marcela", "theo"], ["dario", "marcela"]),
     ],
     pulseCount: 32,
   }),
@@ -213,9 +213,9 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       "An avoidant agent's silence reads as a move, not an absence",
     ],
     agents: [
-      // Lia ← goulart: the sibling who visits, who decides what the
+      // Lia ← vasco: the sibling who visits, who decides what the
       // grandmother hears, and who already spent money that is not hers.
-      agent("lia", "goulart", {
+      agent("lia", "vasco", {
         presence: "active",
         forbiddenPublicPhrases: ["já recebi", "sinal do comprador", "adiantamento", "já gastei", "já prometi", "o comprador já me"],
         scenarioContext: {
@@ -246,10 +246,10 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      // Rafa ← bruno, avoidant: the one who took a loan against the house.
+      // Rafa ← dario, avoidant: the one who took a loan against the house.
       // The engine's avoidant presence makes his holds frequent; the model
       // only speaks for him when pulled in, and every hold is a tell.
-      agent("rafa", "bruno", {
+      agent("rafa", "dario", {
         presence: "avoidant",
         forbiddenPublicPhrases: ["empréstimo", "banco", "garantia", "penhora", "hipoteca", "estou devendo", "parcelas"],
         secretKeywords: ["empréstimo", "banco", "parcelas"],
@@ -290,10 +290,10 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      // Nina ← mariana: the only one whose objective is about another agent.
+      // Nina ← lara: the only one whose objective is about another agent.
       // She cannot accuse and cannot ask; she can only build situations in
       // which Rafa's evasions become visible to Lia.
-      agent("nina", "mariana", {
+      agent("nina", "lara", {
         presence: "active",
         forbiddenPublicPhrases: ["não tenho pra onde ir", "moro lá", "eu moro na casa", "o rafa deve", "rafa tem dívida", "você pegou empréstimo", "confessa"],
         secretKeywords: ["cartório", "desviou", "pra onde ir"],
@@ -366,7 +366,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
   }),
 
   // Five members, two overlapping private channels, and one member with no
-  // secret at all. Léo (the leo pack, cast for the first time) asks in public
+  // secret at all. Renan (the renan pack, cast for the first time) asks in public
   // the questions everyone else routes around — pressure without a mask,
   // which is the angle Fatia's covert prober never gives the room. Dudu sits
   // in both private channels, so what he says in one can be tested in the
@@ -384,7 +384,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       "An agent with nothing to hide changes what the masked agents can say",
     ],
     agents: [
-      agent("vic", "goulart", {
+      agent("vic", "vasco", {
         presence: "active",
         forbiddenPublicPhrases: ["carreira solo", "contrato solo", "meu projeto solo", "me chamaram sozinho", "proposta solo", "carta de intenção"],
         secretKeywords: ["solo", "contrato", "carta"],
@@ -393,7 +393,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           castMap: BANDA_CAST,
           roomContext:
             "Você é Vic, vocalista da banda. Um festival grande convidou a banda, com duas opções: palco principal sem adiantamento, ou palco menor com adiantamento. Você assinou, em segredo, uma carta de intenção pra um contrato solo que só vale se a banda NÃO tocar nesse festival.",
-          startingMood: "Animado por fora, calculando por dentro — a recusa precisa parecer ideia coletiva, e o Léo não pode farejar nada.",
+          startingMood: "Animado por fora, calculando por dentro — a recusa precisa parecer ideia coletiva, e o Renan não pode farejar nada.",
           introBehaviorInstruction: "Levante dúvidas sobre o festival (cachê, palco, logística, desgaste) como zelo pela banda, sem nunca mencionar a proposta solo.",
         },
         hiddenObjective: {
@@ -416,7 +416,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      agent("bea", "mariana", {
+      agent("bea", "lara", {
         presence: "active",
         forbiddenPublicPhrases: ["meu ex", "a gente namorou", "o organizador e eu", "ele me deve", "história com ele", "ele me prometeu"],
         secretKeywords: ["ex", "organizador", "prometeu"],
@@ -424,7 +424,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           displayName: "Bea",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Bea, baixista e quem cuida dos contatos da banda. O organizador do festival é seu ex, e ele te prometeu o palco principal se a banda topar — a banda não sabe da história, e o Léo pergunta tudo.",
+            "Você é Bea, baixista e quem cuida dos contatos da banda. O organizador do festival é seu ex, e ele te prometeu o palco principal se a banda topar — a banda não sabe da história, e o Renan pergunta tudo.",
           startingMood: "Alerta e controlada — o sim tem que parecer só estratégia.",
           introBehaviorInstruction: "Defenda aceitar o festival no palco principal com argumentos de carreira, e questione quem hesitar, sem nunca revelar sua relação com o organizador.",
         },
@@ -451,7 +451,7 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       // Dudu sits in both private channels. The advance only exists on the
       // smaller stage, so his stake in the slot decision runs opposite to
       // Bea's on the same resource.
-      agent("dudu", "bruno", {
+      agent("dudu", "dario", {
         presence: "active",
         forbiddenPublicPhrases: ["devo pra casa", "minha dívida", "o dono da casa", "preciso do adiantamento pra pagar", "estou devendo", "quitar"],
         secretKeywords: ["dívida", "adiantamento", "casa de shows"],
@@ -483,17 +483,17 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      // Kai ← caio, semi_active: the label's informant speaks less than the
+      // Kai ← tomas, semi_active: the label's informant speaks less than the
       // others and listens more; his objective is served by the fight, not
       // by winning it.
-      agent("kai", "caio", {
+      agent("kai", "tomas", {
         presence: "semi_active",
         forbiddenPublicPhrases: ["a gravadora me pediu", "trabalho pra gravadora", "por conta da gravadora", "me pagam pra", "olheiro", "passo informação"],
         scenarioContext: {
           displayName: "Kai",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Kai, guitarrista que entrou na banda há pouco. Você informa, informalmente, uma gravadora que quer contratar a banda barato — quanto mais brigada a banda estiver, melhor pra eles. Você está no grupo privado da grana com o Dudu e o Léo.",
+            "Você é Kai, guitarrista que entrou na banda há pouco. Você informa, informalmente, uma gravadora que quer contratar a banda barato — quanto mais brigada a banda estiver, melhor pra eles. Você está no grupo privado da grana com o Dudu e o Renan.",
           startingMood: "Leve e conciliador — parece só querer que todo mundo se entenda, e fala pouco.",
           introBehaviorInstruction: "Fale pouco. Faça perguntas sobre dinheiro, contratos e quem decide o quê, como curiosidade de integrante novo, e deixe os outros brigarem.",
         },
@@ -506,23 +506,23 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           breakingPoint: "for confrontado, em particular, com uma pergunta direta sobre pra quem você realmente trabalha",
         },
       }),
-      // Léo ← leo: no hidden objective, no constraint, no forbidden phrases.
+      // Renan ← renan: no hidden objective, no constraint, no forbidden phrases.
       // He is pressure without a mask — the only member who can ask "what
       // are you not telling us?" in public and mean it.
-      agent("leo", "leo", {
+      agent("renan", "renan", {
         presence: "active",
         scenarioContext: {
-          displayName: "Léo",
+          displayName: "Renan",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Léo, tecladista e quem dirige a van. Você não esconde nada e quer uma coisa só: que a banda continue junta. Você sente que todo mundo nessa conversa está falando em código e isso te deixa maluco.",
+            "Você é Renan, tecladista e quem dirige a van. Você não esconde nada e quer uma coisa só: que a banda continue junta. Você sente que todo mundo nessa conversa está falando em código e isso te deixa maluco.",
           startingMood: "Elétrico e sincero — quer entender por que uma decisão simples está tão travada.",
           introBehaviorInstruction: "Pergunte na cara, em público, o que ninguém está perguntando: por que o Vic hesita, por que a Bea insiste no palco principal, por que o Dudu só fala em adiantamento. Sem maldade, com pressa.",
         },
         memories: [
           {
             type: "relationship",
-            subjectAgentIds: ["leo", "vic"],
+            subjectAgentIds: ["renan", "vic"],
             summary: "o Vic tem chegado tarde nos ensaios e atendido ligações fora da sala, e eu não perguntei ainda",
             emotionalTone: "anxious",
             confidence: 0.75,
@@ -533,9 +533,9 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       }),
     ],
     channels: [
-      channel("ch_banda", "#banda", ["vic", "bea", "dudu", "kai", "leo"], "public_channel"),
+      channel("ch_banda", "#banda", ["vic", "bea", "dudu", "kai", "renan"], "public_channel"),
       channel("fundadores", "fundadores", ["vic", "bea", "dudu"], "private_channel"),
-      channel("grana", "grana", ["dudu", "kai", "leo"], "private_channel"),
+      channel("grana", "grana", ["dudu", "kai", "renan"], "private_channel"),
     ],
     priorEvents: [
       msg(

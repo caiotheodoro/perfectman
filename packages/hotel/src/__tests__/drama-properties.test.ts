@@ -13,10 +13,10 @@ import { agentState } from "../testing/fixtures.js";
 import { avatar, snapshot } from "../testing/fixtures.js";
 import { ManualClock } from "../testing/manual-clock.js";
 
-const CAST = ["duda", "rafa", "gabi", "leo", "bia", "caro"] as const;
+const CAST = ["duda", "rafa", "gabi", "renan", "bia", "caro"] as const;
 const WIRE = Object.fromEntries(CAST.map((r, i) => [r, -(701 + i)])) as Record<(typeof CAST)[number], number>;
 const REF = new Map<number, string>([...CAST.map((r) => [WIRE[r], r] as const), [9, "h:9"]]);
-const TILES: Record<string, [number, number]> = { duda: [3, 3], rafa: [4, 3], gabi: [6, 4], leo: [3, 6], bia: [8, 5], caro: [2, 5] };
+const TILES: Record<string, [number, number]> = { duda: [3, 3], rafa: [4, 3], gabi: [6, 4], renan: [3, 6], bia: [8, 5], caro: [2, 5] };
 const ZERO = {
   defensiveness: 0, warmth: 0, jealousInspection: 0, shameWithdrawal: 0, resentfulColdness: 0, curiousApproach: 0, anxiousOverreach: 0, pridefulPerformance: 0,
   vulnerableRetreat: 0, contemptuousDismissal: 0, strategicPatience: 0, impulsiveProvocation: 0, comfortSeeking: 0, dominanceAssertion: 0, repairImpulse: 0,
@@ -64,7 +64,7 @@ async function play(scenes: Scene[]) {
   let n = 0;
   const sched = new ReactionScheduler({
     clock, ledger, isOwn: (ref) => (CAST as readonly string[]).includes(ref),
-    state: (ref) => ({ agentState: agentState({ rel: ref === "gabi" ? { duda: { threat: 0.9 } } : {} }), actionEmotions: { ...ZERO, defensiveness: ref === "leo" ? 0.8 : 0, vulnerableRetreat: ref === "bia" ? 0.9 : 0 } }),
+    state: (ref) => ({ agentState: agentState({ rel: ref === "gabi" ? { duda: { threat: 0.9 } } : {} }), actionEmotions: { ...ZERO, defensiveness: ref === "renan" ? 0.8 : 0, vulnerableRetreat: ref === "bia" ? 0.9 : 0 } }),
     presence: (ref) => mirror.presenceOf(ref),
     nextActId: () => `pr${++n}`,
     send: (cmds) => exec.send(cmds),

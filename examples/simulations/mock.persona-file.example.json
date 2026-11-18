@@ -35,15 +35,15 @@
       "name": "general",
       "default": true,
       "memberAgentIds": [
-        "example-friend"
+        "example-character"
       ]
     }
   ],
   "agents": [
     {
-      "id": "example-friend",
+      "id": "example-character",
       "presence": "active",
-      "personaFile": "personas/example-friend.persona.json",
+      "personaFile": "personas/example-character.persona.json",
       "llm": {
         "providerType": "mock",
         "modelName": "mock-model",

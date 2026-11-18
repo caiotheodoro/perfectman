@@ -8,7 +8,7 @@ const r = tinyReplay();
 const ctx = { archetype: (id: string) => r.agentArchetypes[id] ?? "", measure };
 const T = buildTimeline(r, { pageWords: makePageWords(ctx) });
 planBalloons(T, ctx);
-const name = (id: string): string => ({ ana: "Ana", bruno: "Bruno", carla: "Carla" })[id] ?? id;
+const name = (id: string): string => ({ ana: "Ana", dario: "Dario", carla: "Carla" })[id] ?? id;
 
 describe("captionAt", () => {
   it("says nothing when nothing is being said", () => {

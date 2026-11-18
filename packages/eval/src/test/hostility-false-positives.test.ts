@@ -84,8 +84,8 @@ describe("the hostility word list on ordinary talk", () => {
     expect(flagged.map((f) => [f.own, f.pack])).toEqual([
       ["mockery", "residencial-aurora/tavo"],
       ["mockery", "studio-partners/iris"],
-      ["insult", "the-group/caio"],
-      ["insult", "the-group/goulart"],
+      ["insult", "the-group/tomas"],
+      ["insult", "the-group/vasco"],
     ]);
   });
 

@@ -18,7 +18,7 @@ import type {
   EngineSnapshot,
   CommittedEvent,
 } from "@perfectman/shared";
-import { CAIO, createSeededRng } from "@perfectman/shared";
+import { TOMAS, createSeededRng } from "@perfectman/shared";
 import { translateEmotionalState } from "../prompt/translate-emotional-state.js";
 import { runEngineStep } from "../step/run-engine-step.js";
 
@@ -107,8 +107,8 @@ describe("translateEmotionalState contains no decimal numbers", () => {
   const mood = makeMood();
   const social = makeSocial();
   const relational = new Map([
-    ["caio", makeRelational("caio")],
-    ["bruno", makeRelational("bruno", { resentment: 0.8, suspicion: 0.7 })],
+    ["tomas", makeRelational("tomas")],
+    ["dario", makeRelational("dario", { resentment: 0.8, suspicion: 0.7 })],
   ]);
 
   const result = translateEmotionalState(mood, social, relational, ALL_PRESSURES, ALL_INHIBITIONS);
@@ -210,7 +210,7 @@ describe("perceptionPacket does not contain operator-internal events", () => {
       agentState: {
         agentId: "a1",
         simulationId: "sim1",
-        personaId: "caio",
+        personaId: "tomas",
         presence: "active",
         coreMood: {
           valence: 0.1, arousal: 0.4, stability: 0.6, energy: 0.6,
@@ -233,7 +233,7 @@ describe("perceptionPacket does not contain operator-internal events", () => {
         createdAt: 1700000000000,
         updatedAt: 1700000000000,
       },
-      persona: CAIO,
+      persona: TOMAS,
       channels: [{
         id: "ch1",
         simulationId: "sim1",

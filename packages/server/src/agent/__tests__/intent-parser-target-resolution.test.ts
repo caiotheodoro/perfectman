@@ -57,13 +57,13 @@ describe("IntentParser reply/react target resolution", () => {
   });
 
   it("flags an invented slug as a retriable unresolved target (no fallback intent yet)", () => {
-    const result = IntentParser.parse(replyIntentJson("marianas-last-message"), actorId, availableActions, "no_op", targetContext());
+    const result = IntentParser.parse(replyIntentJson("laras-last-message"), actorId, availableActions, "no_op", targetContext());
 
     expect(result.fallbackApplied).toBe(false);
     expect(result.intent.intentType).toBe("reply_to_message");
     expect(result.unresolvedTarget).toEqual({
       field: "replyToEventId",
-      badHandle: "marianas-last-message",
+      badHandle: "laras-last-message",
       validHandles: ["e1", "e2"],
     });
   });

@@ -341,7 +341,7 @@ export class PersonaAwareMockProvider implements LLMProvider {
       p => p.type === "urge_to_create_private_channel",
     );
     if (!pressure) return undefined;
-    // Public players (high chaos cap: Goulart, Leo) don't scheme on status
+    // Public players (high chaos cap: Vasco, Renan) don't scheme on status
     // alone — the drive must be intimacy-sourced (a real relationship pull).
     const intimacySourced = (pressure.sourceMotivations ?? []).includes("desireForIntimacy");
     if (pack.edgeProfile.chaosCap === "high" && !intimacySourced) return undefined;

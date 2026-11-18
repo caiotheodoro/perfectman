@@ -13,5 +13,5 @@ Recommended local command:
 ```bash
 mkdir -p config/personas
 cp examples/simulations/mock.persona-file.example.json config/index.json
-cp examples/personas/compiled/example-friend.persona.example.json config/personas/example-friend.persona.json
+cp examples/personas/compiled/example-character.persona.example.json config/personas/example-character.persona.json
 ```

@@ -23,14 +23,14 @@ const compiled = (source: string): { drama: ScenarioDrama | undefined; ids: stri
 };
 
 const KEYS = ["tapa-na-cara", "confronto-da-traicao", "assassinato-na-festa", "reencontro-abraco", "anuncio-do-desmaio"] as const;
-const CAST = [{ id: "ana", displayName: "Ana Clara" }, { id: "bia", displayName: "Bia" }, { id: "caio", displayName: "Caio" }];
+const CAST = [{ id: "ana", displayName: "Ana Clara" }, { id: "bia", displayName: "Bia" }, { id: "tomas", displayName: "Tomas" }];
 
 describe("compileSceneDrama: a markdown scene's drama block", () => {
   it("[SCN-5] reads agent ids the way a form reads cast names, and gives agent ids back", () => {
-    const r = compileSceneDrama({ max_rung: "slap", may_target: [["ana", "bia"], ["caio", "@human"]], may_die: ["bia", "@human"] }, CAST, { sceneCuts: 1 });
+    const r = compileSceneDrama({ max_rung: "slap", may_target: [["ana", "bia"], ["tomas", "@human"]], may_die: ["bia", "@human"] }, CAST, { sceneCuts: 1 });
     expect(r.errors).toEqual([]);
     expect(r.warnings).toEqual([]);
-    expect(r.drama).toEqual({ max_rung: 4, may_target: [["ana", "bia"], ["caio", "@human"]], may_die: ["bia", "@human"], permadeath: false });
+    expect(r.drama).toEqual({ max_rung: 4, may_target: [["ana", "bia"], ["tomas", "@human"]], may_die: ["bia", "@human"], permadeath: false });
   });
 
   it("[SCN-5] reads cast names too, and refuses a person who is not in the cast, an @human aggressor and an unknown key", () => {

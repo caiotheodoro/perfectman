@@ -251,8 +251,8 @@ describe("novelty, judged against the actor's own lines and the turn before", ()
 
   it("the motif check still names the production phrase", () => {
     const room = [
-      { speaker: "Pistolinha", text: "Escuta, Caio, você já viu um pato de perto?" },
-      { speaker: "Caio", text: "Pato de perto eu nunca vi, juro." },
+      { speaker: "Pistolinha", text: "Escuta, Tomas, você já viu um pato de perto?" },
+      { speaker: "Tomas", text: "Pato de perto eu nunca vi, juro." },
       { speaker: "Pistolinha", text: "Eu preciso saber: você já viu um pato de perto?" },
     ];
     expect(motifRepeat("Calma, ninguém aqui julga: você já viu um pato de perto?", room, new Set())?.said).toBe("pato de perto");

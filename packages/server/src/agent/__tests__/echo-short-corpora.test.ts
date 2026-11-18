@@ -67,7 +67,7 @@ describe("no ordinary line is flagged", () => {
   });
 
   it("across personas the only pairs are two authors' near-identical lines, which are two actors and not one repeating itself", () => {
-    // The caio and the iris personas each wrote "this deserves a proper lunch ..."; two casts wrote "i'm fine!! (not fine, ... tell you later)" with a different aside.
+    // The tomas and the iris personas each wrote "this deserves a proper lunch ..."; two casts wrote "i'm fine!! (not fine, ... tell you later)" with a different aside.
     const distinct = [...new Set(PERSONA_EXAMPLES.map((e) => e.text))];
     const pairs = flagged(distinct);
     expect(pairs).toHaveLength(4);

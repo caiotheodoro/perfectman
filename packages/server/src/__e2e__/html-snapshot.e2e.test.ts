@@ -1,8 +1,8 @@
 /**
  * HTML Snapshot E2E Test
  *
- * Runs a 15-pulse simulation with 4 personas (Ana, Bruno, Carla, Diego)
- * across 4 channels (general, core-group, ana-carla DM, bruno-diego DM),
+ * Runs a 15-pulse simulation with 4 personas (Ana, Dario, Carla, Diego)
+ * across 4 channels (general, core-group, ana-carla DM, dario-diego DM),
  * then:
  *  1. Generates tmp/perfectman-simulation-snapshot.html (gitignored test
  *     evidence) — an interactive single-file replay viewer with emotion
@@ -118,7 +118,7 @@ describe("HTML Snapshot: 4-persona simulation", () => {
         perPulseEventSummary: Array<{ byActor: Record<string, unknown[]> }>;
       };
       for (const p of trajectory.emotionalTrajectory) {
-        expect(Object.keys(p.agentMoods).sort()).toEqual(["ana", "bruno", "carla", "diego"]);
+        expect(Object.keys(p.agentMoods).sort()).toEqual(["ana", "dario", "carla", "diego"]);
       }
       // At least one agent must act across the entire run
       const anyAgentActed = trajectory.perPulseEventSummary.some(
@@ -131,7 +131,7 @@ describe("HTML Snapshot: 4-persona simulation", () => {
       expect(html).toContain("<!DOCTYPE html>");
       expect(html).toContain("REPLAY_DATA");
       expect(html).toContain("Ana");
-      expect(html).toContain("Bruno");
+      expect(html).toContain("Dario");
       expect(html).toContain("Carla");
       expect(html).toContain("Diego");
 

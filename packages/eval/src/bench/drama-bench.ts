@@ -24,8 +24,8 @@ export type DramaBenchReport = { scenariosRun: number; scenariosFailed: number; 
 
 // ---- building blocks ----------------------------------------------------------------------------------------
 
-const REFS = ["ana", "bia", "caio", "duda"] as const;
-const NAMES: Record<string, string> = { ana: "Ana", bia: "Bia", caio: "Caio", duda: "Duda" };
+const REFS = ["ana", "bia", "tomas", "duda"] as const;
+const NAMES: Record<string, string> = { ana: "Ana", bia: "Bia", tomas: "Tomas", duda: "Duda" };
 const START = 1_000_000;
 
 /** A cold start: nobody feels anything the director reads. */
@@ -125,12 +125,12 @@ const CORE_SCENARIOS: readonly DramaScenario[] = [
       base("kill-once", {
         durationMs: 110_000,
         states: CALM(),
-        drama: block(6, [["ana", "bia"], ["ana", "caio"]], ["bia", "caio"]),
+        drama: block(6, [["ana", "bia"], ["ana", "tomas"]], ["bia", "tomas"]),
         beats: script([
           { atMs: 20_000, kind: "act", actor: "ana", verb: "kill", with: "bia", skip: true },
-          { atMs: 50_000, kind: "act", actor: "ana", verb: "kill", with: "caio", skip: true },
+          { atMs: 50_000, kind: "act", actor: "ana", verb: "kill", with: "tomas", skip: true },
           { atMs: 62_000, kind: "cut", reason: "next scene" },
-          { atMs: 90_000, kind: "act", actor: "ana", verb: "kill", with: "caio", skip: true },
+          { atMs: 90_000, kind: "act", actor: "ana", verb: "kill", with: "tomas", skip: true },
         ]),
       }),
     check: (r) => {
@@ -151,7 +151,7 @@ const CORE_SCENARIOS: readonly DramaScenario[] = [
       base("reaction-obligations", {
         durationMs: 60_000,
         states: CALM(),
-        actors: [{ ref: "ana", name: "Ana", tile: [4, 4] }, { ref: "bia", name: "Bia", tile: [5, 4] }, { ref: "caio", name: "Caio", tile: [4, 5] }, { ref: "duda", name: "Duda", tile: [6, 5] }],
+        actors: [{ ref: "ana", name: "Ana", tile: [4, 4] }, { ref: "bia", name: "Bia", tile: [5, 4] }, { ref: "tomas", name: "Tomas", tile: [4, 5] }, { ref: "duda", name: "Duda", tile: [6, 5] }],
         drama: block(4, [["ana", "bia"]]),
         beats: script([{ atMs: 15_000, kind: "act", actor: "ana", verb: "slap", with: "bia", skip: true }]),
       }),
@@ -257,9 +257,9 @@ const CORE_SCENARIOS: readonly DramaScenario[] = [
       base("pressure-floor", {
         durationMs: 270_000,
         consultMs: 12_000,
-        // Caio is the witness the slap needs (LAD-11): nobody talks to him, nobody holds anything against him.
-        actors: [{ ref: "ana", name: "Ana" }, { ref: "bia", name: "Bia" }, { ref: "caio", name: "Caio" }],
-        states: new Map(["ana", "bia", "caio"].map((r) => [r, seedState(r, { others: ["ana", "bia", "caio"], ...(r === "caio" ? {} : { relations: { [r === "ana" ? "bia" : "ana"]: { resentment: 0.16 } } }) })])),
+        // Tomas is the witness the slap needs (LAD-11): nobody talks to him, nobody holds anything against him.
+        actors: [{ ref: "ana", name: "Ana" }, { ref: "bia", name: "Bia" }, { ref: "tomas", name: "Tomas" }],
+        states: new Map(["ana", "bia", "tomas"].map((r) => [r, seedState(r, { others: ["ana", "bia", "tomas"], ...(r === "tomas" ? {} : { relations: { [r === "ana" ? "bia" : "ana"]: { resentment: 0.16 } } }) })])),
         drama: block(4, [["ana", "bia"], ["bia", "ana"]]),
         pressure: { climax_at_ms: 240_000 },
         speechOnly: true,

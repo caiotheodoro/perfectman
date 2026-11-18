@@ -9,7 +9,7 @@ import { sceneCutFrames } from "../testing/fake-drama.js";
 import { ZERO_ACT, handles, intent, rig } from "../testing/drama-body-rig.js";
 import { avatar, snapshot } from "../testing/fixtures.js";
 
-const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "leo"].includes(a) && ["duda", "rafa", "gabi", "leo"].includes(b);
+const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "renan"].includes(a) && ["duda", "rafa", "gabi", "renan"].includes(b);
 
 describe("a refusal of the ladder is a note for the model's next prompt", () => {
   it.each([["motive"], ["grievance"], ["rung"], ["contagion"], ["zero_witness"]])("a model's act refused for %s is noted, with the name it aimed at, and counted; the log still gets the reason, the verb and the target", (detail) => {
@@ -93,10 +93,10 @@ describe("what the cast says", () => {
 
   it("an actor out of the say radius, in the room, is told it behind its back: half the gain", () => {
     const r = rig({ allow: own });
-    // Wide room, Leo at the far end: 14 tiles from Rafa.
-    r.mirror.applySnapshot(snapshot(12, 2, [avatar(-701, "Duda", 4, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Leo", 20, 2), avatar(9, "ana", 7, 5)], 24), r.clock.now());
-    r.body.noteSpoken({ speaker: "rafa", content: "o Leo é um idiota", addressees: ["gabi"], mentioned: ["leo"] });
-    expect(r.body.provocation.levelOf("leo", "rafa")).toBe(0.25);
+    // Wide room, Renan at the far end: 14 tiles from Rafa.
+    r.mirror.applySnapshot(snapshot(12, 2, [avatar(-701, "Duda", 4, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Renan", 20, 2), avatar(9, "ana", 7, 5)], 24), r.clock.now());
+    r.body.noteSpoken({ speaker: "rafa", content: "o Renan é um idiota", addressees: ["gabi"], mentioned: ["renan"] });
+    expect(r.body.provocation.levelOf("renan", "rafa")).toBe(0.25);
     r.body.noteSpoken({ speaker: "rafa", content: "o Gabi é um idiota", addressees: ["duda"], mentioned: ["gabi"] });
     expect(r.body.provocation.levelOf("gabi", "rafa")).toBe(0.5);
   });

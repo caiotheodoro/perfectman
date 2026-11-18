@@ -18,7 +18,7 @@ const evidence = join(root, 'out/gauntlet/app-browser-checks');
 await mkdir(evidence, { recursive: true });
 
 const agents = [
-  { id: 'iris', displayName: 'Iris' }, { id: 'bruno', displayName: 'Bruno' },
+  { id: 'iris', displayName: 'Iris' }, { id: 'dario', displayName: 'Dario' },
   { id: 'marcela', displayName: 'Marcela' },
   { id: 'very-long', displayName: 'Alexandria Evangeline de Albuquerque' },
   { id: 'tess', displayName: 'Tess' }, { id: 'nox', displayName: 'Nox' }, { id: 'moss', displayName: 'Moss' },
@@ -28,7 +28,7 @@ const channels = [
   { id: 'public', name: 'the studio', type: 'public_channel', memberAgentIds: ids },
   { id: 'private', name: 'private-thread', type: 'private_channel', memberAgentIds: ['iris', 'marcela'] },
 ];
-const castFiles = await Promise.all(['iris', 'bruno', 'marcela'].map(async name => ({
+const castFiles = await Promise.all(['iris', 'dario', 'marcela'].map(async name => ({
   filename: `${name}.persona.md`,
   text: await readFile(join(root, `examples/presets/casts/studio-partners/${name}.persona.md`), 'utf8'),
 })));

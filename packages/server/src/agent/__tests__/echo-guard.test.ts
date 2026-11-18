@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { findGarble, findOwnEcho, findPhraseLoop, findRoomEcho, foldLine, tokenize } from "../echo-guard.js";
 import { isNearRepeat } from "../repetition-guard.js";
-import { CAIO_JOKE, DUZENTAS, GARBLED, HELOISA, IAN_FIRST, IAN_SECOND, NORMAL, PISTOLINHA } from "./fixtures/ptbr-lines.js";
+import { TOMAS_JOKE, DUZENTAS, GARBLED, HELOISA, OMAR_FIRST, OMAR_SECOND, NORMAL, PISTOLINHA } from "./fixtures/ptbr-lines.js";
 
 describe("folding", () => {
   it("ignores case, accents, punctuation, laughter runs, stage directions and elongation", () => {
@@ -17,30 +17,30 @@ describe("folding", () => {
 });
 
 describe("what the older guard missed, from the 2026-11-10 runs", () => {
-  it("run 56: Ian's sentence with a changed tail is under the Jaccard threshold and is now an own echo", () => {
-    expect(isNearRepeat(IAN_SECOND, [IAN_FIRST])).toBe(false);
-    expect(findOwnEcho(IAN_SECOND, [IAN_FIRST])).toMatchObject({ kind: "prefix" });
+  it("run 56: Omar's sentence with a changed tail is under the Jaccard threshold and is now an own echo", () => {
+    expect(isNearRepeat(OMAR_SECOND, [OMAR_FIRST])).toBe(false);
+    expect(findOwnEcho(OMAR_SECOND, [OMAR_FIRST])).toMatchObject({ kind: "prefix" });
   });
 
   it("run 56: the same sentence with a shorter or a longer tail is an echo too, and a bare repeat is exact", () => {
-    for (const tail of [" Bora?", " Quem topa?", " Vem, Caio, senta aqui do meu lado.", " Pistolinha, traz o envelope e abre aqui agora, vai."]) {
-      expect(findOwnEcho(IAN_FIRST + tail, [IAN_FIRST]), tail).toMatchObject({ kind: "prefix" });
+    for (const tail of [" Bora?", " Quem topa?", " Vem, Tomas, senta aqui do meu lado.", " Pistolinha, traz o envelope e abre aqui agora, vai."]) {
+      expect(findOwnEcho(OMAR_FIRST + tail, [OMAR_FIRST]), tail).toMatchObject({ kind: "prefix" });
     }
-    expect(findOwnEcho(IAN_FIRST, [IAN_FIRST])).toMatchObject({ kind: "exact" });
+    expect(findOwnEcho(OMAR_FIRST, [OMAR_FIRST])).toMatchObject({ kind: "exact" });
   });
 
-  it("run 56: Caio's joke said again, with the laughter changed, is an exact echo of the first", () => {
+  it("run 56: Tomas's joke said again, with the laughter changed, is an exact echo of the first", () => {
     const between = ["Quem é que vai pagar a conta hoje?", "Ninguém falou em pagar nada."];
-    expect(findOwnEcho("Se ele desse uma força, talvez dispensasse o cooper, KKKKKKKKK", [CAIO_JOKE, ...between])).toMatchObject({ kind: "exact" });
+    expect(findOwnEcho("Se ele desse uma força, talvez dispensasse o cooper, KKKKKKKKK", [TOMAS_JOKE, ...between])).toMatchObject({ kind: "exact" });
   });
 
   it("run 56: a line another actor just said is a room echo, with the laughter and a few words changed", () => {
-    expect(findRoomEcho(CAIO_JOKE, ["Chega de papo.", CAIO_JOKE])).toMatchObject({ kind: "exact" });
-    expect(findRoomEcho("Se ele desse uma força talvez dispensasse o Cooper, hein, KKKK", [CAIO_JOKE])).toMatchObject({ kind: "run" });
+    expect(findRoomEcho(TOMAS_JOKE, ["Chega de papo.", TOMAS_JOKE])).toMatchObject({ kind: "exact" });
+    expect(findRoomEcho("Se ele desse uma força talvez dispensasse o Cooper, hein, KKKK", [TOMAS_JOKE])).toMatchObject({ kind: "run" });
   });
 
   it("run 57: the pato question is a loop once 2 of the last 4 lines already carried it", () => {
-    const hit = findPhraseLoop("Olha, Caio, não adianta mudar de assunto e fugir da pergunta de novo: você já viu um pato de perto?", PISTOLINHA.slice(0, 3));
+    const hit = findPhraseLoop("Olha, Tomas, não adianta mudar de assunto e fugir da pergunta de novo: você já viu um pato de perto?", PISTOLINHA.slice(0, 3));
     expect(hit).toMatchObject({ kind: "ngram" });
     expect(hit?.phrase.toLowerCase()).toContain("viu um pato de perto");
   });
@@ -51,7 +51,7 @@ describe("what the older guard missed, from the 2026-11-10 runs", () => {
   });
 
   it("run 57: one earlier use is not a loop yet", () => {
-    expect(findPhraseLoop("Olha, Caio, não adianta mudar de assunto e fugir da pergunta de novo: você já viu um pato de perto?", [PISTOLINHA[0]!, "Cadê o envelope que ele trouxe?", "Abre isso agora."])).toBeUndefined();
+    expect(findPhraseLoop("Olha, Tomas, não adianta mudar de assunto e fugir da pergunta de novo: você já viu um pato de perto?", [PISTOLINHA[0]!, "Cadê o envelope que ele trouxe?", "Abre isso agora."])).toBeUndefined();
   });
 
   it("run 57: the question frame is caught even when the words around it change", () => {
@@ -75,13 +75,13 @@ describe("what the older guard missed, from the 2026-11-10 runs", () => {
 
 describe("own echoes", () => {
   it("catches a word dropped or added in the middle through the share of trigrams", () => {
-    expect(findOwnEcho("Se ele desse uma força, aí talvez dispensasse o cooper", [CAIO_JOKE])).toMatchObject({ kind: "shingle" });
+    expect(findOwnEcho("Se ele desse uma força, aí talvez dispensasse o cooper", [TOMAS_JOKE])).toMatchObject({ kind: "shingle" });
   });
 
   it("looks at the actor's last 8 lines, not only the previous one", () => {
     const filler = Array.from({ length: 6 }, (_, i) => NORMAL[i * 7]!);
-    expect(findOwnEcho(IAN_SECOND, [IAN_FIRST, ...filler])).toMatchObject({ kind: "prefix" });
-    expect(findOwnEcho(IAN_SECOND, [IAN_FIRST, ...filler, ...NORMAL.slice(50, 53)])).toBeUndefined();
+    expect(findOwnEcho(OMAR_SECOND, [OMAR_FIRST, ...filler])).toMatchObject({ kind: "prefix" });
+    expect(findOwnEcho(OMAR_SECOND, [OMAR_FIRST, ...filler, ...NORMAL.slice(50, 53)])).toBeUndefined();
   });
 
   it("leaves short lines to the older guard", () => {
@@ -96,14 +96,14 @@ describe("own echoes", () => {
 
 describe("room echoes", () => {
   it("only a near-verbatim copy counts, not an answer in the other's words", () => {
-    expect(findRoomEcho("Dispensar o Cooper? Tá maluco, mano?", [CAIO_JOKE])).toBeUndefined();
-    expect(findRoomEcho("Você já viu um pato de perto, Caio?", ["Escuta, você já viu um pato de perto?"])).toMatchObject({ kind: "run" });
+    expect(findRoomEcho("Dispensar o Cooper? Tá maluco, mano?", [TOMAS_JOKE])).toBeUndefined();
+    expect(findRoomEcho("Você já viu um pato de perto, Tomas?", ["Escuta, você já viu um pato de perto?"])).toMatchObject({ kind: "run" });
   });
 
   it("looks at the last 4 lines", () => {
-    const lines = [IAN_FIRST, ...NORMAL.slice(0, 4)];
-    expect(findRoomEcho(IAN_FIRST, lines)).toBeUndefined();
-    expect(findRoomEcho(IAN_FIRST, lines.slice(0, 4))).toMatchObject({ kind: "exact" });
+    const lines = [OMAR_FIRST, ...NORMAL.slice(0, 4)];
+    expect(findRoomEcho(OMAR_FIRST, lines)).toBeUndefined();
+    expect(findRoomEcho(OMAR_FIRST, lines.slice(0, 4))).toMatchObject({ kind: "exact" });
   });
 });
 

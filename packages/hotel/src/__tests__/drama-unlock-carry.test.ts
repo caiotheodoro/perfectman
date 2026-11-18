@@ -109,7 +109,7 @@ describe("the director is looked at the moment an unlock is granted", () => {
 
   it("only a grant: a refresh does not ask again, an actor that was never planned has nothing to ask with, a pair the scenario does not let is not opened", () => {
     const r = rig({ allow: (a, b) => a === "duda" && b === "gabi" });
-    r.body.grant("leo", "gabi", "shove", "test");
+    r.body.grant("renan", "gabi", "shove", "test");
     expect(r.port!.turns).toHaveLength(0);
     r.body.planFor("duda", r.input());
     r.body.grant("duda", "gabi", "shove", "test");

@@ -179,7 +179,7 @@ export function sectionBullets(section: MdSection | undefined): MdBullet[] {
 
 /**
  * Splits `key: value` where the value may itself contain colons
- * (`ana:bruno: close_friends`, `Hidden objective: keep it quiet (resource: x)`).
+ * (`ana:dario: close_friends`, `Hidden objective: keep it quiet (resource: x)`).
  * `which` picks the separating colon — the last one for pair keys, the first
  * for everything else.
  */

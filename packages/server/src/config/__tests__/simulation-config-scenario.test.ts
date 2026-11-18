@@ -7,7 +7,7 @@ const scenarioContext = {
   startingMood: "Apressada.",
   introBehaviorInstruction: "Anuncie a proposta.",
   displayName: "Íris",
-  castMap: { bruno: "bruno" },
+  castMap: { dario: "dario" },
 };
 const hiddenObjective = {
   description: "ser a diretora criativa única",

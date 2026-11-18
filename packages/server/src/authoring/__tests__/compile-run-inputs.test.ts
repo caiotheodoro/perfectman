@@ -22,10 +22,10 @@ const LLM: LLMConfig = {
   retryCount: 0,
 };
 
-/** The fixture's cast names `bruno` for two members, by pack id rather than filename. */
-const BRUNO = IRIS.replace("personaId: iris", "personaId: bruno").replace(
+/** The fixture's cast names `dario` for two members, by pack id rather than filename. */
+const DARIO = IRIS.replace("personaId: iris", "personaId: dario").replace(
   "displayName: Íris",
-  "displayName: Bruno",
+  "displayName: Dario",
 );
 
 function markdown(): RunInputs {
@@ -33,7 +33,7 @@ function markdown(): RunInputs {
     kind: "markdown",
     personas: [
       { filename: "iris.persona.md", text: IRIS },
-      { filename: "bruno.persona.md", text: BRUNO },
+      { filename: "dario.persona.md", text: DARIO },
     ],
     scenario: { filename: "dinner.scenario.md", text: SCENARIO },
   };
@@ -56,7 +56,7 @@ describe("compileRunInputs — the summary the preview panel reads", () => {
 
   it("resolves a cast member that names a persona by pack id", () => {
     const { summary } = compile();
-    expect(summary?.agents.find((a) => a.id === "bruno")?.personaFile).toBe("bruno.persona.md");
+    expect(summary?.agents.find((a) => a.id === "dario")?.personaFile).toBe("dario.persona.md");
   });
 
   it("keys the language table by the same filename the agents point at", () => {
@@ -106,7 +106,7 @@ describe("compileRunInputs — one language per scene", () => {
       ...markdown(),
       personas: [
         { filename: "iris.persona.md", text: withoutLanguage(IRIS) },
-        { filename: "bruno.persona.md", text: withoutLanguage(BRUNO) },
+        { filename: "dario.persona.md", text: withoutLanguage(DARIO) },
       ],
     });
     expect(summary?.languages["iris.persona.md"]?.language).toBe("pt-BR");
@@ -118,7 +118,7 @@ describe("compileRunInputs — one language per scene", () => {
       ...markdown(),
       personas: [
         { filename: "iris.persona.md", text: IRIS.replace("language: pt-BR", "language: en") },
-        { filename: "bruno.persona.md", text: BRUNO },
+        { filename: "dario.persona.md", text: DARIO },
       ],
     });
     expect(summary?.languages["iris.persona.md"]?.language).toBe("en");

@@ -67,8 +67,8 @@ packages/server/src/agent/
   prompt-builder.ts             # builds 8-section prompt from PerceptionPacket.translatedEmotionalState
   intent-parser.ts              # validates LLM JSON output against shared ActionIntent schema
   fixtures/
-    goulart-cold-start.ts
-    bruno-exclusion.ts
+    vasco-cold-start.ts
+    dario-exclusion.ts
   __tests__/
     prompt-builder.test.ts
     intent-parser.test.ts
@@ -111,7 +111,7 @@ LlmConfig
 
 `PersonaLoader` may read Dev3's `PersonaConfig`, but only to translate calibration into natural language hints. It must not mutate, replace, or narrow `PersonaConfig`.
 
-Persona source material may later live in committed Markdown docs using real names and sanitized/paraphrased examples by default. Keep that source layer separate from runtime: self-perception, peer perception, and observed chat evidence should be manually summarized into the compact `PersonaPromptProfile` until repeated work justifies a compiler.
+Persona source material describes fictional characters only; never real people.
 
 Suggested `PersonaPromptProfile` shape:
 
@@ -198,8 +198,8 @@ Rules: short subjective sentences, preserve ambiguity, never leak numbers, never
 Deterministic by `agentId` + event type + top pressure. Required for dev2/dev3 integration without network.
 
 Fixtures:
-- Goulart alone + boredom → casual opener
-- Bruno sees Caio reply to Goulart but not Bruno → react/delay/no_op by inhibition
+- Vasco alone + boredom → casual opener
+- Dario sees Tomas reply to Vasco but not Dario → react/delay/no_op by inhibition
 - High reply pressure + high shame → emoji or delay
 - Overwhelming inhibition → no-op with meaningful motive summary
 - Private-channel motive → `create_channel` with gossip/comfort/repair/etc motive
@@ -305,7 +305,7 @@ Fallback: prefer `delay_response` when social context can wait, `no_op` when uns
 
 ### M3: PersonaPromptProfile & PersonaLoader
 - Define Dev1-owned `PersonaPromptProfile` as the compact runtime prompt artifact, not the full biography/testimonial store.
-- Provide initial Goulart and Bruno profiles plus safe fallback behavior.
+- Provide initial Vasco and Dario profiles plus safe fallback behavior.
 - Resolve `LlmConfig` with mock defaults unless explicit runtime overrides are supplied.
 - Do not duplicate, mutate, or replace Dev3 `PersonaConfig`.
 
@@ -349,7 +349,7 @@ Expected: prompt tests pass, parser tests pass, mock adapter tests pass, budget 
 
 ## MVP Done Criteria
 
-- Persona configs load for at least Goulart and Bruno, and Dev1 resolves their individual `PersonaPromptProfile` and `LlmConfig` definitions
+- Persona configs load for at least Vasco and Dario, and Dev1 resolves their individual `PersonaPromptProfile` and `LlmConfig` definitions
 - Prompt builder produces natural language subjective state without numbers
 - Mock adapter produces deterministic valid JSON intents matching the `ActionIntent` schema
 - OpenAI-compatible provider works with at least one verified local Qwen3-8B endpoint and FreeLLMAPI behind the same interface

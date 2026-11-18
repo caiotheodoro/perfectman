@@ -27,10 +27,10 @@ describe("AgentRuntime Orchestration", () => {
 
   const baseInput: AgentRuntimeInput = {
     simulationId: "sim-123",
-    agentId: "example-friend",
+    agentId: "example-character",
     personaConfig: {
-      id: "example-friend",
-      name: "Example Friend",
+      id: "example-character",
+      name: "Example Character",
       archetype: "provocateur",
       writingStyle: "lowercase blunt",
       styleExamples: [],
@@ -50,7 +50,7 @@ describe("AgentRuntime Orchestration", () => {
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "example-friend",
+      agentId: "example-character",
       triggeringEvent: null,
       visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [],
       involvedPeople: [],
@@ -103,7 +103,7 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.fallbackApplied).toBe(false);
     expect(output.latencyMs).toBeGreaterThan(0);
     expect(output.llmUsage).not.toBeNull();
-    expect(output.llmUsage!.agentId).toBe("example-friend");
+    expect(output.llmUsage!.agentId).toBe("example-character");
     expect(output.llmUsage!.simulationId).toBe("sim-123");
     expect(output.llmUsage!.pulseIndex).toBe(42);
     expect(output.llmUsage!.callType).toBe("cognition");
@@ -112,7 +112,7 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.operatorEvents[0]!.data!.model).toBe("mock-model");
 
     // Intent checks
-    expect(output.intent.actorId).toBe("example-friend");
+    expect(output.intent.actorId).toBe("example-character");
     expect(output.intent.intentType).toBe("send_message");
     // The mock's wording rotates per turn; this test is about orchestration.
     expect(output.intent.visibleContent).toBeTypeOf("string");
@@ -151,14 +151,14 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.intent.privateMotiveSummary).toContain("LLM budget exceeded");
     expect(output.operatorEvents).toHaveLength(1);
     expect(output.operatorEvents[0]!.type).toBe("llm_budget_exceeded");
-    expect(output.operatorEvents[0]!.agentId).toBe("example-friend");
+    expect(output.operatorEvents[0]!.agentId).toBe("example-character");
     expect(output.operatorEvents[0]!.pulseIndex).toBe(42);
   });
 
   it("should catch provider errors and return a fallback intent and failure operator event", async () => {
     // Register an OpenAI-compatible config but with a missing baseUrl, which throws LLMConfigurationError!
     const runtime = new AgentRuntime({
-      "example-friend": {
+      "example-character": {
         providerType: "openai-compatible",
         baseUrl: "", // Will throw LLMConfigurationError!
         modelName: "test-model",
@@ -178,7 +178,7 @@ describe("AgentRuntime Orchestration", () => {
 
   it("should record token usage and emit an operator event when provider succeeds but parsing/validation fails", async () => {
     const runtime = new AgentRuntime({
-      "example-friend": {
+      "example-character": {
         providerType: "openai-compatible",
         baseUrl: "http://localhost:11434/v1",
         modelName: "test-model",
@@ -226,7 +226,7 @@ describe("AgentRuntime Orchestration", () => {
         JSON.stringify({
           choices: [{ message: { content: JSON.stringify({
             id: "intent-1",
-            actorId: "example-friend",
+            actorId: "example-character",
             intentType: "send_message",
             channelTarget: "general",
             personTargets: [],
@@ -245,7 +245,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("retries once and commits fresh content when the retry is genuinely different", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
 
       const fetchMock = vi.fn()
@@ -268,7 +268,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("falls back to no_op when the retry also repeats", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
 
       const fetchMock = vi.fn()
@@ -288,7 +288,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("delivers a repeated answer to a guest who asked this agent, instead of going silent", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
       const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse("kkkkk não acredito nesse take", 50, 10)));
       vi.stubGlobal("fetch", fetchMock);
@@ -296,7 +296,7 @@ describe("AgentRuntime Orchestration", () => {
         ...repeatingInput,
         perceptionPacket: {
           ...repeatingInput.perceptionPacket,
-          triggeringEvent: { simulationId: "s", channelId: "general", createdAt: 1, pulseIndex: 1, sourceEventIds: [], emotionalSalience: "high", visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "channel_member" }, id: "e-guest", actorId: "h:9", type: "message_sent", payload: { content: "e aí?", untrusted: true, addresseeIds: ["example-friend"], mentionedAgentIds: ["example-friend"] } } as never,
+          triggeringEvent: { simulationId: "s", channelId: "general", createdAt: 1, pulseIndex: 1, sourceEventIds: [], emotionalSalience: "high", visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "channel_member" }, id: "e-guest", actorId: "h:9", type: "message_sent", payload: { content: "e aí?", untrusted: true, addresseeIds: ["example-character"], mentionedAgentIds: ["example-character"] } } as never,
         },
       };
       const output = await runtime.generateIntent(asked, context);
@@ -310,7 +310,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("retry correction carries the repeat warning, a motive anchor, and the no-op escape hatch", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
 
       const fetchMock = vi.fn()
@@ -334,7 +334,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("honors maxRetries=2: recovers on the second retry after two repeats", async () => {
       const runtime = new AgentRuntime(
-        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { maxRetries: 2 },
@@ -355,7 +355,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("blocks immediately with zero retry budget (single provider call)", async () => {
       const runtime = new AgentRuntime(
-        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { maxRetries: 0 },
@@ -380,7 +380,7 @@ describe("AgentRuntime Orchestration", () => {
       // threshold stops reaching the guard.
       const borderline = "kkkkk não acredito nesse take mesmo";
       const lenient = new AgentRuntime(
-        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { threshold: 0.99 },
@@ -400,7 +400,7 @@ describe("AgentRuntime Orchestration", () => {
     it("blocks a loose near-match when the threshold is lowered", async () => {
       const borderline = "kkkkk não acredito nesse tema";
       const strict = new AgentRuntime(
-        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-character": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { threshold: 0.3, maxRetries: 0 },

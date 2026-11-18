@@ -1,18 +1,18 @@
 import type { PersonaPack } from "../persona/persona-pack.types.js";
-import { BRUNO_PACK } from "./bruno.js";
-import { CAIO_PACK } from "./caio.js";
-import { GOULART_PACK } from "./goulart.js";
-import { LEO_PACK } from "./leo.js";
-import { MARIANA_PACK } from "./mariana.js";
+import { DARIO_PACK } from "./dario.js";
+import { TOMAS_PACK } from "./tomas.js";
+import { VASCO_PACK } from "./vasco.js";
+import { RENAN_PACK } from "./renan.js";
+import { LARA_PACK } from "./lara.js";
 
-export { BRUNO_PACK, CAIO_PACK, GOULART_PACK, LEO_PACK, MARIANA_PACK };
+export { DARIO_PACK, TOMAS_PACK, VASCO_PACK, RENAN_PACK, LARA_PACK };
 
 export const ALL_PERSONA_PACKS: readonly PersonaPack[] = [
-  GOULART_PACK,
-  BRUNO_PACK,
-  CAIO_PACK,
-  MARIANA_PACK,
-  LEO_PACK,
+  VASCO_PACK,
+  DARIO_PACK,
+  TOMAS_PACK,
+  LARA_PACK,
+  RENAN_PACK,
 ];
 
 export function getPersonaPackById(id: string): PersonaPack | undefined {

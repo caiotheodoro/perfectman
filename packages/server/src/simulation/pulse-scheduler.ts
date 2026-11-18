@@ -1407,7 +1407,7 @@ export class PulseScheduler {
       case "channel_created": {
         // A channel-less event anchors nothing, and a decision that began before a door and committed after
         // it carries the old room: letting it through would pin the actor to a room it left, and every line
-        // it said from then on would go there (hotel run 29: Leo mute for 80 s after coming back).
+        // it said from then on would go there (hotel run 29: Renan mute for 80 s after coming back).
         if (!event.channelId) break;
         const pinned = this.hostRoomByAgent.get(event.actorId);
         if (pinned !== undefined && event.channelId !== pinned && roomIdOfChannel(event.channelId) !== undefined) break;

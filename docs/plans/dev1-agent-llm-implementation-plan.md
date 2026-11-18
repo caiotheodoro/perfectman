@@ -20,7 +20,7 @@ Current Dev1 progress:
 
 - M1 runtime/provider types exist under `packages/server/src/agent/` and `packages/server/src/llm/`.
 - M2 `IntentParser` exists and validates raw LLM JSON against `ActionIntentSchema` with narrow repair/fallback behavior.
-- M3 `PersonaPromptProfile` and `PersonaLoader` exist with initial Goulart/Bruno profiles and mock `LlmConfig` defaults.
+- M3 `PersonaPromptProfile` and `PersonaLoader` exist with initial Vasco/Dario profiles and mock `LlmConfig` defaults.
 
 Not implemented yet:
 
@@ -72,7 +72,7 @@ generateIntent(
 6. **Persona source data uses a simple hybrid architecture**
    - `PersonaPromptProfile` stays small, typed, deterministic, and prompt-ready.
    - Rich persona material lives separately as committed Markdown/source docs, not as raw runtime prompt input.
-   - Source docs preserve real names, but raw examples should be sanitized/paraphrased by default.
+   - Characters are fictional; source docs never describe real people.
    - Source material distinguishes self-perception, peer perception, and observed chat evidence.
    - Relationship biases in the runtime profile are from the agent's perspective, informed by self-interviews, peer testimonials, and sanitized chat evidence.
 
@@ -87,8 +87,8 @@ packages/server/src/agent/
   prompt-builder.ts
   intent-parser.ts
   fixtures/
-    goulart-cold-start.ts
-    bruno-exclusion.ts
+    vasco-cold-start.ts
+    dario-exclusion.ts
   __tests__/
     prompt-builder.test.ts
     intent-parser.test.ts
@@ -124,20 +124,9 @@ Keep three layers separate:
 
 `PersonaPromptProfile` should answer: "What does the LLM need right now to act as this agent in chat?" It should not answer: "What is every known fact, quote, testimonial, and contradiction about this person?"
 
-Recommended future source layout, when real content exists:
-
-```text
-docs/personas/
-  goulart/
-    self.md
-    peer-perceptions.md
-    observed-style.md
-    prompt-profile-notes.md
-```
-
 Rules:
 
-- These files may be committed to the repo and may preserve real names.
+- These files describe fictional characters only.
 - Sanitize or paraphrase examples by default.
 - Exclude addresses, phone numbers, secrets, medical/legal/financial details, and private facts that should not affect simulation behavior.
 - Do not load full Markdown files into the runtime prompt.
@@ -204,31 +193,6 @@ type LlmProviderResult = {
 };
 ```
 
-## Staged Persona-Source Plan
-
-### Now
-
-- Keep `PersonaPromptProfile` as the compact runtime artifact.
-- Improve `docs/notes/friend-questionnaire.md` for peer perception.
-- Add `docs/notes/solo-questionnaire.md` for self-perception.
-- Document that committed persona sources may use real names but should sanitize/paraphrase sensitive examples.
-- Use manual summarization from source docs into TypeScript profiles.
-
-### Later
-
-- Add `docs/personas/<name>/` source files once real interviews exist.
-- Add a lightweight review checklist for what can/cannot be copied into prompt profiles.
-- Add tests that prompt profiles remain compact and do not leak raw private data.
-
-### Defer
-
-- Markdown loaders/parsers.
-- Automated testimonial schema enforcement.
-- Profile compilers.
-- Vector search / retrieval over persona source docs.
-- Database or migration work.
-- Automated numeric scoring from interviews.
-
 ## Milestones
 
 ### M1 — Runtime and provider types
@@ -272,14 +236,14 @@ Implement Dev1-owned profiles/config lookup.
 Responsibilities:
 
 - Define `PersonaPromptProfile`.
-- Provide initial profiles for at least Goulart and Bruno.
+- Provide initial profiles for at least Vasco and Dario.
 - Resolve profile by `personaId`.
 - Resolve `LlmConfig` by agent/persona with safe mock defaults.
 - Never mutate or replace `PersonaConfig`.
 
 Acceptance:
 
-- Goulart and Bruno resolve.
+- Vasco and Dario resolve.
 - Unknown persona falls back to a safe generic profile or explicit typed error handled by runtime.
 - LLM config defaults to mock unless configured otherwise.
 

@@ -90,5 +90,5 @@ export async function run(answers: Scripted[], inp: AgentRuntimeInput, policy: R
 }
 
 // Invented lines throughout.
-export const LONG = "Ian, você tá parado aí que nem lasanha de véspera: parece firme, mas por baixo tá tudo deslizando e ninguém percebe nada. Eu juro que vi o cofre aberto ontem à noite, perto da escada. Depois ele sumiu de repente.";
+export const LONG = "Omar, você tá parado aí que nem lasanha de véspera: parece firme, mas por baixo tá tudo deslizando e ninguém percebe nada. Eu juro que vi o cofre aberto ontem à noite, perto da escada. Depois ele sumiu de repente.";
 export const QUIET = [line("ana", "Ana", "Quem abriu a janela do corredor?"), line("caco", "Caco", "Foi o vento, ninguém abriu nada."), line("ana", "Ana", "O vento não gira maçaneta, Caco.")];

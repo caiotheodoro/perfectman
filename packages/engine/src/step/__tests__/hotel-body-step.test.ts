@@ -92,10 +92,10 @@ describe("redactForListener", () => {
   });
 
   it("a whisper notice loses its text and says how it was heard", () => {
-    const e = msg("e1", { content: "psiu", hearing: { a1: "notice" }, senderName: "Léo" });
+    const e = msg("e1", { content: "psiu", hearing: { a1: "notice" }, senderName: "Renan" });
     const r = redactForListener(e, "a1");
     expect(r).not.toBe(e);
-    expect(r.payload).toEqual({ hearing: { a1: "notice" }, senderName: "Léo", heardAs: "notice" });
+    expect(r.payload).toEqual({ hearing: { a1: "notice" }, senderName: "Renan", heardAs: "notice" });
     expect(e.payload["content"]).toBe("psiu");
   });
 });

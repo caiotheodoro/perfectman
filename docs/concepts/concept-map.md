@@ -9,8 +9,6 @@ Use this as the deep conceptual map. Use `README.md` as the main entry point.
 ## Source Documents
 
 - [`experiment-brief.md`](experiment-brief.md): first compact charter for the socket-chat hierarchy experiment.
-- [`../notes/meeting-synthesis.md`](../notes/meeting-synthesis.md): broad meeting synthesis with objectives, mood, actions, socket chat permissions, personas, spectator stance, risks, and next steps.
-- [`../notes/design-conversation-history.md`](../notes/design-conversation-history.md): design conversation history, gap analysis, mood/AutoDream research, and tick/social timing brainstorms.
 - [`../architecture/social-presence.md`](../architecture/social-presence.md): current social presence architecture, with ticks demoted to invisible backend infrastructure.
 
 ## One-Sentence Thesis
@@ -212,12 +210,12 @@ Public/private logic:
 Example:
 
 ```text
-Matheus creates a private channel with Caio.
-Bruno cannot see it.
-Bruno sees Caio stop replying publicly.
-Bruno concludes he is being excluded.
-Caio may simply be distracted.
-The drama comes from Bruno's interpretation, not objective truth.
+Felipe creates a private channel with Tomas.
+Dario cannot see it.
+Dario sees Tomas stop replying publicly.
+Dario concludes he is being excluded.
+Tomas may simply be distracted.
+The drama comes from Dario's interpretation, not objective truth.
 ```
 
 This incomplete visibility is one of the strongest sources of human-like behavior.
@@ -260,13 +258,13 @@ Attention is probabilistic. The same event should matter differently to differen
 Example:
 
 ```text
-Goulart posts a challenge in #geral.
+Vasco posts a challenge in #geral.
 
-Goulart: already active, no attention decision needed.
-Caio: likely notices because he tracks social tension.
-Bruno: definitely notices if he already feels excluded.
+Vasco: already active, no attention decision needed.
+Tomas: likely notices because he tracks social tension.
+Dario: definitely notices if he already feels excluded.
 Giovanni: maybe notices, likely does not speak.
-Matheus: notices only if it affects a private plan.
+Felipe: notices only if it affects a private plan.
 ```
 
 Attention should be cheap. Not every noticed event needs an LLM call.
@@ -288,11 +286,11 @@ Presence is not a clock. It changes because of events and personality.
 
 Examples:
 
-- Bruno becomes avoidant after public embarrassment.
+- Dario becomes avoidant after public embarrassment.
 - Giovanni drifts into lurking during noisy group chat.
-- Matheus becomes public-silent while private-focused.
-- Goulart becomes active when challenged.
-- Caio remains semi-active while tracking multiple threads.
+- Felipe becomes public-silent while private-focused.
+- Vasco becomes active when challenged.
+- Tomas remains semi-active while tracking multiple threads.
 
 ## Concept 5: Perception Packet
 
@@ -361,7 +359,7 @@ The interpreter should preserve uncertainty.
 Example:
 
 ```text
-event: Caio does not answer Bruno, but reacts to Goulart.
+event: Tomas does not answer Dario, but reacts to Vasco.
 
 possible meanings:
   exclusion: medium confidence
@@ -473,7 +471,7 @@ Low masking:
 
 Masking should be personality-driven and state-sensitive.
 
-Caio may have high masking. Bruno may lose masking under exclusion anxiety. Goulart may mask vulnerability through dominance. Matheus may mask strategy through quietness. Giovanni may mask by not participating.
+Tomas may have high masking. Dario may lose masking under exclusion anxiety. Vasco may mask vulnerability through dominance. Felipe may mask strategy through quietness. Giovanni may mask by not participating.
 
 ## Concept 10: No-Op As Behavior
 
@@ -547,10 +545,10 @@ The drama comes from mismatch.
 
 Examples:
 
-- Caio publicly jokes while privately worried.
-- Matheus publicly quiets down while privately recruiting.
-- Goulart publicly dominates while privately checking if people are still aligned.
-- Bruno publicly jokes but privately feels humiliated.
+- Tomas publicly jokes while privately worried.
+- Felipe publicly quiets down while privately recruiting.
+- Vasco publicly dominates while privately checking if people are still aligned.
+- Dario publicly jokes but privately feels humiliated.
 - Giovanni publicly says little but builds a sharp theory of the room.
 
 ## Concept 13: Memory
@@ -569,8 +567,8 @@ Example:
 
 ```text
 relationshipMemory:
-  person: Caio
-  belief: "Caio ignored me publicly while staying active elsewhere."
+  person: Tomas
+  belief: "Tomas ignored me publicly while staying active elsewhere."
   emotion: humiliation
   confidence: medium
   unresolved: true
@@ -616,9 +614,9 @@ Rumination should not create false evidence.
 Example:
 
 ```text
-Bruno keeps thinking about Caio ignoring him.
+Dario keeps thinking about Tomas ignoring him.
 His resentment grows.
-But the system must know this is rumination, not a new insult by Caio.
+But the system must know this is rumination, not a new insult by Tomas.
 ```
 
 ## Concept 15: Emotional Drift
@@ -693,12 +691,12 @@ Persona should change:
 Example profiles:
 
 ```text
-Goulart:
+Vasco:
   notices public challenges quickly
   low inhibition for public response
   masks vulnerability through dominance
 
-Caio:
+Tomas:
   notices social awkwardness quickly
   high masking
   prefers indirect repair
@@ -708,12 +706,12 @@ Giovanni:
   high threshold for conflict
   strong lurking behavior
 
-Bruno:
+Dario:
   high sensitivity to exclusion
   high rumination
   may use jokes to hide hurt
 
-Matheus:
+Felipe:
   patient
   private-channel oriented
   low public drama threshold, high strategic threshold
@@ -740,7 +738,7 @@ subjectiveObjectiveBelief:
 
 spectatorLegibility:
   narrative events
-  "Matheus is using the gap", not "Matheus score +12"
+  "Felipe is using the gap", not "Felipe score +12"
 ```
 
 Do not expose true progress as a scoreboard.
@@ -807,9 +805,9 @@ Blocked actions should become events when socially meaningful.
 Example:
 
 ```text
-Matheus tries to create a private channel.
+Felipe tries to create a private channel.
 Permission limit blocks it.
-Matheus now feels constrained and may switch strategy.
+Felipe now feels constrained and may switch strategy.
 ```
 
 ## Concept 21: Spectator Layer
@@ -839,17 +837,17 @@ Spectators should not be forced to see:
 Prefer:
 
 ```text
-Bruno has started treating Caio's silence as deliberate.
-Caio noticed the shift but chose not to repair it yet.
-Matheus is moving through the gap.
+Dario has started treating Tomas's silence as deliberate.
+Tomas noticed the shift but chose not to repair it yet.
+Felipe is moving through the gap.
 ```
 
 Avoid:
 
 ```text
-Bruno resentment: 0.82
-Caio masking: 0.91
-Matheus influence: 73%
+Dario resentment: 0.82
+Tomas masking: 0.91
+Felipe influence: 73%
 ```
 
 ## Concept 22: Narrator And Recaps
@@ -878,8 +876,8 @@ Recap style:
 
 ```text
 The room did not explode. It got quieter, which was worse.
-Bruno noticed Caio was still around, just not around for him.
-Matheus used the silence well. Goulart kept the public channel warm enough
+Dario noticed Tomas was still around, just not around for him.
+Felipe used the silence well. Vasco kept the public channel warm enough
 that nobody could accuse anyone of disappearing.
 ```
 
@@ -897,10 +895,10 @@ Safer event type:
 
 ```text
 inner_motive_summary:
-  actor: Bruno
+  actor: Dario
   visibleToSpectators: true
   visibleToAgents: false
-  text: "Bruno wants to ask directly, but thinks it would make him look needy."
+  text: "Dario wants to ask directly, but thinks it would make him look needy."
 ```
 
 This preserves the spectator value without leaking hidden state into agent context.
@@ -1241,7 +1239,7 @@ agent subjective state:
   "you feel excluded", "you feel momentum", "you feel blocked"
 
 spectator narrative:
-  "Bruno has started treating Caio's silence as deliberate"
+  "Dario has started treating Tomas's silence as deliberate"
 ```
 
 This preserves structure without gamification.
@@ -1324,8 +1322,6 @@ Keep docs separated by purpose:
 - [`../architecture/social-presence.md`](../architecture/social-presence.md): current social presence architecture and backend timing stance.
 - [`../architecture/application.md`](../architecture/application.md): full application architecture.
 - [`../architecture/emotion.md`](../architecture/emotion.md): canonical emotion model and simulation health systems.
-- [`../notes/meeting-synthesis.md`](../notes/meeting-synthesis.md): original broad meeting synthesis.
-- [`../notes/design-conversation-history.md`](../notes/design-conversation-history.md): brainstorm transcript and research notes.
 - [`experiment-brief.md`](experiment-brief.md): initial concise experiment setup.
 
 Future docs:

@@ -52,7 +52,7 @@ describe("the drama planner behind the director's port (NEG-2, NEG-6)", () => {
     r.port!.turns.length = 0;
     r.body.planFor("duda", r.input());
     expect(r.port?.turns.filter((t) => t.proposal)).toEqual([]);
-    r.mirror.applySnapshot(snapshot(12, 2, [avatar(-701, "Duda", 5, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Leo", 2, 2), avatar(9, "ana", 7, 5)]), r.clock.now());
+    r.mirror.applySnapshot(snapshot(12, 2, [avatar(-701, "Duda", 5, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Renan", 2, 2), avatar(9, "ana", 7, 5)]), r.clock.now());
     r.body.planFor("duda", r.input());
     expect(r.port?.turns.filter((t) => t.proposal).map((t) => t.proposal?.verb)).toEqual(["shove"]);
   });
@@ -143,8 +143,8 @@ describe("death in the engine and the memory (DEATH-2, DEATH-4, DEATH-7, REA-8, 
     expect(say("rafa")).toEqual([["Duda killed me.", "grief"]]);
     expect(say("duda")).toEqual([["I killed Rafa.", "hostile"]]);
     expect(say("gabi")).toEqual([["I saw Rafa die at the hands of Duda.", "grief"]]);
-    expect(say("leo")).toEqual([["I saw Rafa die at the hands of Duda.", "fear"]]);
-    expect(r.states.get("leo")?.relationalStates.get("duda")?.threat).toBeGreaterThanOrEqual(0.2);
+    expect(say("renan")).toEqual([["I saw Rafa die at the hands of Duda.", "fear"]]);
+    expect(r.states.get("renan")?.relationalStates.get("duda")?.threat).toBeGreaterThanOrEqual(0.2);
   });
 
   it("[DEATH-7] the memory outlives the revive and a repeated frame writes nothing twice", async () => {
@@ -153,7 +153,7 @@ describe("death in the engine and the memory (DEATH-2, DEATH-4, DEATH-7, REA-8, 
     feedFrames(r.body, sceneCutFrames({ scene: "7.3", prev: "7.2", revived: [-702] }));
     feedFrames(r.body, kill());
     await r.body.idle();
-    expect(r.states.get("leo")?.memories.filter((m) => m.unresolved)).toHaveLength(1);
+    expect(r.states.get("renan")?.memories.filter((m) => m.unresolved)).toHaveLength(1);
     expect(r.states.get("rafa")?.memories.some((m) => m.summary === "Duda killed me.")).toBe(true);
   });
 
@@ -166,7 +166,7 @@ describe("death in the engine and the memory (DEATH-2, DEATH-4, DEATH-7, REA-8, 
     expect(r.states.get("duda")?.memories.map((m) => m.summary)).toEqual(["I slapped Rafa."]);
     expect(r.states.get("rafa")?.memories.map((m) => m.summary)).toEqual(["Duda slapped me."]);
     expect(r.states.get("gabi")?.memories.map((m) => m.summary)).toEqual(["I saw Duda slap Rafa."]);
-    expect(r.states.get("leo")?.memories).toEqual([]);
+    expect(r.states.get("renan")?.memories).toEqual([]);
   });
 
   it("[REA-8] a dodged violent act leaves the aggressor an aggressor and the target nothing", async () => {

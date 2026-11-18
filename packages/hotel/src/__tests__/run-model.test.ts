@@ -85,7 +85,7 @@ describe("a model picked for one run (D54)", () => {
 describe("the builder's persona fields reach the persona file", () => {
   const form = {
     title: "Noite no lounge", situation: "Uma noite no lounge do hotel.", language: "pt-BR" as const,
-    cast: ["Goulart", "Enzo"].map((name, i) => ({
+    cast: ["Vasco", "Enzo"].map((name, i) => ({
       name, role: i ? "connector" : "performer", goal: "Fazer alguém aceitar a aposta.", voice: "Fala alto e rápido.",
       identity: "Barbudo de relógio no pulso.", delay: (i ? "slow" : "quick") as "slow" | "quick",
       triggers: [{ trigger: "Alguém duvida dele", behavior: "Dobra a aposta." }], lines: ["Duvido que vocês aguentem.", "Bora animar isso aqui!", "Quem topa?"],
@@ -97,7 +97,7 @@ describe("the builder's persona fields reach the persona file", () => {
     const { personas, scenario } = roomFiles(draft);
     const compiled = compilePersonaMarkdown(personas[0]!.text, personas[0]!.filename);
     expect(compiled.diagnostics.filter((d) => d.level === "error")).toEqual([]);
-    expect(compiled.pack?.identityFrame).toMatch(/^Você é Goulart\. Barbudo de relógio no pulso\./);
+    expect(compiled.pack?.identityFrame).toMatch(/^Você é Vasco\. Barbudo de relógio no pulso\./);
     expect(compiled.pack?.edgeProfile.triggers[0]).toMatchObject({ trigger: "Alguém duvida dele", behavior: "Dobra a aposta." });
     expect(compiled.pack?.presenceProfile.responseDelayMs).toEqual([400, 2000]);
     expect(compilePersonaMarkdown(personas[1]!.text, personas[1]!.filename).pack?.presenceProfile.responseDelayMs).toEqual([2500, 8000]);
@@ -105,7 +105,7 @@ describe("the builder's persona fields reach the persona file", () => {
     expect(scenario.text).not.toMatch(/Expectant|Private goal/);
   });
 
-  it("a spite scene is not calibrated as Goulart and cannot invent a second object", () => {
+  it("a spite scene is not calibrated as Vasco and cannot invent a second object", () => {
     const { draft } = formToDraft({
       title: "Tira o teu dente do meu copo.",
       situation: "Na pia tem um copo com um dente. Nanda fica na pia. Biro fica no banco.",
@@ -119,7 +119,7 @@ describe("the builder's persona fields reach the persona file", () => {
     const { personas, scenario } = roomFiles(draft);
     expect(personas[0]!.text).not.toContain("calibrationFrom");
     expect(personas[1]!.text).not.toContain("calibrationFrom");
-    expect(personas[0]!.text).not.toMatch(/goulart|mariana|caio/);
+    expect(personas[0]!.text).not.toMatch(/vasco|lara|tomas/);
     expect(scenario.text).toContain("O que você diz: Tira o teu dente do meu copo.");
     expect(scenario.text).toContain("(resource: the_object)");
     expect(scenario.text).not.toContain("the_groups_attention");

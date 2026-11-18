@@ -6,7 +6,7 @@
 
 ## Context
 
-`computePressures` recomputes every urge from the agent's emotional state each pulse, with no memory of having acted on it. `computeActionEmotions` carries large baseline terms that do not depend on events: for the goulart calibration (arousal 0.65, stability 0.35) `impulsiveProvocation ≈ 0.49`, which times its pressure weight is a `high urge_to_provoke` on every pulse of every run, with nothing said. No inhibition available to that persona outranks `high`. ADR-0015 removed the ownership defects around `needsLLM`; without a memory of acting, a hot persona still alternates act / cooldown / act.
+`computePressures` recomputes every urge from the agent's emotional state each pulse, with no memory of having acted on it. `computeActionEmotions` carries large baseline terms that do not depend on events: for the vasco calibration (arousal 0.65, stability 0.35) `impulsiveProvocation ≈ 0.49`, which times its pressure weight is a `high urge_to_provoke` on every pulse of every run, with nothing said. No inhibition available to that persona outranks `high`. ADR-0015 removed the ownership defects around `needsLLM`; without a memory of acting, a hot persona still alternates act / cooldown / act.
 
 Issue #119 lists "targeted per-motive accumulator relief — discharge only the accumulator(s) whose source drove the committed action; needs motive→action attribution threaded to the resolver first" as unspecified. Constraint carried in: the engine stays pure and reads persisted state only; the scheduler is the single writer after commit (the `lastActionAt` precedent, #124); no speculative constants without a tuning owner.
 
@@ -14,7 +14,7 @@ Issue #119 lists "targeted per-motive accumulator relief — discharge only the 
 
 1. **`AgentState.pressureDischargedAt?: Partial<Record<PressureType, number>>` (D-55)** — the pulse index of the last committed outward act that expressed each urge. Optional: absent means never discharged, so the forty-odd fixtures that build the literal keep compiling and existing rows read back unchanged.
 2. **Discharge is subtractive with linear refill, overwhelming exempt (D-56).** `effective = raw ≥ 0.85 ? raw : max(0, raw − PRESSURE_DISCHARGE · max(0, (PRESSURE_REFRACTORY_PULSES − pulsesSince + 1) / PRESSURE_REFRACTORY_PULSES))`, applied per `ACTION_PRESSURE_MAP` entry and to the private-channel drive before the intensity label; an urge that discharges below `PRESSURE_THRESHOLD` is removed, not clamped. `PRESSURE_DISCHARGE = 0.40`, `PRESSURE_REFRACTORY_PULSES = 6` (`shared/src/constants/pressure-refractory.ts`), provisional, owner #129.
-3. **The scheduler stamps every salient pressure after a committed outward act (D-57)** at the `lastActionAt` site, under the same condition. Not only the top one: the goulart calibration feels provoke, dominate and show-off together, and discharging one would hand the turn to the next.
+3. **The scheduler stamps every salient pressure after a committed outward act (D-57)** at the `lastActionAt` site, under the same condition. Not only the top one: the vasco calibration feels provoke, dominate and show-off together, and discharging one would hand the turn to the next.
 4. **Persistence rides the agent-state row (D-58)**: a nullable JSON column `pressure_discharged_at`, added with a guarded `ALTER TABLE` for databases created before it; the in-memory repository needs nothing.
 
 ## Rationale

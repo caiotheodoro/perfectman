@@ -11,7 +11,7 @@ const PULSE_INTERVAL_MS = 1000;
 function memory(overrides: Partial<Memory> = {}): Memory {
   return {
     id: "m",
-    agentId: "goulart",
+    agentId: "vasco",
     simulationId: "sim",
     type: "episodic",
     subjectAgentIds: [],

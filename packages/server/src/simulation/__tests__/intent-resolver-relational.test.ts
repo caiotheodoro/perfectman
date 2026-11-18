@@ -24,15 +24,15 @@ import { makeAgentState, makePersona, SETTINGS, ZERO_ACTION } from "./fixtures.j
 const SIM_ID = "sim_relational";
 const CHANNEL_ID = "ch_public";
 const ALICE = "agent_alice";
-const BRUNO = "agent_bruno";
-const AGENT_NAMES: Record<string, string> = { [ALICE]: "Alice", [BRUNO]: "Bruno" };
+const DARIO = "agent_dario";
+const AGENT_NAMES: Record<string, string> = { [ALICE]: "Alice", [DARIO]: "Dario" };
 const NOW = 1_700_000_050_000;
 
 const AVAILABLE_ACTIONS: AvailableAction[] = [
-  { intentType: "send_message", channelTargets: [CHANNEL_ID], personTargets: [ALICE, BRUNO], blocked: false },
-  { intentType: "reply_to_message", channelTargets: [CHANNEL_ID], personTargets: [ALICE, BRUNO], blocked: false },
-  { intentType: "react", channelTargets: [CHANNEL_ID], personTargets: [ALICE, BRUNO], blocked: false },
-  { intentType: "create_channel", channelTargets: [], personTargets: [ALICE, BRUNO], blocked: false },
+  { intentType: "send_message", channelTargets: [CHANNEL_ID], personTargets: [ALICE, DARIO], blocked: false },
+  { intentType: "reply_to_message", channelTargets: [CHANNEL_ID], personTargets: [ALICE, DARIO], blocked: false },
+  { intentType: "react", channelTargets: [CHANNEL_ID], personTargets: [ALICE, DARIO], blocked: false },
+  { intentType: "create_channel", channelTargets: [], personTargets: [ALICE, DARIO], blocked: false },
   { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
 ];
 
@@ -69,7 +69,7 @@ describe("relational accretion through the real resolver", () => {
       type: "public_channel",
       name: "general",
       createdBy: "system",
-      memberAgentIds: [ALICE, BRUNO],
+      memberAgentIds: [ALICE, DARIO],
       spectatorVisible: true,
       operatorVisible: true,
       createdForMotives: [],
@@ -77,7 +77,7 @@ describe("relational accretion through the real resolver", () => {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
-    for (const agentId of [ALICE, BRUNO]) {
+    for (const agentId of [ALICE, DARIO]) {
       await channelRepo.addMembership({ channelId: CHANNEL_ID, agentId, joinedAt: Date.now() });
     }
     eventRepo = new InMemoryEventRepository();
@@ -107,11 +107,11 @@ describe("relational accretion through the real resolver", () => {
 
     await resolve(makeIntent({
       actorId: ALICE,
-      personTargets: [BRUNO],
-      visibleContent: "hello Bruno",
+      personTargets: [DARIO],
+      visibleContent: "hello Dario",
     }));
     await resolve(makeIntent({
-      actorId: BRUNO,
+      actorId: DARIO,
       intentType: "reply_to_message",
       personTargets: [ALICE],
       visibleContent: "happy to help, Alice",
@@ -119,7 +119,7 @@ describe("relational accretion through the real resolver", () => {
       replyToActorId: ALICE,
     }));
     await resolve(makeIntent({
-      actorId: BRUNO,
+      actorId: DARIO,
       intentType: "react",
       personTargets: [ALICE],
       targetEventId: "evt_prior",
@@ -130,7 +130,7 @@ describe("relational accretion through the real resolver", () => {
       intentType: "create_channel",
       channelTarget: undefined,
       channelName: "duetto",
-      invitedAgentIds: [BRUNO],
+      invitedAgentIds: [DARIO],
     }));
 
     return eventRepo.append(SIM_ID, committed);
@@ -138,35 +138,35 @@ describe("relational accretion through the real resolver", () => {
 
   it("commits participant identifiers on message, reply, and reaction payloads", async () => {
     const message = await resolver.resolve(
-      makeIntent({ personTargets: [BRUNO], visibleContent: "hello Bruno" }),
-      ctxFor(makeIntent({ personTargets: [BRUNO] })),
+      makeIntent({ personTargets: [DARIO], visibleContent: "hello Dario" }),
+      ctxFor(makeIntent({ personTargets: [DARIO] })),
     );
     const reply = await resolver.resolve(
       makeIntent({
-        actorId: BRUNO,
+        actorId: DARIO,
         intentType: "reply_to_message",
         personTargets: [ALICE],
         visibleContent: "happy to help, Alice",
         replyToEventId: "evt_prior",
         replyToActorId: ALICE,
       }),
-      ctxFor(makeIntent({ actorId: BRUNO, intentType: "reply_to_message" })),
+      ctxFor(makeIntent({ actorId: DARIO, intentType: "reply_to_message" })),
     );
     const reaction = await resolver.resolve(
       makeIntent({
-        actorId: BRUNO,
+        actorId: DARIO,
         intentType: "react",
         personTargets: [ALICE],
         targetEventId: "evt_prior",
         emoji: "🔥",
       }),
-      ctxFor(makeIntent({ actorId: BRUNO, intentType: "react" })),
+      ctxFor(makeIntent({ actorId: DARIO, intentType: "react" })),
     );
 
     expect(message.outcome).toBe("committed");
     const messagePayload = message.committedEvents[0]!.payload;
-    expect(messagePayload["personTargets"], "a directed message must carry its personTargets").toEqual([BRUNO]);
-    expect(messagePayload["mentionedAgentIds"], "content naming Bruno must parse the mention").toEqual([BRUNO]);
+    expect(messagePayload["personTargets"], "a directed message must carry its personTargets").toEqual([DARIO]);
+    expect(messagePayload["mentionedAgentIds"], "content naming Dario must parse the mention").toEqual([DARIO]);
 
     expect(reply.outcome).toBe("committed");
     const replyPayload = reply.committedEvents[0]!.payload;
@@ -182,22 +182,22 @@ describe("relational accretion through the real resolver", () => {
   it("records who a message is aimed at, most deliberate signal first, never the author", async () => {
     const reply = await resolver.resolve(
       makeIntent({
-        actorId: BRUNO,
+        actorId: DARIO,
         intentType: "reply_to_message",
         personTargets: [ALICE],
-        visibleContent: "fair point, Alice, and thanks Bruno",
+        visibleContent: "fair point, Alice, and thanks Dario",
         replyToEventId: "evt_prior",
         replyToActorId: ALICE,
       }),
-      ctxFor(makeIntent({ actorId: BRUNO, intentType: "reply_to_message" })),
+      ctxFor(makeIntent({ actorId: DARIO, intentType: "reply_to_message" })),
     );
     expect(reply.committedEvents[0]!.payload["addresseeIds"], "the reply target and the mention are the same person, listed once").toEqual([ALICE]);
 
     const pointed = await resolver.resolve(
-      makeIntent({ actorId: ALICE, personTargets: [BRUNO], visibleContent: "what do you think?" }),
+      makeIntent({ actorId: ALICE, personTargets: [DARIO], visibleContent: "what do you think?" }),
       ctxFor(makeIntent({ actorId: ALICE })),
     );
-    expect(pointed.committedEvents[0]!.payload["addresseeIds"], "a directed message addresses its target even when the text names nobody").toEqual([BRUNO]);
+    expect(pointed.committedEvents[0]!.payload["addresseeIds"], "a directed message addresses its target even when the text names nobody").toEqual([DARIO]);
 
     const selfNamed = await resolver.resolve(
       makeIntent({ actorId: ALICE, visibleContent: "Alice here, hello room" }),
@@ -211,7 +211,7 @@ describe("relational accretion through the real resolver", () => {
       makeIntent({
         actorId: ALICE,
         intentType: "reply_to_message",
-        personTargets: [BRUNO],
+        personTargets: [DARIO],
         visibleContent: "psst",
         replyToEventId: "evt_prior",
         replyToActorId: "agent_ghost",
@@ -219,12 +219,12 @@ describe("relational accretion through the real resolver", () => {
       ctxFor(makeIntent({ actorId: ALICE, intentType: "reply_to_message" })),
     );
     expect(result.outcome).toBe("committed");
-    expect(result.committedEvents[0]!.payload["addresseeIds"]).toEqual([BRUNO]);
+    expect(result.committedEvents[0]!.payload["addresseeIds"]).toEqual([DARIO]);
   });
 
   it("parses mentions by exact display name and case-insensitive @handle, with no match for unknown names", async () => {
     const mentionMessage = await resolver.resolve(
-      makeIntent({ visibleContent: "ping @BRUNO and Zed" }),
+      makeIntent({ visibleContent: "ping @DARIO and Zed" }),
       ctxFor(makeIntent({})),
     );
     const noMatchMessage = await resolver.resolve(
@@ -233,7 +233,7 @@ describe("relational accretion through the real resolver", () => {
     );
 
     const mentionPayload = mentionMessage.committedEvents[0]!.payload;
-    expect(mentionPayload["mentionedAgentIds"], "the @handle form must match Bruno case-insensitively").toEqual([BRUNO]);
+    expect(mentionPayload["mentionedAgentIds"], "the @handle form must match Dario case-insensitively").toEqual([DARIO]);
 
     const noMatchPayload = noMatchMessage.committedEvents[0]!.payload;
     expect(noMatchPayload["mentionedAgentIds"], "content naming no known agent must parse no mentions").toBeUndefined();
@@ -242,7 +242,7 @@ describe("relational accretion through the real resolver", () => {
   it("does not attribute a mention when two agents share a display name", async () => {
     const ambiguousCtx = {
       ...ctxFor(makeIntent({})),
-      agentNames: { [ALICE]: "Sam", [BRUNO]: "Sam" } as Record<string, string>,
+      agentNames: { [ALICE]: "Sam", [DARIO]: "Sam" } as Record<string, string>,
     };
     const result = await resolver.resolve(makeIntent({ visibleContent: "hey Sam" }), ambiguousCtx);
     expect(
@@ -254,22 +254,22 @@ describe("relational accretion through the real resolver", () => {
   it("ignores a one-character display name", async () => {
     const shortNameCtx = {
       ...ctxFor(makeIntent({})),
-      agentNames: { [ALICE]: "A", [BRUNO]: "Bruno" } as Record<string, string>,
+      agentNames: { [ALICE]: "A", [DARIO]: "Dario" } as Record<string, string>,
     };
-    const result = await resolver.resolve(makeIntent({ visibleContent: "A and Bruno are here" }), shortNameCtx);
-    expect(result.committedEvents[0]!.payload["mentionedAgentIds"]).toEqual([BRUNO]);
+    const result = await resolver.resolve(makeIntent({ visibleContent: "A and Dario are here" }), shortNameCtx);
+    expect(result.committedEvents[0]!.payload["mentionedAgentIds"]).toEqual([DARIO]);
   });
 
   it("accretes non-empty relational state for both agents of the conversation", async () => {
     const committed = await scriptConversation();
 
     const aliceView = updateRelationalEmotions(new Map(), committed, ALICE, NEUTRAL_MOOD, makePersona(ALICE), NOW);
-    const brunoView = updateRelationalEmotions(new Map(), committed, BRUNO, NEUTRAL_MOOD, makePersona(BRUNO), NOW);
+    const darioView = updateRelationalEmotions(new Map(), committed, DARIO, NEUTRAL_MOOD, makePersona(DARIO), NOW);
 
-    expect(aliceView.get(BRUNO), "Alice must hold a relational entry about Bruno after the exchange").toBeDefined();
-    expect(aliceView.get(BRUNO)!.trust, "Bruno's reply and reaction must warm Alice's view of him").toBeGreaterThan(0);
-    expect(brunoView.get(ALICE), "Bruno must hold a relational entry about Alice after the exchange").toBeDefined();
-    expect(brunoView.get(ALICE)!.trust, "Alice's messages and invite must warm Bruno's view of her").toBeGreaterThan(0);
+    expect(aliceView.get(DARIO), "Alice must hold a relational entry about Dario after the exchange").toBeDefined();
+    expect(aliceView.get(DARIO)!.trust, "Dario's reply and reaction must warm Alice's view of him").toBeGreaterThan(0);
+    expect(darioView.get(ALICE), "Dario must hold a relational entry about Alice after the exchange").toBeDefined();
+    expect(darioView.get(ALICE)!.trust, "Alice's messages and invite must warm Dario's view of her").toBeGreaterThan(0);
   });
 });
 
@@ -278,23 +278,23 @@ describe("mention parsing — accented display names", () => {
     const channelRepo = new InMemoryChannelRepository();
     await channelRepo.create({
       id: CHANNEL_ID, simulationId: SIM_ID, type: "public_channel", name: "general", createdBy: "system",
-      memberAgentIds: [ALICE, BRUNO], spectatorVisible: true, operatorVisible: true, createdForMotives: [],
+      memberAgentIds: [ALICE, DARIO], spectatorVisible: true, operatorVisible: true, createdForMotives: [],
       status: "active", createdAt: Date.now(), updatedAt: Date.now(),
     });
-    for (const agentId of [ALICE, BRUNO]) await channelRepo.addMembership({ channelId: CHANNEL_ID, agentId, joinedAt: Date.now() });
+    for (const agentId of [ALICE, DARIO]) await channelRepo.addMembership({ channelId: CHANNEL_ID, agentId, joinedAt: Date.now() });
     const resolverAccented = new IntentResolver(new RateLimitGate(SETTINGS), new ChannelRegistry(channelRepo));
-    const intent = makeIntent({ actorId: BRUNO, visibleContent: "valeu @iris, depois te conto" });
+    const intent = makeIntent({ actorId: DARIO, visibleContent: "valeu @iris, depois te conto" });
     const result = await resolverAccented.resolve(intent, {
       simulationId: SIM_ID,
       channelId: CHANNEL_ID,
       pulseIndex: 1,
-      agentState: makeAgentState({ agentId: BRUNO, simulationId: SIM_ID }),
+      agentState: makeAgentState({ agentId: DARIO, simulationId: SIM_ID }),
       availableActions: AVAILABLE_ACTIONS,
       channels: [],
       membership: [],
       settings: SETTINGS,
       actionEmotions: ZERO_ACTION,
-      agentNames: { [ALICE]: "Íris", [BRUNO]: "Bruno" },
+      agentNames: { [ALICE]: "Íris", [DARIO]: "Dario" },
     });
     expect(result.outcome).toBe("committed");
     expect(result.committedEvents[0]!.payload["mentionedAgentIds"]).toEqual([ALICE]);

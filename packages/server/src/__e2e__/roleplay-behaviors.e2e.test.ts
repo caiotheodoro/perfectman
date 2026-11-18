@@ -15,8 +15,8 @@
 
 import { describe, it, expect, beforeEach } from "vitest";
 import {
-  buildGoulartColdStartScenario,
-  buildBrunoCaioExclusionScenario,
+  buildVascoColdStartScenario,
+  buildDarioTomasExclusionScenario,
   buildNoOpInhibitionScenario,
   buildPrivateChannelMotiveScenario,
 } from "@perfectman/shared";
@@ -27,15 +27,15 @@ type ScenarioEntry = { name: string; seed: () => ScenarioSeed };
 // Fixture builders return different shapes; adapt each to ScenarioSeed here.
 const SCENARIOS: ScenarioEntry[] = [
   {
-    name: "cold-start: Goulart's strategic patience delays pulse 0",
+    name: "cold-start: Vasco's strategic patience delays pulse 0",
     seed: () => {
-      const s = buildGoulartColdStartScenario();
+      const s = buildVascoColdStartScenario();
       return {
         simulation: s.simulation,
         channels: s.channels,
         memberships: s.memberships,
         agentContexts: [
-          { id: "goulart", state: s.goulartState, persona: s.goulartPersona },
+          { id: "vasco", state: s.vascoState, persona: s.vascoPersona },
           ...s.otherPersonas.map((p, i) => ({
             id: p.id,
             state: s.otherStates[i]!,
@@ -47,24 +47,24 @@ const SCENARIOS: ScenarioEntry[] = [
     },
   },
   {
-    name: "exclusion cascade: Bruno's fear rises after Caio ignores him",
+    name: "exclusion cascade: Dario's fear rises after Tomas ignores him",
     seed: () => {
-      const s = buildBrunoCaioExclusionScenario();
+      const s = buildDarioTomasExclusionScenario();
       return {
         simulation: s.simulation,
         channels: s.channels,
         memberships: s.memberships,
         agentContexts: [
-          { id: "bruno", state: s.agentStates.bruno, persona: s.personas.bruno },
-          { id: "caio", state: s.agentStates.caio, persona: s.personas.caio },
-          { id: "goulart", state: s.agentStates.goulart, persona: s.personas.goulart },
+          { id: "dario", state: s.agentStates.dario, persona: s.personas.dario },
+          { id: "tomas", state: s.agentStates.tomas, persona: s.personas.tomas },
+          { id: "vasco", state: s.agentStates.vasco, persona: s.personas.vasco },
         ],
         priorEvents: s.committedEvents,
       };
     },
   },
   {
-    name: "no-op inhibition: shame silences Bruno without an LLM call",
+    name: "no-op inhibition: shame silences Dario without an LLM call",
     seed: () => {
       const s = buildNoOpInhibitionScenario();
       return {
@@ -72,16 +72,16 @@ const SCENARIOS: ScenarioEntry[] = [
         channels: s.channels,
         memberships: s.memberships,
         agentContexts: [
-          { id: "bruno", state: s.agentStates.bruno, persona: s.personas.bruno },
-          { id: "goulart", state: s.agentStates.goulart, persona: s.personas.goulart },
-          { id: "caio", state: s.agentStates.caio, persona: s.personas.caio },
+          { id: "dario", state: s.agentStates.dario, persona: s.personas.dario },
+          { id: "vasco", state: s.agentStates.vasco, persona: s.personas.vasco },
+          { id: "tomas", state: s.agentStates.tomas, persona: s.personas.tomas },
         ],
         priorEvents: s.committedEvents,
       };
     },
   },
   {
-    name: "private-channel motive: Mariana opens a private channel with Caio",
+    name: "private-channel motive: Lara opens a private channel with Tomas",
     seed: () => {
       const s = buildPrivateChannelMotiveScenario();
       return {
@@ -89,8 +89,8 @@ const SCENARIOS: ScenarioEntry[] = [
         channels: s.channels,
         memberships: s.memberships,
         agentContexts: [
-          { id: "mariana", state: s.agentStates.mariana, persona: s.personas.mariana },
-          { id: "caio", state: s.agentStates.caio, persona: s.personas.caio },
+          { id: "lara", state: s.agentStates.lara, persona: s.personas.lara },
+          { id: "tomas", state: s.agentStates.tomas, persona: s.personas.tomas },
         ],
         priorEvents: s.committedEvents,
       };
@@ -120,21 +120,21 @@ describe.each(SCENARIOS)("E2E scenario smoke: $name", ({ name, seed }) => {
 
 // ── Scenario-unique behaviors ────────────────────────────────────────────────
 
-describe("cold-start: Goulart delays due to strategic patience in pulse 0", () => {
+describe("cold-start: Vasco delays due to strategic patience in pulse 0", () => {
   let harness: SimulationHarness;
 
   beforeEach(async () => {
     harness = await SimulationHarness.create(SCENARIOS[0]!.seed());
   });
 
-  it("does not invoke AgentRuntime for Goulart (initiative fires but inhibition produces delay, needsLLM=false)", async () => {
+  it("does not invoke AgentRuntime for Vasco (initiative fires but inhibition produces delay, needsLLM=false)", async () => {
     await harness.runPulse();
-    expect(harness.llmCallsFor("goulart")).toBe(0);
+    expect(harness.llmCallsFor("vasco")).toBe(0);
   });
 
   it("does not invoke AgentRuntime for any offline agent", async () => {
     await harness.runPulse();
-    for (const p of ["bruno", "caio", "mariana", "leo"]) {
+    for (const p of ["dario", "tomas", "lara", "renan"]) {
       expect(harness.llmCallsFor(p)).toBe(0);
     }
   });
@@ -144,15 +144,15 @@ describe("cold-start: Goulart delays due to strategic patience in pulse 0", () =
     expect(harness.totalLLMCalls()).toBe(0);
   });
 
-  it("no message_sent committed in pulse 0 (Goulart is delayed, not acting)", async () => {
+  it("no message_sent committed in pulse 0 (Vasco is delayed, not acting)", async () => {
     await harness.runPulse();
     const messages = await harness.getEventsByType("message_sent");
     expect(messages).toHaveLength(0);
   });
 
-  it("Goulart's boredom initiative accumulator is seeded above threshold in state", async () => {
+  it("Vasco's boredom initiative accumulator is seeded above threshold in state", async () => {
     await harness.runPulse();
-    const state = await harness.getAgentState("goulart");
+    const state = await harness.getAgentState("vasco");
     const boredom = state.initiativeAccumulators.find(a => a.source === "boredom_accumulator");
     // Engine may update the accumulator value, but it was above threshold (0.75 > 0.6) going in
     expect(boredom).toBeDefined();
@@ -160,7 +160,7 @@ describe("cold-start: Goulart delays due to strategic patience in pulse 0", () =
   });
 });
 
-describe("exclusion cascade: Bruno's fear does not decrease after being ignored", () => {
+describe("exclusion cascade: Dario's fear does not decrease after being ignored", () => {
   let harness: SimulationHarness;
   const INITIAL_FEAR = 0.2;
 
@@ -168,16 +168,16 @@ describe("exclusion cascade: Bruno's fear does not decrease after being ignored"
     harness = await SimulationHarness.create(SCENARIOS[1]!.seed());
   });
 
-  it("Bruno's fearOfExclusion sustains or rises after the exclusion signal", async () => {
+  it("Dario's fearOfExclusion sustains or rises after the exclusion signal", async () => {
     await harness.runPulse();
-    const state = await harness.getAgentState("bruno");
+    const state = await harness.getAgentState("dario");
     expect(state.socialEmotions.fearOfExclusion).toBeGreaterThanOrEqual(INITIAL_FEAR);
   });
 
-  it("Bruno still produces a response event (no_op, message, or reply)", async () => {
+  it("Dario still produces a response event (no_op, message, or reply)", async () => {
     await harness.runPulse();
-    const brunoEvents = await harness.getEventsForAgent("bruno");
-    const responseEvents = brunoEvents.filter(e =>
+    const darioEvents = await harness.getEventsForAgent("dario");
+    const responseEvents = darioEvents.filter(e =>
       ["message_sent", "reply_sent", "no_op_recorded", "intent_delayed"].includes(e.type),
     );
     expect(responseEvents.length).toBeGreaterThan(0);
@@ -191,67 +191,67 @@ describe("exclusion cascade: Bruno's fear does not decrease after being ignored"
   });
 });
 
-describe("no-op inhibition: shame silences Bruno without a public message", () => {
+describe("no-op inhibition: shame silences Dario without a public message", () => {
   let harness: SimulationHarness;
 
   beforeEach(async () => {
     harness = await SimulationHarness.create(SCENARIOS[2]!.seed());
   });
 
-  it("commits no_op_recorded for Bruno carrying a non-empty private motive", async () => {
+  it("commits no_op_recorded for Dario carrying a non-empty private motive", async () => {
     await harness.runPulse();
     const noOps = await harness.getEventsByType("no_op_recorded");
-    const brunoNoOp = noOps.find(e => e.actorId === "bruno");
-    expect(brunoNoOp).toBeDefined();
+    const darioNoOp = noOps.find(e => e.actorId === "dario");
+    expect(darioNoOp).toBeDefined();
     // Silence must carry a private motive (the e2e's point): non-empty summary
-    const summary = brunoNoOp?.payload["privateMotiveSummary"];
+    const summary = darioNoOp?.payload["privateMotiveSummary"];
     expect(typeof summary).toBe("string");
     expect(summary!.length).toBeGreaterThan(0);
   });
 
-  it("Bruno commits no public message — the behavioral outcome of inhibition", async () => {
+  it("Dario commits no public message — the behavioral outcome of inhibition", async () => {
     await harness.runPulse();
-    const brunoMessages = (await harness.getEventsForAgent("bruno")).filter(
+    const darioMessages = (await harness.getEventsForAgent("dario")).filter(
       e => e.type === "message_sent" || e.type === "reply_sent",
     );
-    expect(brunoMessages).toHaveLength(0);
+    expect(darioMessages).toHaveLength(0);
   });
 
-  it("Bruno's shame remains high after processing the humiliation events", async () => {
+  it("Dario's shame remains high after processing the humiliation events", async () => {
     await harness.runPulse();
-    const state = await harness.getAgentState("bruno");
+    const state = await harness.getAgentState("dario");
     expect(state.socialEmotions.shame).toBeGreaterThan(0.5);
   });
 
-  it("SpectatorProjection emits a sanitized spectator_hint for Bruno's silence", async () => {
+  it("SpectatorProjection emits a sanitized spectator_hint for Dario's silence", async () => {
     await harness.runPulse();
     const hints = harness.gateway.spectatorEvents.filter(e => e.type === "spectator_hint");
-    const brunoHint = hints.find(e => e.actorId === "bruno");
-    expect(brunoHint).toBeDefined();
+    const darioHint = hints.find(e => e.actorId === "dario");
+    expect(darioHint).toBeDefined();
     // Must not leak the raw private motive (spectator sees max 80 chars)
-    if (brunoHint?.visibleContent) {
-      expect(brunoHint.visibleContent.length).toBeLessThanOrEqual(80);
+    if (darioHint?.visibleContent) {
+      expect(darioHint.visibleContent.length).toBeLessThanOrEqual(80);
     }
   });
 });
 
-describe("private-channel motive: Mariana opens a private channel with Caio", () => {
+describe("private-channel motive: Lara opens a private channel with Tomas", () => {
   let harness: SimulationHarness;
 
   beforeEach(async () => {
     harness = await SimulationHarness.create(SCENARIOS[3]!.seed());
   });
 
-  it("commits a channel_created event attributed to Mariana inviting Caio", async () => {
+  it("commits a channel_created event attributed to Lara inviting Tomas", async () => {
     await harness.runPulse();
     const created = await harness.getEventsByType("channel_created");
-    const marianaChannel = created.find(e => e.actorId === "mariana");
-    expect(marianaChannel).toBeDefined();
+    const laraChannel = created.find(e => e.actorId === "lara");
+    expect(laraChannel).toBeDefined();
     // The private-channel motive is evidenced by who she invited, not by a payload summary
-    expect(marianaChannel!.payload["invitedAgentIds"]).toContain("caio");
+    expect(laraChannel!.payload["invitedAgentIds"]).toContain("tomas");
   });
 
-  it("calls gateway.createChannel with Mariana as creator", async () => {
+  it("calls gateway.createChannel with Lara as creator", async () => {
     await harness.runPulse();
     expect(harness.gateway.createdChannels.length).toBeGreaterThan(0);
   });
@@ -259,8 +259,8 @@ describe("private-channel motive: Mariana opens a private channel with Caio", ()
   it("channel_created payload marks a private channel", async () => {
     await harness.runPulse();
     const created = await harness.getEventsByType("channel_created");
-    const marianaChannel = created.find(e => e.actorId === "mariana");
+    const laraChannel = created.find(e => e.actorId === "lara");
     // channel_created payload carries channelType/invitedAgentIds, not the motive summary
-    expect(marianaChannel?.payload["channelType"]).toBe("private_channel");
+    expect(laraChannel?.payload["channelType"]).toBe("private_channel");
   });
 });

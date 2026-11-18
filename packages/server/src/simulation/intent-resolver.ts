@@ -118,8 +118,8 @@ const MIN_MENTION_NAME_LENGTH = 2;
 
 /**
  * Exact, case-insensitive display-name mentions over visible content:
- * persona name "Bruno" matches both "Bruno" and "@bruno", but not
- * "BrunoBytes". Names absent from agentNames never match.
+ * persona name "Dario" matches both "Dario" and "@dario", but not
+ * "DarioBytes". Names absent from agentNames never match.
  *
  * A name is skipped when it is shorter than {@link MIN_MENTION_NAME_LENGTH}
  * or when two or more agents share it (case-insensitively) — an ambiguous
@@ -501,7 +501,7 @@ function buildNoOpEvent(
  * `channelTarget` for every channel-scoped type (send_message,
  * reply_to_message, react), so membership/visibility checks re-run against
  * the real target instead of silently re-homing to `ctx.channelId`. The
- * denied primary's `memoryWrites` are dropped — recording "I told Bruno X"
+ * denied primary's `memoryWrites` are dropped — recording "I told Dario X"
  * as memory after the message was refused would be false telemetry.
  * `fallbackIfBlocked` and `preferredDelay` never carry over (single level,
  * same pulse).

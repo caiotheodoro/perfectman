@@ -22,7 +22,7 @@
 {"conn":3,"dir":"out","frame":{"actor":-704,"cid":800,"dir":2,"ref":"person-4","room":17,"seq":1671,"t":"actor_spawned","x":0,"y":8},"run":7,"ts_ms":1794052337907}
 {"conn":3,"dir":"in","frame":{"actor":-704,"cid":803,"cmd":{"k":"chat","mode":"thought","text":"queria brincar de tocar música pra provocar um responses dos outros, e ver se há algum aqui interessado"},"lease":1,"run":7,"seq":1179,"t":"actor_cmd"},"run":7,"ts_ms":1794052341304}
 {"conn":3,"dir":"in","frame":{"actor":-701,"cid":804,"cmd":{"k":"face","tile":[6,4]},"lease":1,"run":7,"seq":1180,"t":"actor_cmd"},"run":7,"ts_ms":1794052341306}
-{"conn":3,"dir":"out","frame":{"msg":{"from":-704,"mode":"say","name":"Leo","t":"chat","text":"Toco aqui toda sexta, se quiser ouvir."},"rev":774,"room":17,"seq":1693,"t":"delta"},"run":7,"ts_ms":1794052343973}
+{"conn":3,"dir":"out","frame":{"msg":{"from":-704,"mode":"say","name":"Renan","t":"chat","text":"Toco aqui toda sexta, se quiser ouvir."},"rev":774,"room":17,"seq":1693,"t":"delta"},"run":7,"ts_ms":1794052343973}
 {"conn":3,"dir":"out","frame":{"msg":{"from":-702,"mode":"say","name":"Rafa","t":"chat","text":"Hmm, entendi."},"rev":783,"room":17,"seq":1705,"t":"delta"},"run":7,"ts_ms":1794052346522}
 {"conn":3,"dir":"in","frame":{"actor":-704,"cid":828,"cmd":{"action":"wave","k":"action"},"lease":1,"run":7,"seq":1208,"t":"actor_cmd"},"run":7,"ts_ms":1794052351941}
 {"conn":3,"dir":"out","frame":{"msg":{"action":"wave","id":-704,"t":"avatar_action"},"rev":798,"room":17,"seq":1726,"t":"delta"},"run":7,"ts_ms":1794052351942}

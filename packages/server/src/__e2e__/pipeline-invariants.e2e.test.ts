@@ -23,8 +23,8 @@
 import { describe, it, expect } from "vitest";
 import {
   buildNoOpInhibitionScenario,
-  buildBrunoCaioExclusionScenario,
-  buildGoulartColdStartScenario,
+  buildDarioTomasExclusionScenario,
+  buildVascoColdStartScenario,
 } from "@perfectman/shared";
 import { SimulationHarness } from "./harness.js";
 
@@ -38,9 +38,9 @@ describe("Invariant: engine-emitted events (no_op_recorded) are operator-only", 
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
       ],
       priorEvents: scenario.committedEvents,
     });
@@ -56,29 +56,29 @@ describe("Invariant: engine-emitted events (no_op_recorded) are operator-only", 
     }
   });
 
-  it("engine-emitted no_op_recorded is committed for Bruno before any intent resolution", async () => {
+  it("engine-emitted no_op_recorded is committed for Dario before any intent resolution", async () => {
     const scenario = buildNoOpInhibitionScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
       ],
       priorEvents: scenario.committedEvents,
     });
 
     await harness.runPulse();
     const noOps = await harness.getEventsByType("no_op_recorded");
-    const brunoNoOp = noOps.find(e => e.actorId === "bruno");
+    const darioNoOp = noOps.find(e => e.actorId === "dario");
 
     // The engine emits no_op_recorded from stepResult.noOpRecord BEFORE the LLM path runs.
-    // This guarantees the event exists regardless of whether attention events also route Bruno to LLM.
-    expect(brunoNoOp).toBeDefined();
-    expect(brunoNoOp?.visibility.visibleToOperators).toBe(true);
-    expect(brunoNoOp?.visibility.visibleToSpectators).toBe(false);
+    // This guarantees the event exists regardless of whether attention events also route Dario to LLM.
+    expect(darioNoOp).toBeDefined();
+    expect(darioNoOp?.visibility.visibleToOperators).toBe(true);
+    expect(darioNoOp?.visibility.visibleToSpectators).toBe(false);
   });
 });
 
@@ -86,13 +86,13 @@ describe("Invariant: engine-emitted events (no_op_recorded) are operator-only", 
 
 describe("Invariant: every committed event is visible to operators", () => {
   it("cold-start pulse produces only operator-visible events (delay produces 0 events — no violations)", async () => {
-    const scenario = buildGoulartColdStartScenario();
+    const scenario = buildVascoColdStartScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "goulart", state: scenario.goulartState, persona: scenario.goulartPersona },
+        { id: "vasco", state: scenario.vascoState, persona: scenario.vascoPersona },
         ...scenario.otherPersonas.map((p, i) => ({
           id: p.id, state: scenario.otherStates[i]!, persona: p,
         })),
@@ -103,7 +103,7 @@ describe("Invariant: every committed event is visible to operators", () => {
     await harness.runPulse();
     const allEvents = await harness.getAllEvents();
 
-    // Cold-start pulse 0 may commit zero events (Goulart delays, offline agents inactive).
+    // Cold-start pulse 0 may commit zero events (Vasco delays, offline agents inactive).
     // Invariant: if any events ARE committed, all must have visibleToOperators=true.
     for (const evt of allEvents) {
       expect(evt.visibility.visibleToOperators).toBe(true);
@@ -111,15 +111,15 @@ describe("Invariant: every committed event is visible to operators", () => {
   });
 
   it("all events in exclusion-cascade pulse have visibleToOperators=true", async () => {
-    const scenario = buildBrunoCaioExclusionScenario();
+    const scenario = buildDarioTomasExclusionScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
       ],
       priorEvents: scenario.committedEvents,
     });
@@ -136,22 +136,22 @@ describe("Invariant: every committed event is visible to operators", () => {
 // ── Invariant 4: Anti-drift cursor advances ───────────────────────────────────
 
 describe("Invariant: lastProcessedEventId advances after processing prior events", () => {
-  it("Bruno's cursor is non-null after processing the exclusion event sequence", async () => {
-    const scenario = buildBrunoCaioExclusionScenario();
+  it("Dario's cursor is non-null after processing the exclusion event sequence", async () => {
+    const scenario = buildDarioTomasExclusionScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
       ],
       priorEvents: scenario.committedEvents,
     });
 
     await harness.runPulse();
-    const state = await harness.getAgentState("bruno");
+    const state = await harness.getAgentState("dario");
     // Engine sets lastProcessedEventId to the last event it saw
     expect(state.lastProcessedEventId).not.toBeNull();
   });
@@ -161,13 +161,13 @@ describe("Invariant: lastProcessedEventId advances after processing prior events
 
 describe("Invariant: agent state always persisted and emotion bounds valid", () => {
   it("all agents have persisted state with valid emotion values after cold-start pulse", async () => {
-    const scenario = buildGoulartColdStartScenario();
+    const scenario = buildVascoColdStartScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "goulart", state: scenario.goulartState, persona: scenario.goulartPersona },
+        { id: "vasco", state: scenario.vascoState, persona: scenario.vascoPersona },
         ...scenario.otherPersonas.map((p, i) => ({
           id: p.id, state: scenario.otherStates[i]!, persona: p,
         })),
@@ -177,28 +177,28 @@ describe("Invariant: agent state always persisted and emotion bounds valid", () 
 
     await harness.runPulse();
 
-    for (const id of ["goulart", "bruno", "caio", "mariana", "leo"]) {
+    for (const id of ["vasco", "dario", "tomas", "lara", "renan"]) {
       const state = await harness.getAgentState(id);
       harness.assertEmotionBounds(state);
     }
   });
 
-  it("Bruno's state is persisted even when he goes no_op (no LLM call)", async () => {
+  it("Dario's state is persisted even when he goes no_op (no LLM call)", async () => {
     const scenario = buildNoOpInhibitionScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
       ],
       priorEvents: scenario.committedEvents,
     });
 
     await harness.runPulse();
-    const state = await harness.getAgentState("bruno");
+    const state = await harness.getAgentState("dario");
     expect(state).toBeDefined();
     harness.assertEmotionBounds(state);
   });
@@ -208,15 +208,15 @@ describe("Invariant: agent state always persisted and emotion bounds valid", () 
 
 describe("Invariant: event log is append-only across pulses", () => {
   it("events from pulse 0 are still visible after pulse 1 runs", async () => {
-    const scenario = buildBrunoCaioExclusionScenario();
+    const scenario = buildDarioTomasExclusionScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
       ],
       priorEvents: scenario.committedEvents,
     });
@@ -241,13 +241,13 @@ describe("Invariant: event log is append-only across pulses", () => {
 
 describe("Invariant: all committed events have correct mandatory fields", () => {
   it("cold-start events pass shape validation", async () => {
-    const scenario = buildGoulartColdStartScenario();
+    const scenario = buildVascoColdStartScenario();
     const harness = await SimulationHarness.create({
       simulation: scenario.simulation,
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "goulart", state: scenario.goulartState, persona: scenario.goulartPersona },
+        { id: "vasco", state: scenario.vascoState, persona: scenario.vascoPersona },
         ...scenario.otherPersonas.map((p, i) => ({
           id: p.id, state: scenario.otherStates[i]!, persona: p,
         })),
@@ -265,9 +265,9 @@ describe("Invariant: all committed events have correct mandatory fields", () => 
       channels: scenario.channels,
       memberships: scenario.memberships,
       agentContexts: [
-        { id: "bruno",   state: scenario.agentStates.bruno,   persona: scenario.personas.bruno },
-        { id: "goulart", state: scenario.agentStates.goulart, persona: scenario.personas.goulart },
-        { id: "caio",    state: scenario.agentStates.caio,    persona: scenario.personas.caio },
+        { id: "dario",   state: scenario.agentStates.dario,   persona: scenario.personas.dario },
+        { id: "vasco", state: scenario.agentStates.vasco, persona: scenario.personas.vasco },
+        { id: "tomas",    state: scenario.agentStates.tomas,    persona: scenario.personas.tomas },
       ],
       priorEvents: scenario.committedEvents,
     });

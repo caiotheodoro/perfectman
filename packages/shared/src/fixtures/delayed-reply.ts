@@ -1,13 +1,13 @@
 /**
  * buildDelayedReplyScenario
- * Leo sent a message 4 pulses ago. No one replied.
+ * Renan sent a message 4 pulses ago. No one replied.
  * The interpretation module should detect reply_latency and offer multiple meanings
- * (indifference, busy, deliberate ignore). The delay itself changes Leo's social reading.
+ * (indifference, busy, deliberate ignore). The delay itself changes Renan's social reading.
  *
  * Expected engine signals:
- * - Interpretation includes reply_latency signal for leo's last message
+ * - Interpretation includes reply_latency signal for renan's last message
  * - Multiple plausible meanings preserved (not forced to "ignored")
- * - leo.socialEmotions.socialAnxiety or fearOfExclusion slightly elevated
+ * - renan.socialEmotions.socialAnxiety or fearOfExclusion slightly elevated
  */
 
 import type {
@@ -18,7 +18,7 @@ import type {
   PersonaConfig,
   CommittedEvent,
 } from "../index.js";
-import { LEO, CAIO, GOULART } from "../constants/personas.js";
+import { RENAN, TOMAS, VASCO } from "../constants/personas.js";
 import {
   makeSimulation,
   makePublicChannel,
@@ -31,11 +31,11 @@ export type DelayedReplyScenario = {
   simulation: Simulation;
   channels: Channel[];
   memberships: ChannelMembership[];
-  personas: { leo: PersonaConfig; caio: PersonaConfig; goulart: PersonaConfig };
-  agentStates: { leo: AgentState; caio: AgentState; goulart: AgentState };
-  /** Leo's unanswered message + 3 pulses of silence */
+  personas: { renan: PersonaConfig; tomas: PersonaConfig; vasco: PersonaConfig };
+  agentStates: { renan: AgentState; tomas: AgentState; vasco: AgentState };
+  /** Renan's unanswered message + 3 pulses of silence */
   committedEvents: CommittedEvent[];
-  /** pulse index now — 4 pulses after leo's message */
+  /** pulse index now — 4 pulses after renan's message */
   currentPulseIndex: number;
   expectedSignals: {
     replyLatencyDetected: boolean;
@@ -51,42 +51,42 @@ export function buildDelayedReplyScenario(): DelayedReplyScenario {
   const simulation = makeSimulation(
     simulationId,
     "Delayed Reply",
-    ["leo", "caio", "goulart"],
+    ["renan", "tomas", "vasco"],
     [channelId],
   );
 
-  const channel = makePublicChannel(channelId, simulationId, "#geral", ["leo", "caio", "goulart"]);
-  const memberships = membershipFor(channelId, ["leo", "caio", "goulart"]);
+  const channel = makePublicChannel(channelId, simulationId, "#geral", ["renan", "tomas", "vasco"]);
+  const memberships = membershipFor(channelId, ["renan", "tomas", "vasco"]);
 
   const leoState = makeAgentState(
-    "leo",
+    "renan",
     simulationId,
-    "leo",
+    "renan",
     { valence: -0.1, arousal: 0.35 },
     { socialAnxiety: 0.2, fearOfExclusion: 0.15 },
   );
 
-  const caioState = makeAgentState("caio", simulationId, "caio");
-  const goulartState = makeAgentState("goulart", simulationId, "goulart");
+  const tomasState = makeAgentState("tomas", simulationId, "tomas");
+  const vascoState = makeAgentState("vasco", simulationId, "vasco");
 
-  // Leo posted at pulse 1, no replies at pulses 2, 3, 4
+  // Renan posted at pulse 1, no replies at pulses 2, 3, 4
   const leoMsg = makeCommittedEvent(
-    simulationId, channelId, "leo", "message_sent",
+    simulationId, channelId, "renan", "message_sent",
     { content: "e aí galera, o que estão fazendo?" },
     1,
   );
   // Override createdAt to be in the past (simulating time passed)
   leoMsg.createdAt = Date.now() - 60000 * 4;   // 4 minutes ago
 
-  // No reply events — channel silent after leo's message
-  // Caio and Goulart are online (presence=active) but haven't replied
+  // No reply events — channel silent after renan's message
+  // Tomas and Vasco are online (presence=active) but haven't replied
 
   return {
     simulation,
     channels: [channel],
     memberships,
-    personas: { leo: LEO, caio: CAIO, goulart: GOULART },
-    agentStates: { leo: leoState, caio: caioState, goulart: goulartState },
+    personas: { renan: RENAN, tomas: TOMAS, vasco: VASCO },
+    agentStates: { renan: leoState, tomas: tomasState, vasco: vascoState },
     committedEvents: [leoMsg],
     currentPulseIndex: 5,
     expectedSignals: {

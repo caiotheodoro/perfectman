@@ -37,9 +37,9 @@ Read [`docs/README.md`](docs/README.md) first for the canonical architecture and
 - [`docs/README.md`](docs/README.md#current-open-questions) lists genuinely undecided design questions (private-channel spectator visibility, scoring machinery, which symbolic actions earn their keep). If one interests you, open an issue or discussion before a big PR so the direction gets agreed on first.
 - Use GitHub Discussions for design debate; issues for concrete, scoped work.
 
-## Personas and private data
+## Characters
 
-Real, person-specific persona files are gitignored by design (`config/index.json`, `config/personas/`, `docs/personas/` subfolders except templates). Never commit real names, transcripts, or persona interview material outside the example/template paths in `examples/personas/`. See [`docs/personas/README.md`](docs/personas/README.md) for the intended workflow.
+Characters are fictional. Never commit real names, chat transcripts or personality profiles of real people.
 
 ## PR expectations
 

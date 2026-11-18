@@ -39,7 +39,7 @@ describe("a follow window and the actor's own walks (issue #262)", () => {
 
   it("another actor's own walk is not touched", () => {
     const r = following();
-    const i = r.input({ bodyIntent: intent({ move: { kind: "approach", target: "p1", band: "personal" } }), handles: { p1: { kind: "person", ref: "leo" } } }, "rafa");
+    const i = r.input({ bodyIntent: intent({ move: { kind: "approach", target: "p1", band: "personal" } }), handles: { p1: { kind: "person", ref: "renan" } } }, "rafa");
     delete i.actionEmotions;
     expect(r.body.planFor("rafa", i).some((c) => c.cmd === "walk")).toBe(true);
     expect(r.blocked).toEqual([]);

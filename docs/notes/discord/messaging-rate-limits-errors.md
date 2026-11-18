@@ -238,13 +238,13 @@ Avoid prefixing every persona message with metadata if the bot identity already 
 Spectator projection:
 
 ```text
-[recap] Mariana noticed the silence after Caio moved private.
+[recap] Lara noticed the silence after Tomas moved private.
 ```
 
 Operator projection:
 
 ```text
-[discord warning] private channel ch42 is missing SendMessages for agent caio.
+[discord warning] private channel ch42 is missing SendMessages for agent tomas.
 ```
 
 Operator format can be denser. Spectator format should remain product-facing.

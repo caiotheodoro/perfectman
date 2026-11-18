@@ -5,7 +5,7 @@ import { loungeModel, person, T0, viewOf } from "../../space/__tests__/fixture.j
 import { buildBodyPerception } from "../build-body-perception.js";
 import { compressBodyPerception, estimateBodyTokens, renderBodyBlock } from "../render-body-perception.js";
 
-const NAMES = ["Duda", "Rafa", "Gabi", "Léo", "Bia", "Caio", "Dani", "Edu", "Fabi", "Gui", "Hana"];
+const NAMES = ["Duda", "Rafa", "Gabi", "Renan", "Bia", "Tomas", "Dani", "Edu", "Fabi", "Gui", "Hana"];
 
 function crowd(n: number) {
   const occ = [person("a1", "Ana", [5, 4], { dir: 6 })];

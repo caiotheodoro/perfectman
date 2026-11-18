@@ -40,7 +40,7 @@ Do not overload `PersonaConfig`.
 
 - `PersonaConfig` is Dev3-owned domain calibration data used by the pure engine: mood baselines, emotional reactivity, sensitivity tables, thresholds, and social-behavior math.
 - `PersonaPromptProfile` is Dev1-owned runtime prompt data: compact identity prose, voice examples, relationship biases expressed for the LLM, language/slang preferences, and system-prompt fragments. It is a compiled prompt artifact, not the full biography, questionnaire, or testimonial store.
-- Persona source material may live in committed Markdown docs using real names and sanitized/paraphrased examples by default. Source material should distinguish self-perception, peer perception, and observed chat evidence before being summarized into `PersonaPromptProfile`.
+- Persona source material describes fictional characters only; never real people.
 - `LlmConfig` is Dev1-owned provider/runtime configuration: provider, model names, max tokens, temperature, timeout/retry policy, and budget policy.
 - `AgentRuntimeInput` may carry the Dev3 `PersonaConfig` for calibration context, but Dev1 must translate it into prompt language and combine it with `PersonaPromptProfile`; it must not treat `PersonaConfig` as the full prompt/persona object.
 

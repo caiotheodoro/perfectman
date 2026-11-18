@@ -239,7 +239,7 @@ export class FakeDirector {
     const lease = p.lease ?? 1;
     this.lease.set(p.run, lease);
     this.awaitAck(p.run);
-    this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12, ...(p.model ? { model: p.model } : {}) });
+    this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "tomas" }, cap_actors: p.capActors ?? 12, ...(p.model ? { model: p.model } : {}) });
   }
 
   /** The hotel made a run row for a replay and gave it a lease, without a `run_start` (director-protocol.md 6.1). */
@@ -264,7 +264,7 @@ export class FakeDirector {
   }
 
   pmCommand(run: number, room: number, cmd: Extract<HotelMsg, { t: "pm_command" }>["cmd"], args?: string, source: "chat" | "panel" | "auto" = "panel"): void {
-    this.send({ t: "pm_command", run, room, cmd, source, ...(args ? { args } : {}), ...(source === "auto" ? {} : { admin: { id: 9, name: "caio" } }) });
+    this.send({ t: "pm_command", run, room, cmd, source, ...(args ? { args } : {}), ...(source === "auto" ? {} : { admin: { id: 9, name: "tomas" } }) });
   }
 
   send(msg: HotelMsg): void {

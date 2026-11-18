@@ -13,7 +13,7 @@ const META: GatewayRuntimeMetadata = {
   simulationName: "Receiver Test",
   agents: {
     ana: { name: "Ana", archetype: "observer" },
-    bruno: { name: "Bruno", archetype: "observer" },
+    dario: { name: "Dario", archetype: "observer" },
   },
   channels: {
     general: { name: "general" },
@@ -110,7 +110,7 @@ describe("HtmlSnapshotGateway — the replay a viewer draws from", () => {
     ...META,
     agents: {
       ana: { name: "Dona Ana", archetype: "gatekeeper", writingStyle: "formal, ALL CAPS for emphasis", language: "en", messageLength: "medium" },
-      bruno: { name: "Bruno", archetype: "trickster" },
+      dario: { name: "Dario", archetype: "trickster" },
     },
     storyClock: { start: "23:40", minutesPerPulse: 4 },
     look: { setting: "rooftop", props: ["cat"], rooms: ["stairwell"] },
@@ -127,7 +127,7 @@ describe("HtmlSnapshotGateway — the replay a viewer draws from", () => {
       language: "en",
       messageLength: "medium",
     });
-    expect(replay.agentProfiles?.["bruno"], "a persona that says nothing more adds nothing more").toEqual({ displayName: "Bruno", archetype: "trickster" });
+    expect(replay.agentProfiles?.["dario"], "a persona that says nothing more adds nothing more").toEqual({ displayName: "Dario", archetype: "trickster" });
     expect(replay.storyClock).toEqual({ start: "23:40", minutesPerPulse: 4 });
     expect(replay.look).toEqual({ setting: "rooftop", props: ["cat"], rooms: ["stairwell"] });
   });
@@ -141,7 +141,7 @@ describe("HtmlSnapshotGateway — the replay a viewer draws from", () => {
 
   it("keeps who a reply answered and who it was aimed at through the event_visibility round trip", async () => {
     const gw = new HtmlSnapshotGateway(META, join(tmpdir(), "unused.html"));
-    const ev = visibility("evt_2", 3, "reply_sent", { actorId: "bruno", content: "fair point" });
+    const ev = visibility("evt_2", 3, "reply_sent", { actorId: "dario", content: "fair point" });
     Object.assign(ev.data!, { replyToEventId: "evt_1", replyToActorId: "ana", addresseeIds: ["ana"], mentionedAgentIds: ["ana"] });
     await gw.sendOperatorEvent(ev);
 
@@ -316,8 +316,8 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     dirs.push(dir);
     const outputPath = join(dir, "out", "snapshot.html");
     const gw = new HtmlSnapshotGateway(META, outputPath);
-    void gw.createChannel("general", "public_channel", ["ana", "bruno"]);
-    void gw.createChannel("ana-carla", "private_channel", ["ana", "bruno"]);
+    void gw.createChannel("general", "public_channel", ["ana", "dario"]);
+    void gw.createChannel("ana-carla", "private_channel", ["ana", "dario"]);
     return { gw, outputPath };
   }
 
@@ -327,28 +327,28 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     void gw.sendAgentMessage("general", { kind: "message", agentId: "ana", content: "oi", salience: "low" });
 
     await gw.sendOperatorEvent(snapshot("ana", 0));
-    await gw.sendOperatorEvent(snapshot("bruno", 0));
+    await gw.sendOperatorEvent(snapshot("dario", 0));
     await gw.sendOperatorEvent(intent("ana", 0));
     await gw.sendOperatorEvent(visibility("ev_m1", 0, "message_sent", { content: "oi gente" }));
-    await gw.sendOperatorEvent(visibility("ev_noop", 0, "no_op_recorded", { actorId: "bruno", visibleToAgents: [] }));
+    await gw.sendOperatorEvent(visibility("ev_noop", 0, "no_op_recorded", { actorId: "dario", visibleToAgents: [] }));
     await gw.onSimulationStopped("sim_rcv");
 
     const replay = gw.toReplay();
     expect(replay.simulationId).toBe("sim_rcv");
     expect(replay.simulationName).toBe("Receiver Test");
-    expect(replay.agentIds).toEqual(["ana", "bruno"]);
-    expect(replay.agentNames).toEqual({ ana: "Ana", bruno: "Bruno" });
-    expect(replay.agentArchetypes).toEqual({ ana: "observer", bruno: "observer" });
+    expect(replay.agentIds).toEqual(["ana", "dario"]);
+    expect(replay.agentNames).toEqual({ ana: "Ana", dario: "Dario" });
+    expect(replay.agentArchetypes).toEqual({ ana: "observer", dario: "observer" });
 
     expect(replay.channels).toEqual([
-      { id: "general", name: "general", type: "public_channel", memberAgentIds: ["ana", "bruno"] },
-      { id: "ana-carla", name: "ana ↔ carla", type: "private_channel", memberAgentIds: ["ana", "bruno"] },
+      { id: "general", name: "general", type: "public_channel", memberAgentIds: ["ana", "dario"] },
+      { id: "ana-carla", name: "ana ↔ carla", type: "private_channel", memberAgentIds: ["ana", "dario"] },
     ]);
     expect(replay.pulses).toHaveLength(1);
 
     const frame = replay.pulses[0]!;
     expect(frame.pulseIndex).toBe(0);
-    expect(Object.keys(frame.agentStates).sort()).toEqual(["ana", "bruno"]);
+    expect(Object.keys(frame.agentStates).sort()).toEqual(["ana", "dario"]);
     expect(frame.agentStates["ana"]).toEqual(state("ana"));
     expect(frame.committedEvents.map((e) => e.type)).toEqual(["message_sent", "no_op_recorded"]);
     const messageRow = frame.committedEvents[0]!;
@@ -358,7 +358,7 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     expect(messageRow.payload["content"]).toBe("oi gente");
     expect(messageRow.visibility.visibleToAgents).toEqual([]);
     const noOpRow = frame.committedEvents[1]!;
-    expect(noOpRow.actorId).toBe("bruno");
+    expect(noOpRow.actorId).toBe("dario");
     expect(noOpRow.visibility.visibleToAgents).toEqual([]);
 
     expect(frame.agentThinking["ana"]).toEqual({
@@ -376,7 +376,7 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     const html = readFileSync(outputPath, "utf-8");
     expect(html).toContain("<!DOCTYPE html>");
     expect(html).toContain("Ana");
-    expect(html).toContain("Bruno");
+    expect(html).toContain("Dario");
     expect(html).toContain("Preciso marcar presença sem chamar atenção.");
   });
 
@@ -417,7 +417,7 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
   it("keeps the partial frame when stopped mid-pulse", async () => {
     const { gw } = buildGateway();
     await gw.sendOperatorEvent(snapshot("ana", 0));
-    await gw.sendOperatorEvent(snapshot("bruno", 0));
+    await gw.sendOperatorEvent(snapshot("dario", 0));
     await gw.sendOperatorEvent(visibility("ev_1", 0, "message_sent", { content: "first" }));
     // Pulse 1 interrupted: only one snapshot and one intent delivered.
     await gw.sendOperatorEvent(snapshot("ana", 1));
@@ -431,8 +431,8 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     expect(replay.pulses[1]!.agentStates).toEqual({ ana: state("ana") });
     expect(replay.pulses[1]!.agentThinking).toHaveProperty("ana");
     // The staleness axis: pulse 1 delivered an intent only for ana, so a
-    // receiver leaking bruno's earlier row must fail here.
-    expect(replay.pulses[1]!.agentThinking).not.toHaveProperty("bruno");
+    // receiver leaking dario's earlier row must fail here.
+    expect(replay.pulses[1]!.agentThinking).not.toHaveProperty("dario");
   });
 
   it("creates an empty replay when stopped before any pulse", async () => {
@@ -442,13 +442,13 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     const replay = gw.toReplay();
     expect(replay.pulses).toEqual([]);
     expect(replay.channels).toHaveLength(2);
-    expect(replay.agentIds).toEqual(["ana", "bruno"]);
+    expect(replay.agentIds).toEqual(["ana", "dario"]);
   });
 
   it("keeps a frame with only snapshots empty of committed events", async () => {
     const { gw } = buildGateway();
     await gw.sendOperatorEvent(snapshot("ana", 2));
-    await gw.sendOperatorEvent(snapshot("bruno", 2));
+    await gw.sendOperatorEvent(snapshot("dario", 2));
     await gw.onSimulationStopped("sim_rcv");
 
     const frame = gw.toReplay().pulses[0]!;
@@ -469,13 +469,13 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
 
   it("tracks addMember and removeMember on the channel topology", async () => {
     const { gw } = buildGateway();
-    await gw.addMember("ana-carla", "bruno");
+    await gw.addMember("ana-carla", "dario");
     await gw.createChannel("dyn-9", "private_channel", ["carla"]);
     await gw.addMember("dyn-9", "ana");
     await gw.removeMember("dyn-9", "carla");
     const replay = gw.toReplay();
     const privateChannel = replay.channels.find((c) => c.id === "ana-carla")!;
-    expect(privateChannel.memberAgentIds).toEqual(["ana", "bruno"]);
+    expect(privateChannel.memberAgentIds).toEqual(["ana", "dario"]);
     const dynamic = replay.channels.find((c) => c.id === "dyn-9")!;
     expect(dynamic.memberAgentIds).toEqual(["ana"]);
   });
@@ -483,7 +483,7 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
   it("renders a standalone artifact via generateHtml with names and thinking", async () => {
     const { gw, outputPath } = buildGateway();
     await gw.sendOperatorEvent(snapshot("ana", 0));
-    await gw.sendOperatorEvent(snapshot("bruno", 0));
+    await gw.sendOperatorEvent(snapshot("dario", 0));
     await gw.sendOperatorEvent(intent("ana", 0));
     await gw.sendOperatorEvent(visibility("ev_1", 0, "message_sent", { content: "oi" }));
     await gw.onSimulationStopped("sim_rcv");
@@ -492,7 +492,7 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     const html = generateHtml(replay);
     expect(html).toContain("REPLAY_DATA");
     expect(html).toContain("Ana");
-    expect(html).toContain("Bruno");
+    expect(html).toContain("Dario");
     expect(html).toContain("Preciso marcar presença sem chamar atenção.");
     expect(html).toContain("oi");
 
@@ -647,10 +647,10 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     await gw.sendOperatorEvent({
       type: "goal_proposed",
       simulationId: "sim_rcv",
-      agentId: "bruno",
+      agentId: "dario",
       pulseIndex: 4,
       detail: "Goal proposed: g3",
-      data: { goalId: "g3", proposal: { agentId: "bruno" } },
+      data: { goalId: "g3", proposal: { agentId: "dario" } },
       createdAt: 1,
     });
     // Unknown endReason-adjacent fields on the stop: keys stay absent.
@@ -661,7 +661,7 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     const g3 = replay.goals![0]!;
     expect(g3).toEqual({
       goalId: "g3",
-      agentId: "bruno",
+      agentId: "dario",
       title: "",
       kind: "",
       targetStateDescription: "",
@@ -681,10 +681,10 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
   it("stays byte-identical for no-goal runs: no goal keys in the replay, no goal markers in the artifact", async () => {
     const { gw, outputPath } = buildGateway();
     await gw.sendOperatorEvent(snapshot("ana", 0));
-    await gw.sendOperatorEvent(snapshot("bruno", 0));
+    await gw.sendOperatorEvent(snapshot("dario", 0));
     await gw.sendOperatorEvent(intent("ana", 0));
     await gw.sendOperatorEvent(visibility("ev_m1", 0, "message_sent", { content: "oi gente" }));
-    await gw.sendOperatorEvent(visibility("ev_noop", 0, "no_op_recorded", { actorId: "bruno", visibleToAgents: [] }));
+    await gw.sendOperatorEvent(visibility("ev_noop", 0, "no_op_recorded", { actorId: "dario", visibleToAgents: [] }));
     await gw.onSimulationStopped("sim_rcv");
 
     const replay = gw.toReplay();

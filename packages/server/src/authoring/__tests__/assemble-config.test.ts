@@ -25,12 +25,12 @@ const MOCK_LLM: LLMConfig = {
 function personaMap(): Map<string, CompiledPersona> {
   const iris = compilePersonaMarkdown(PERSONA_MD, "iris.persona.md");
   const generic = compilePersonaMarkdown(
-    PERSONA_MD.replace("personaId: iris", "personaId: bruno").replace("displayName: Íris", "displayName: Bruno"),
-    "bruno.persona.md",
+    PERSONA_MD.replace("personaId: iris", "personaId: dario").replace("displayName: Íris", "displayName: Dario"),
+    "dario.persona.md",
   );
   return new Map([
     ["iris.persona.md", iris],
-    ["bruno", generic],
+    ["dario", generic],
   ]);
 }
 
@@ -56,7 +56,7 @@ describe("assembleSimulationConfig", () => {
 
   it("survives the validator without being changed by it", () => {
     const parsed = parseSimulationConfig(config, { allowNoGateways: true });
-    expect(parsed.agents.map((a) => a.id)).toEqual(["iris", "bruno", "marcela"]);
+    expect(parsed.agents.map((a) => a.id)).toEqual(["iris", "dario", "marcela"]);
     expect(parsed.channels.map((c) => c.id)).toEqual(["geral", "iris_marcela"]);
   });
 
@@ -87,10 +87,10 @@ describe("assembleSimulationConfig", () => {
 
   it("expands the familiarity matrix into complete relational states", () => {
     const iris = config?.agents.find((a) => a.id === "iris");
-    // close_friends with marcela, acquaintances with bruno.
+    // close_friends with marcela, acquaintances with dario.
     expect(iris?.relationalStates?.["marcela"]).toMatchObject({ trust: 0.85, comfort: 0.9 });
-    expect(iris?.relationalStates?.["bruno"]).toMatchObject({ trust: 0.35 });
-    expect(Object.keys(iris?.relationalStates ?? {})).toEqual(["bruno", "marcela"]);
+    expect(iris?.relationalStates?.["dario"]).toMatchObject({ trust: 0.35 });
+    expect(Object.keys(iris?.relationalStates ?? {})).toEqual(["dario", "marcela"]);
   });
 
   it("completes a partial authored mood instead of resetting the rest to zero", () => {
@@ -112,40 +112,40 @@ describe("assembleSimulationConfig", () => {
   });
 
   it("lets a per-agent room context override the scene-wide one", () => {
-    const bruno = config?.agents.find((a) => a.id === "bruno");
+    const dario = config?.agents.find((a) => a.id === "dario");
     const iris = config?.agents.find((a) => a.id === "iris");
-    expect(bruno?.promptProfile.scenarioContext?.roomContext).toContain("achando que era só um papo");
+    expect(dario?.promptProfile.scenarioContext?.roomContext).toContain("achando que era só um papo");
     expect(iris?.promptProfile.scenarioContext?.roomContext).toContain("Três sócios");
   });
 
   it("attaches the host message only to the agent it was written under", () => {
     const iris = config?.agents.find((a) => a.id === "iris");
-    const bruno = config?.agents.find((a) => a.id === "bruno");
+    const dario = config?.agents.find((a) => a.id === "dario");
     expect(iris?.promptProfile.scenarioContext?.hostStartingMessage).toContain("sábado");
-    expect(bruno?.promptProfile.scenarioContext?.hostStartingMessage).toBeUndefined();
+    expect(dario?.promptProfile.scenarioContext?.hostStartingMessage).toBeUndefined();
   });
 
   it("carries hidden objectives, keeping the shared resource that creates the conflict", () => {
     const iris = config?.agents.find((a) => a.id === "iris");
-    const bruno = config?.agents.find((a) => a.id === "bruno");
+    const dario = config?.agents.find((a) => a.id === "dario");
     expect(iris?.promptProfile.hiddenObjective?.scarceResourceId).toBe("o_convite");
-    expect(bruno?.promptProfile.hiddenObjective?.scarceResourceId).toBe("o_convite");
+    expect(dario?.promptProfile.hiddenObjective?.scarceResourceId).toBe("o_convite");
   });
 
   it("returns seed memories separately, since config drops initialMemories", () => {
     expect(config?.agents.every((a) => a.initialMemories === undefined)).toBe(true);
-    expect(seeds.memoriesByAgent["bruno"]?.some((m) => m.summary.includes("investidor"))).toBe(true);
+    expect(seeds.memoriesByAgent["dario"]?.some((m) => m.summary.includes("investidor"))).toBe(true);
   });
 
   it("merges the persona's own memories with the scene's", () => {
-    // iris has one from the pack and none from the scene; bruno has both.
+    // iris has one from the pack and none from the scene; dario has both.
     expect(seeds.memoriesByAgent["iris"]).toHaveLength(1);
-    expect(seeds.memoriesByAgent["bruno"]?.length).toBeGreaterThan(1);
+    expect(seeds.memoriesByAgent["dario"]?.length).toBeGreaterThan(1);
   });
 
   it("returns prior events separately too", () => {
     expect(seeds.priorEvents).toHaveLength(1);
-    expect(seeds.priorEvents[0]).toMatchObject({ actorId: "bruno", channelId: "geral" });
+    expect(seeds.priorEvents[0]).toMatchObject({ actorId: "dario", channelId: "geral" });
   });
 
   it("reports which calibration source each persona actually got", () => {

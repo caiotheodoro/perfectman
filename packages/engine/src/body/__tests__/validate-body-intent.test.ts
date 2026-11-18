@@ -75,7 +75,7 @@ describe("validateBodyIntent", () => {
 
     const full = world([
       person("a3", "Rafa", [2, 3], { state: "sit", seatId: 2 }),
-      person("a4", "Léo", [3, 3], { state: "sit", seatId: 3 }),
+      person("a4", "Renan", [3, 3], { state: "sit", seatId: 3 }),
       person("a5", "Bia", [4, 3], { state: "sit", seatId: 4 }),
     ]);
     const blocked = validateBodyIntent(full.view, "a1", body({ posture: { pose: "sit", at: furniH(full.handles, 2) } }), NOW, full.handles);
@@ -112,12 +112,12 @@ describe("validateBodyIntent", () => {
     expect(r.accepted.gesture).toBeUndefined();
     expect(r.blocked.filter((b) => b.code === "slow_down").map((b) => b.part)).toEqual(["gesture", "expression", "face"]);
 
-    const far = world([person("a3", "Léo", [1, 1])]);
-    const leo = handleOf(far.handles, (t) => t.kind === "person" && t.ref === "a3");
-    const kiss = validateBodyIntent(far.view, "a1", body({ gesture: { kind: "kiss", toward: leo } }), NOW, far.handles);
+    const far = world([person("a3", "Renan", [1, 1])]);
+    const renan = handleOf(far.handles, (t) => t.kind === "person" && t.ref === "a3");
+    const kiss = validateBodyIntent(far.view, "a1", body({ gesture: { kind: "kiss", toward: renan } }), NOW, far.handles);
     expect(codes(kiss)).toEqual(["too_far"]);
-    expect(kiss.accepted.move).toEqual({ kind: "approach", target: leo, band: "intimate" });
-    expect(kiss.accepted.gesture).toMatchObject({ kind: "kiss", toward: leo });
+    expect(kiss.accepted.move).toEqual({ kind: "approach", target: renan, band: "intimate" });
+    expect(kiss.accepted.gesture).toMatchObject({ kind: "kiss", toward: renan });
   });
 
   it("every code has a line or is explicitly silent", () => {
@@ -129,7 +129,7 @@ describe("validateBodyIntent", () => {
   });
 
   it("property: never throws, never invents parts, keeps the order, only known codes", () => {
-    const { view, handles } = world([person("a3", "Léo", [1, 1])]);
+    const { view, handles } = world([person("a3", "Renan", [1, 1])]);
     const stale: SpaceView = { ...view, room: { ...view.room!, stale: true } };
     const ref = fc.constantFrom(...Object.keys(handles), "p99", "z0", "f1007", "r9", "zz");
     const bodyArb = fc.record(
@@ -169,18 +169,18 @@ describe("validateBodyIntent", () => {
 
 describe("speechNeedsDeferral", () => {
   it("defers move_then_speak to a far addressee with an ETA and expiry; not when near or speak_then_move", () => {
-    const { view, handles } = world([person("a3", "Léo", [0, 0], { dir: 2 })], {}, [11, 7]);
-    const leo = "p77"; // a far, unspoken-to person has no handle in a real render; the validator only needs the map
-    handles[leo] = { kind: "person", ref: "a3" };
+    const { view, handles } = world([person("a3", "Renan", [0, 0], { dir: 2 })], {}, [11, 7]);
+    const renan = "p77"; // a far, unspoken-to person has no handle in a real render; the validator only needs the map
+    handles[renan] = { kind: "person", ref: "a3" };
     const duda = handleOf(handles, (t) => t.kind === "person" && t.ref === "a2");
-    const far = speechNeedsDeferral(view, "a1", body({ move: { kind: "approach", target: leo, band: "personal" } }), handles, { now: NOW });
+    const far = speechNeedsDeferral(view, "a1", body({ move: { kind: "approach", target: renan, band: "personal" } }), handles, { now: NOW });
     expect(far).toMatchObject({ targetRef: "a3", distance: 11 });
     expect(far!.etaMs).toBeGreaterThan(0);
     expect(far!.expiresAt).toBe(NOW + 2 * far!.etaMs + 5000);
-    expect(speechNeedsDeferral(view, "a1", body({ move: { kind: "follow", target: leo } }), handles, { now: NOW })).not.toBeNull();
-    expect(speechNeedsDeferral(view, "a1", body({ order: "together", move: { kind: "approach", target: leo, band: "personal" } }), handles)).not.toBeNull();
+    expect(speechNeedsDeferral(view, "a1", body({ move: { kind: "follow", target: renan } }), handles, { now: NOW })).not.toBeNull();
+    expect(speechNeedsDeferral(view, "a1", body({ order: "together", move: { kind: "approach", target: renan, band: "personal" } }), handles)).not.toBeNull();
     expect(speechNeedsDeferral(view, "a1", body({ move: { kind: "approach", target: duda, band: "personal" } }), handles)).toBeNull();
-    expect(speechNeedsDeferral(view, "a1", body({ order: "speak_then_move", move: { kind: "approach", target: leo, band: "personal" } }), handles)).toBeNull();
+    expect(speechNeedsDeferral(view, "a1", body({ order: "speak_then_move", move: { kind: "approach", target: renan, band: "personal" } }), handles)).toBeNull();
     expect(speechNeedsDeferral(view, "a1", body({}), handles)).toBeNull();
   });
 });

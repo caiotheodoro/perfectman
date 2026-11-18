@@ -23,7 +23,7 @@ To add one, drop a folder in and reload — nothing is bundled into the web buil
 
 ## Default library
 
-**`the-group`** is the headline cast: Goulart, Caio, Jota, Ian Bruno, and Rex.
+**`the-group`** is the headline cast: Vasco, Tomas, Silas, Omar Dario, and Kiko.
 English group chat, with distinct, abrasive voices. Six scenes were written for them,
 each with two scarce resources so at least two people are in structural
 conflict:

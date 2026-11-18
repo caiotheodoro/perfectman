@@ -259,7 +259,7 @@ Suggested env pattern:
 ```text
 DISCORD_GUILD_ID=...
 DISCORD_MANAGER_TOKEN=...
-DISCORD_AGENT_BOTS=goulart:env:DISCORD_TOKEN_GOULART,caio:env:DISCORD_TOKEN_CAIO
+DISCORD_AGENT_BOTS=vasco:env:DISCORD_TOKEN_VASCO,tomas:env:DISCORD_TOKEN_TOMAS
 ```
 
 Do not commit `.env`.

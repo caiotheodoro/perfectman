@@ -201,14 +201,14 @@ Quem está aqui:
 - p2 Rafa: no balcão, a 5 passos, de costas pra você, em pé.
 - p3 Gabi: na porta, chegou agora; acenou pra você.
 - p4 +3 pessoas: perto do tapete, dançando (longe).
-Mudou desde a última vez: Gabi entrou. Léo saiu pelo corredor.
+Mudou desde a última vez: Gabi entrou. Renan saiu pelo corredor.
 Você ouve: Duda (clara). Rafa falou algo mas está longe demais (não deu pra entender).
 Ao seu alcance: mesa de centro (z2), almofada, janela atrás de você.
 Lugares: o balcão (z1, 5 passos, 1 cadeira livre), a pista (z3, 8 passos), a porta (z4, 9 passos),
   outros quartos: Terraço (r1, ~20s), Quarto privado (r2, ~14s).
 ```
 
-Changes from the draft: `p3 Gabi (pessoa real)` is now plain `p3 Gabi` (D43). A whisper notice line reads "Léo cochicha com Duda." with no text. Names in a real render are quoted per ADR-0023.
+Changes from the draft: `p3 Gabi (pessoa real)` is now plain `p3 Gabi` (D43). A whisper notice line reads "Renan cochicha com Duda." with no text. Names in a real render are quoted per ADR-0023.
 
 ## 6. Body intent
 
@@ -349,7 +349,7 @@ State machine: `precheck -> approach -> face -> act -> hold -> part`.
 
 ### 8.1 Latency budget
 
-`lineLandsAt = max(llmDoneAt, min(4000, sampledDelay + 55 ms x chars))`, where `sampledDelay` is drawn from the persona's `presenceProfile.responseDelayMs` ([`persona-pack.types.ts:56`](../packages/shared/src/persona/persona-pack.types.ts) **[V]**) and the 4 s cap keeps slow personas (for example `[3000, 18000]` in `persona-packs/mariana.ts` **[V]**) inside the 10 s p95 target. The typing bubble starts at `onConsult` ([ADR-0020](adr/0020-decide-generate-commit-and-focused-pulse.md)) and ends when the line is delivered or the call fails. Target: addressed reply p50 <= 5 s, p95 <= 10 s after the human line. Phase 1 spike (12 agents, modelled LLM median 2.5 s / p95 6 s): sequential loop 13.3 / 32.3 s, ADR-0020 as first drafted 7.1 / 13.3 s, focus lane with per-agent locks and commit-as-settled 4.0 / 9.6 s. The pulse clock is a 6 s base pulse plus a focused pulse that fires on the first human line with 300 ms coalescing (D52), because typing starts at `onConsult` and a 1.5 s debounce would spend the whole p50 slack. The target is only reachable with a model whose own p95 is <= 6 s (D53). Addressed replies jump ambient lines in the gateway's 2.5 s room queue.
+`lineLandsAt = max(llmDoneAt, min(4000, sampledDelay + 55 ms x chars))`, where `sampledDelay` is drawn from the persona's `presenceProfile.responseDelayMs` ([`persona-pack.types.ts:56`](../packages/shared/src/persona/persona-pack.types.ts) **[V]**) and the 4 s cap keeps slow personas (for example `[3000, 18000]` in `persona-packs/lara.ts` **[V]**) inside the 10 s p95 target. The typing bubble starts at `onConsult` ([ADR-0020](adr/0020-decide-generate-commit-and-focused-pulse.md)) and ends when the line is delivered or the call fails. Target: addressed reply p50 <= 5 s, p95 <= 10 s after the human line. Phase 1 spike (12 agents, modelled LLM median 2.5 s / p95 6 s): sequential loop 13.3 / 32.3 s, ADR-0020 as first drafted 7.1 / 13.3 s, focus lane with per-agent locks and commit-as-settled 4.0 / 9.6 s. The pulse clock is a 6 s base pulse plus a focused pulse that fires on the first human line with 300 ms coalescing (D52), because typing starts at `onConsult` and a 1.5 s debounce would spend the whole p50 slack. The target is only reachable with a model whose own p95 is <= 6 s (D53). Addressed replies jump ambient lines in the gateway's 2.5 s room queue.
 
 ### 8.2 Plans
 

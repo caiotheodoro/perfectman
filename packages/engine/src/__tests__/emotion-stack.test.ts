@@ -7,7 +7,7 @@ import type {
   CommittedEvent,
   MoodImpulse,
 } from "@perfectman/shared";
-import { BRUNO, CAIO, GOULART } from "@perfectman/shared";
+import { DARIO, TOMAS, VASCO } from "@perfectman/shared";
 import { updateCoreMood } from "../emotion/update-core-mood.js";
 import { computeActionEmotions } from "../emotion/compute-action-emotions.js";
 import { updateEmotionStack } from "../emotion/update-emotion-stack.js";
@@ -33,7 +33,7 @@ function makeAgent(id: string, overrides?: Partial<AgentState>): AgentState {
   return {
     agentId: id,
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: BASE_MOOD,
     socialEmotions: ZERO_SOCIAL,
@@ -81,7 +81,7 @@ describe("updateCoreMood", () => {
       { deltaValence: -0.8, deltaArousal: 0.9, magnitude: 0.9, sourceEventId: "e1" },
       { deltaValence: -0.8, deltaArousal: 0.9, magnitude: 0.9, sourceEventId: "e2" },
     ];
-    const result = updateCoreMood(mood, impulses, CAIO, 3);
+    const result = updateCoreMood(mood, impulses, TOMAS, 3);
     expect(result.stability).toBeGreaterThanOrEqual(0.1);
   });
 
@@ -92,7 +92,7 @@ describe("updateCoreMood", () => {
       magnitude: 0.9,
       sourceEventId: `e${i}`,
     }));
-    const result = updateCoreMood(BASE_MOOD, impulses, CAIO, 1);
+    const result = updateCoreMood(BASE_MOOD, impulses, TOMAS, 1);
     expect(result.valence).toBeLessThanOrEqual(1);
   });
 
@@ -103,18 +103,18 @@ describe("updateCoreMood", () => {
       magnitude: 0.9,
       sourceEventId: `e${i}`,
     }));
-    const result = updateCoreMood(BASE_MOOD, impulses, CAIO, 1);
+    const result = updateCoreMood(BASE_MOOD, impulses, TOMAS, 1);
     expect(result.arousal).toBeLessThanOrEqual(1);
     expect(result.arousal).toBeGreaterThanOrEqual(0);
   });
 
   it("energy regenerates toward baseline over time", () => {
     const lowEnergyMood: CoreMood = { ...BASE_MOOD, energy: 0.1 };
-    const result = updateCoreMood(lowEnergyMood, [], CAIO, 5);
+    const result = updateCoreMood(lowEnergyMood, [], TOMAS, 5);
     expect(result.energy).toBeGreaterThan(0.1);
   });
 
-  it("high-reactivity persona (Goulart) responds more than low-reactivity (Mariana)", () => {
+  it("high-reactivity persona (Vasco) responds more than low-reactivity (Lara)", () => {
     const impulse: MoodImpulse[] = [{
       deltaValence: 0.3,
       deltaArousal: 0.3,
@@ -122,23 +122,23 @@ describe("updateCoreMood", () => {
       sourceEventId: "e1",
     }];
     const neutralMood = { ...BASE_MOOD, valence: 0, arousal: 0.5 };
-    const goulartResult = updateCoreMood(neutralMood, impulse, GOULART, 1);
-    const brunoResult = updateCoreMood(neutralMood, impulse, BRUNO, 1);
-    // Goulart has higher emotionalReactivity (1.5 vs 1.2)
-    expect(Math.abs(goulartResult.valence)).toBeGreaterThanOrEqual(Math.abs(brunoResult.valence));
+    const vascoResult = updateCoreMood(neutralMood, impulse, VASCO, 1);
+    const darioResult = updateCoreMood(neutralMood, impulse, DARIO, 1);
+    // Vasco has higher emotionalReactivity (1.5 vs 1.2)
+    expect(Math.abs(vascoResult.valence)).toBeGreaterThanOrEqual(Math.abs(darioResult.valence));
   });
 
   it("angular rotation constrained by maxMoodRotation", () => {
-    const start = updateCoreMood(BASE_MOOD, [], CAIO, 0); // stable
+    const start = updateCoreMood(BASE_MOOD, [], TOMAS, 0); // stable
     const end = updateCoreMood(
       BASE_MOOD,
       [{ deltaValence: 1.0, deltaArousal: 1.0, magnitude: 0.9, sourceEventId: "e1" }],
-      CAIO,
+      TOMAS,
       1,
     );
     const angleDiff = Math.abs(end.circumplexAngle - start.circumplexAngle);
     const normalized = Math.min(angleDiff, 2 * Math.PI - angleDiff);
-    expect(normalized).toBeLessThanOrEqual(CAIO.maxMoodRotation + 0.01); // tolerance
+    expect(normalized).toBeLessThanOrEqual(TOMAS.maxMoodRotation + 0.01); // tolerance
   });
 });
 
@@ -197,32 +197,32 @@ describe("updateEmotionStack", () => {
     const events = [
       makeEvent("e1", { actorId: "other", type: "reaction_sent", payload: { personTargets: ["a1"] } }),
     ];
-    const result = updateEmotionStack(agent, CAIO, events, 3, Date.now());
+    const result = updateEmotionStack(agent, TOMAS, events, 3, Date.now());
     for (const [key, val] of Object.entries(result.actionEmotions)) {
       expect(val, key).toBeGreaterThanOrEqual(0);
       expect(val, key).toBeLessThanOrEqual(1);
     }
   });
 
-  it("Bruno exclusion scenario increases fearOfExclusion", () => {
-    // Bruno sees Caio invited to private channel but not Bruno
-    const brunoAgent = makeAgent("bruno", {
+  it("Dario exclusion scenario increases fearOfExclusion", () => {
+    // Dario sees Tomas invited to private channel but not Dario
+    const darioAgent = makeAgent("dario", {
       coreMood: { ...BASE_MOOD, valence: -0.1, arousal: 0.3 },
     });
     const exclusionEvent = makeEvent("e1", {
       type: "agent_invited",
-      actorId: "caio",
-      payload: { invitedAgentIds: ["goulart"] }, // not bruno
+      actorId: "tomas",
+      payload: { invitedAgentIds: ["vasco"] }, // not dario
     });
-    const before = brunoAgent.socialEmotions.fearOfExclusion;
-    const result = updateEmotionStack(brunoAgent, BRUNO, [exclusionEvent], 3, Date.now());
+    const before = darioAgent.socialEmotions.fearOfExclusion;
+    const result = updateEmotionStack(darioAgent, DARIO, [exclusionEvent], 3, Date.now());
     // fearOfExclusion should increase or stay same (decay vs trigger)
-    expect(result.updatedState.socialEmotions.fearOfExclusion).toBeGreaterThanOrEqual(before * BRUNO.moodInertia);
+    expect(result.updatedState.socialEmotions.fearOfExclusion).toBeGreaterThanOrEqual(before * DARIO.moodInertia);
   });
 
   it("emotionDelta.ruminationApplied defaults to false", () => {
     const agent = makeAgent("a1");
-    const result = updateEmotionStack(agent, CAIO, [], 3, Date.now());
+    const result = updateEmotionStack(agent, TOMAS, [], 3, Date.now());
     expect(result.emotionDelta.ruminationApplied).toBe(false);
   });
 });

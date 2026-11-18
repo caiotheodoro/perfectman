@@ -151,8 +151,8 @@ describe("length target and trimming", () => {
   });
 
   it("cuts a single sentence over the cap at a clause break, or trails off with an ellipsis", () => {
-    const run = "Ian, você tá parado aí que nem lasanha de véspera, parece firme mas por baixo tá tudo deslizando e ninguém percebe nada disso até cair no chão";
-    expect(trimToCap(run, 12, 2)).toBe("Ian, você tá parado aí que nem lasanha de véspera.");
+    const run = "Omar, você tá parado aí que nem lasanha de véspera, parece firme mas por baixo tá tudo deslizando e ninguém percebe nada disso até cair no chão";
+    expect(trimToCap(run, 12, 2)).toBe("Omar, você tá parado aí que nem lasanha de véspera.");
     const noBreak = "um dois três quatro cinco seis sete oito nove dez onze doze treze quatorze";
     expect(trimToCap(noBreak, 5, 2)).toBe("um dois três quatro cinco…");
   });

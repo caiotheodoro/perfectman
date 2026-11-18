@@ -81,7 +81,7 @@ describe("authoring listener", () => {
         { name: "Duda", role: "bartender", goal: "Fechar cedo.", voice: "Seca.", look: { figure: "hd-600-1.hr-515-33", effect: "" }, start: "start" },
         { name: "Rafa", role: "skeptic", goal: "Descobrir o segredo.", look: "auto", start: "start" },
         { name: "Gabi", role: "performer", goal: "Chamar atencao.", start: "after 10s" },
-        { name: "Leo", role: "", goal: "", start: "start" },
+        { name: "Renan", role: "", goal: "", start: "start" },
       ],
       stage: { room: 7 },
     };

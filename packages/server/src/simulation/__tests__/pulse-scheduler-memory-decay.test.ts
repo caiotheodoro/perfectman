@@ -269,7 +269,7 @@ describe("PulseScheduler memory decay, eviction, and reinforcement (issue #137)"
         {
           type: "episodic",
           subjectAgentIds: [],
-          summary: "caio ignored me in front of everyone",
+          summary: "tomas ignored me in front of everyone",
           emotionalTone: "stung",
           confidence: 0.5,
           intensity: 0,

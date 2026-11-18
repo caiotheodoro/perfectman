@@ -29,7 +29,7 @@ export function updateCoreMood(
 
   // Step 1: Damped spring toward baseline.
   // NOTE: personas document moodInertia as "high inertia = slow river"
-  // (Mariana 0.8 barely moves; Goulart 0.25 swings fast). The spring's
+  // (Lara 0.8 barely moves; Vasco 0.25 swings fast). The spring's
   // pull-back must therefore be LARGER for LOW inertia: pull = (1-inertia).
   // With the previous `inertia * dt` formula the semantics were inverted
   // AND dt≈0 in fast bench runs → moods pinned at the clamps forever.

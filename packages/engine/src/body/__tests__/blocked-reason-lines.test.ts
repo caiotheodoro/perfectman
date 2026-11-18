@@ -11,30 +11,30 @@ import { blockedReasonLine } from "../blocked-reason-lines.js";
  */
 describe("blockedReasonLine for the ladder", () => {
   it("says a move is not yet earned when the motive is missing, naming who it was aimed at and what earns it (a direct insult with their name), in both languages", () => {
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "motive", ref: "Goulart" }, "pt-BR")).toBe(
-      'Ainda não dá pra partir pra cima de "Goulart": falta provocação. Uma ofensa direta com o nome da pessoa esquenta. Um passo de cada vez.',
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "motive", ref: "Vasco" }, "pt-BR")).toBe(
+      'Ainda não dá pra partir pra cima de "Vasco": falta provocação. Uma ofensa direta com o nome da pessoa esquenta. Um passo de cada vez.',
     );
-    const en = blockedReasonLine({ code: "ladder", part: "act", detail: "motive", ref: "Goulart" }, "en")!;
-    expect(en).toContain("Goulart");
+    const en = blockedReasonLine({ code: "ladder", part: "act", detail: "motive", ref: "Vasco" }, "en")!;
+    expect(en).toContain("Vasco");
     expect(en).toContain("direct insult");
     expect(en).toContain("One step at a time");
   });
 
   it("says what would earn it when the grievance is missing: a threat or an accusation to their face, with their name", () => {
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "grievance", ref: "Caio" }, "pt-BR")).toContain("ameaça ou acusação na cara");
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "grievance", ref: "Caio" }, "en")).toContain("threat or an accusation to their face");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "grievance", ref: "Tomas" }, "pt-BR")).toContain("ameaça ou acusação na cara");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "grievance", ref: "Tomas" }, "en")).toContain("threat or an accusation to their face");
   });
 
   it("a skipped rung is told too: one step at a time, a look or an insult first", () => {
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "rung", ref: "Caio" }, "pt-BR")).toBe('Um passo de cada vez com "Caio": antes um olhar ou uma ofensa.');
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "rung", ref: "Caio" }, "en")).toContain("One step at a time");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "rung", ref: "Tomas" }, "pt-BR")).toBe('Um passo de cada vez com "Tomas": antes um olhar ou uma ofensa.');
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "rung", ref: "Tomas" }, "en")).toContain("One step at a time");
   });
 
   it("no witness and a room already on fire are told: not with nobody watching, wait for it to cool", () => {
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "zero_witness", ref: "Caio" }, "pt-BR")).toContain("Não com ninguém olhando");
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "zero_witness", ref: "Caio" }, "en")).toContain("nobody watching");
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "contagion", ref: "Caio" }, "pt-BR")).toContain("pegando fogo");
-    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "contagion", ref: "Caio" }, "en")).toContain("on fire");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "zero_witness", ref: "Tomas" }, "pt-BR")).toContain("Não com ninguém olhando");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "zero_witness", ref: "Tomas" }, "en")).toContain("nobody watching");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "contagion", ref: "Tomas" }, "pt-BR")).toContain("pegando fogo");
+    expect(blockedReasonLine({ code: "ladder", part: "act", detail: "contagion", ref: "Tomas" }, "en")).toContain("on fire");
   });
 
   it("is one short line, and a refusal with no name still reads", () => {
@@ -55,8 +55,8 @@ describe("blockedReasonLine for the ladder", () => {
 
 describe("the note reaches the prompt's body block", () => {
   it("a ladder refusal in the body's lastBlocked is a Blocked line, in the room's language, and compression never drops it", () => {
-    const model = loungeModel([person("a1", "Ana", [5, 4]), person("a2", "Goulart", [6, 4])], ["a1", "a2"]);
-    applySpaceAction(model, { type: "agent_body", agentId: "a1", patch: { lastBlocked: [{ code: "ladder", part: "act", detail: "motive", ref: "Goulart" }] } });
+    const model = loungeModel([person("a1", "Ana", [5, 4]), person("a2", "Vasco", [6, 4])], ["a1", "a2"]);
+    applySpaceAction(model, { type: "agent_body", agentId: "a1", patch: { lastBlocked: [{ code: "ladder", part: "act", detail: "motive", ref: "Vasco" }] } });
     const built = buildBodyPerception({ view: viewOf(model, "a1", T0 + 1000), events: [], language: "pt-BR" });
     const lines = renderBodyBlock(built.body, { language: "pt-BR" });
     expect(lines.find((l) => l.startsWith("Bloqueado:"))).toContain("falta provocação");

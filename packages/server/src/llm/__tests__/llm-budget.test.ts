@@ -15,7 +15,7 @@ describe("LLMBudgetTracker", () => {
   function makeUsage(overrides: { pulseIndex?: number; createdAt?: number; inputTokens?: number; outputTokens?: number } = {}) {
     return {
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       model: "mock-model",
       inputTokens: 10,
       outputTokens: 20,
@@ -30,7 +30,7 @@ describe("LLMBudgetTracker", () => {
   it("should allow calls when budget is fresh", () => {
     const dec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "high",
     });
     expect(dec.allowed).toBe(true);
@@ -41,7 +41,7 @@ describe("LLMBudgetTracker", () => {
     for (let i = 0; i < 10; i++) {
       budget.recordUsage({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         model: "mock-model",
         inputTokens: 10,
         outputTokens: 20,
@@ -55,7 +55,7 @@ describe("LLMBudgetTracker", () => {
     // Next call should be blocked
     const dec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "high",
     });
     expect(dec.allowed).toBe(false);
@@ -66,7 +66,7 @@ describe("LLMBudgetTracker", () => {
     // Limit is 10000. Let's record one massive usage of 10000 tokens
     budget.recordUsage({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       model: "mock-model",
       inputTokens: 5000,
       outputTokens: 5000,
@@ -79,7 +79,7 @@ describe("LLMBudgetTracker", () => {
     // Next call should be blocked even if estimated tokens are low
     const dec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "high",
       inputTokensEstimate: 50,
     });
@@ -92,7 +92,7 @@ describe("LLMBudgetTracker", () => {
     for (let i = 0; i < 8; i++) {
       budget.recordUsage({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         model: "mock-model",
         inputTokens: 10,
         outputTokens: 20,
@@ -106,7 +106,7 @@ describe("LLMBudgetTracker", () => {
     // Low priority should be blocked at 80%
     const lowDec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "low",
     });
     expect(lowDec.allowed).toBe(false);
@@ -115,7 +115,7 @@ describe("LLMBudgetTracker", () => {
     // Normal priority should be allowed
     const normalDec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "normal",
     });
     expect(normalDec.allowed).toBe(true);
@@ -123,7 +123,7 @@ describe("LLMBudgetTracker", () => {
     // Record one more call to reach 9 calls (90% usage)
     budget.recordUsage({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       model: "mock-model",
       inputTokens: 10,
       outputTokens: 20,
@@ -144,7 +144,7 @@ describe("LLMBudgetTracker", () => {
     for (let i = 0; i < 19; i++) {
       budget.recordUsage({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         model: "mock-model",
         inputTokens: 10,
         outputTokens: 20,
@@ -158,7 +158,7 @@ describe("LLMBudgetTracker", () => {
     // Normal priority should be blocked at >= 95%
     const normalDec95 = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "normal",
     });
     expect(normalDec95.allowed).toBe(false);
@@ -167,7 +167,7 @@ describe("LLMBudgetTracker", () => {
     // High priority should still be allowed
     const highDec95 = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "high",
     });
     expect(highDec95.allowed).toBe(true);
@@ -175,13 +175,13 @@ describe("LLMBudgetTracker", () => {
 
   it("should derive correct BudgetPriority from getPriority()", () => {
     // Fresh
-    expect(budget.getPriority("sim-test", "goulart")).toBe("high");
+    expect(budget.getPriority("sim-test", "vasco")).toBe("high");
 
     // Record 5 calls (50% usage)
     for (let i = 0; i < 5; i++) {
       budget.recordUsage({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         model: "mock-model",
         inputTokens: 10,
         outputTokens: 20,
@@ -191,13 +191,13 @@ describe("LLMBudgetTracker", () => {
         createdAt: Date.now(),
       });
     }
-    expect(budget.getPriority("sim-test", "goulart")).toBe("normal");
+    expect(budget.getPriority("sim-test", "vasco")).toBe("normal");
 
     // Record 3 more calls to reach 8 calls (80% usage)
     for (let i = 5; i < 8; i++) {
       budget.recordUsage({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         model: "mock-model",
         inputTokens: 10,
         outputTokens: 20,
@@ -207,13 +207,13 @@ describe("LLMBudgetTracker", () => {
         createdAt: Date.now(),
       });
     }
-    expect(budget.getPriority("sim-test", "goulart")).toBe("low");
+    expect(budget.getPriority("sim-test", "vasco")).toBe("low");
 
     // Record 2 more calls to reach 10 calls (100% usage)
     for (let i = 8; i < 10; i++) {
       budget.recordUsage({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         model: "mock-model",
         inputTokens: 10,
         outputTokens: 20,
@@ -223,7 +223,7 @@ describe("LLMBudgetTracker", () => {
         createdAt: Date.now(),
       });
     }
-    expect(budget.getPriority("sim-test", "goulart")).toBe("blocked");
+    expect(budget.getPriority("sim-test", "vasco")).toBe("blocked");
   });
 
   it("accumulates sim-clock usage in the per-minute window (#147)", () => {
@@ -237,7 +237,7 @@ describe("LLMBudgetTracker", () => {
 
     const dec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "high",
     });
     expect(dec.allowed).toBe(false);
@@ -249,7 +249,7 @@ describe("LLMBudgetTracker", () => {
 
     const dec = budget.canCall({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       priority: "high",
       inputTokensEstimate: 50,
     });
@@ -266,7 +266,7 @@ describe("LLMBudgetTracker", () => {
       }
       expect(budget.canCall({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         priority: "high",
       }).allowed).toBe(false);
 
@@ -274,7 +274,7 @@ describe("LLMBudgetTracker", () => {
       vi.setSystemTime(new Date("2026-01-01T00:02:00Z"));
       expect(budget.canCall({
         simulationId: "sim-test",
-        agentId: "goulart",
+        agentId: "vasco",
         priority: "high",
       }).allowed).toBe(true);
     } finally {
@@ -285,7 +285,7 @@ describe("LLMBudgetTracker", () => {
   it("should get complete status", () => {
     budget.recordUsage({
       simulationId: "sim-test",
-      agentId: "goulart",
+      agentId: "vasco",
       model: "mock-model",
       inputTokens: 100,
       outputTokens: 200,
@@ -297,7 +297,7 @@ describe("LLMBudgetTracker", () => {
 
     budget.recordUsage({
       simulationId: "sim-test",
-      agentId: "bruno",
+      agentId: "dario",
       model: "mock-model",
       inputTokens: 50,
       outputTokens: 50,
@@ -310,9 +310,9 @@ describe("LLMBudgetTracker", () => {
     const status = budget.getStatus("sim-test");
     expect(status.callsThisMinute).toBe(2);
     expect(status.tokensThisHour).toBe(400);
-    expect(status.agentUsage.goulart!.calls).toBe(1);
-    expect(status.agentUsage.goulart!.tokens).toBe(300);
-    expect(status.agentUsage.bruno!.calls).toBe(1);
-    expect(status.agentUsage.bruno!.tokens).toBe(100);
+    expect(status.agentUsage.vasco!.calls).toBe(1);
+    expect(status.agentUsage.vasco!.tokens).toBe(300);
+    expect(status.agentUsage.dario!.calls).toBe(1);
+    expect(status.agentUsage.dario!.tokens).toBe(100);
   });
 });

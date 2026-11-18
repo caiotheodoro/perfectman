@@ -1,11 +1,11 @@
 /**
  * buildBiasedMemoryScenario
- * Goulart is in a negative mood. He has both positive and negative memories of Caio.
+ * Vasco is in a negative mood. He has both positive and negative memories of Tomas.
  * Mood-congruent retrieval bias: negative memories should rank higher in the perception packet.
  *
  * Expected engine signals:
  * - perceptionPacket.relevantMemories: negative memories appear before positive ones
- *   when Goulart is in negative valence state
+ *   when Vasco is in negative valence state
  * - The bias is purely from mood state, not from memory age/recency
  */
 
@@ -18,7 +18,7 @@ import type {
   CommittedEvent,
   Memory,
 } from "../index.js";
-import { GOULART, CAIO } from "../constants/personas.js";
+import { VASCO, TOMAS } from "../constants/personas.js";
 import {
   makeSimulation,
   makePublicChannel,
@@ -33,11 +33,11 @@ export type BiasedMemoryScenario = {
   simulation: Simulation;
   channels: Channel[];
   memberships: ChannelMembership[];
-  personas: { goulart: PersonaConfig; caio: PersonaConfig };
-  agentStates: { goulart: AgentState; caio: AgentState };
-  /** Goulart's mixed memories of Caio */
-  goulartMemories: Memory[];
-  /** Caio said something to Goulart — triggers memory retrieval */
+  personas: { vasco: PersonaConfig; tomas: PersonaConfig };
+  agentStates: { vasco: AgentState; tomas: AgentState };
+  /** Vasco's mixed memories of Tomas */
+  vascoMemories: Memory[];
+  /** Tomas said something to Vasco — triggers memory retrieval */
   committedEvents: CommittedEvent[];
   expectedSignals: {
     negativeMemoriesShouldRankHigherInNegativeMood: boolean;
@@ -52,61 +52,61 @@ export function buildBiasedMemoryScenario(): BiasedMemoryScenario {
   const simulation = makeSimulation(
     simulationId,
     "Biased Memory",
-    ["goulart", "caio"],
+    ["vasco", "tomas"],
     [channelId],
   );
 
-  const channel = makePublicChannel(channelId, simulationId, "#geral", ["goulart", "caio"]);
-  const memberships = membershipFor(channelId, ["goulart", "caio"]);
+  const channel = makePublicChannel(channelId, simulationId, "#geral", ["vasco", "tomas"]);
+  const memberships = membershipFor(channelId, ["vasco", "tomas"]);
 
-  // Goulart: negative mood (should bias toward negative memories)
-  const goulartNegative = makeAgentState(
-    "goulart",
+  // Vasco: negative mood (should bias toward negative memories)
+  const vascoNegative = makeAgentState(
+    "vasco",
     simulationId,
-    "goulart",
+    "vasco",
     { valence: -0.6, arousal: 0.4 },
     { resentment: 0.3, suspicion: 0.4 },
     new Map([
-      ["caio", makeRelationalState("caio", { trust: 0.2, resentment: 0.4 })],
+      ["tomas", makeRelationalState("tomas", { trust: 0.2, resentment: 0.4 })],
     ]),
   );
 
-  const caioState = makeAgentState("caio", simulationId, "caio");
+  const tomasState = makeAgentState("tomas", simulationId, "tomas");
 
-  // Mixed memories of Caio (both positive and negative, same age)
+  // Mixed memories of Tomas (both positive and negative, same age)
   // Simulated-clock epoch: memory age is counted in pulses off
   // PulseScheduler.simTime (starts at 0), never wall-clock time.
   const baseTime = 0;
 
   const memories: Memory[] = [
     makeMemory(
-      "mem_pos_1", "goulart", simulationId,
-      "episodic", ["caio"],
-      "caio me ajudou quando eu precisei",
+      "mem_pos_1", "vasco", simulationId,
+      "episodic", ["tomas"],
+      "tomas me ajudou quando eu precisei",
       "positive", 0.85,
     ),
     makeMemory(
-      "mem_pos_2", "goulart", simulationId,
-      "episodic", ["caio"],
-      "caio falou bem de mim na frente de todo mundo",
+      "mem_pos_2", "vasco", simulationId,
+      "episodic", ["tomas"],
+      "tomas falou bem de mim na frente de todo mundo",
       "positive", 0.80,
     ),
     makeMemory(
-      "mem_neg_1", "goulart", simulationId,
-      "emotional_residue", ["caio"],
-      "caio me ignorou numa conversa importante",
+      "mem_neg_1", "vasco", simulationId,
+      "emotional_residue", ["tomas"],
+      "tomas me ignorou numa conversa importante",
       "negative", 0.75,
     ),
     makeMemory(
-      "mem_neg_2", "goulart", simulationId,
-      "social_theory", ["caio"],
-      "caio sempre parece condescendente comigo",
+      "mem_neg_2", "vasco", simulationId,
+      "social_theory", ["tomas"],
+      "tomas sempre parece condescendente comigo",
       "negative", 0.70,
     ),
     makeMemory(
-      "mem_neu_1", "goulart", simulationId,
-      "social_theory", ["caio"],
-      "caio costuma demorar pra responder",
+      "mem_neu_1", "vasco", simulationId,
+      "social_theory", ["tomas"],
+      "tomas costuma demorar pra responder",
       "neutral", 0.65,
     ),
   ];
@@ -117,12 +117,12 @@ export function buildBiasedMemoryScenario(): BiasedMemoryScenario {
     m.lastReinforcedAt = baseTime;
   }
 
-  goulartNegative.memories = memories;
+  vascoNegative.memories = memories;
 
-  // Caio just sent a message — triggers Goulart's memory retrieval
+  // Tomas just sent a message — triggers Vasco's memory retrieval
   const e1 = makeCommittedEvent(
-    simulationId, channelId, "caio", "message_sent",
-    { content: "hey goulart, tudo bem?" },
+    simulationId, channelId, "tomas", "message_sent",
+    { content: "hey vasco, tudo bem?" },
     2,
   );
 
@@ -130,9 +130,9 @@ export function buildBiasedMemoryScenario(): BiasedMemoryScenario {
     simulation,
     channels: [channel],
     memberships,
-    personas: { goulart: GOULART, caio: CAIO },
-    agentStates: { goulart: goulartNegative, caio: caioState },
-    goulartMemories: memories,
+    personas: { vasco: VASCO, tomas: TOMAS },
+    agentStates: { vasco: vascoNegative, tomas: tomasState },
+    vascoMemories: memories,
     committedEvents: [e1],
     expectedSignals: {
       negativeMemoriesShouldRankHigherInNegativeMood: true,

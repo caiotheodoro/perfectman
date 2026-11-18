@@ -14,10 +14,7 @@ Read these in order:
 2. [`architecture/emotion.md`](architecture/emotion.md) - complete 4-layer emotion model (Russell's Circumplex), initiative engine with cold-start bootstrapping, stagnation detection, breaking mechanisms, and personality mutation.
 3. [`concepts/concept-map.md`](concepts/concept-map.md) - complete concept synthesis across all Perfectman notes.
 4. [`architecture/social-presence.md`](architecture/social-presence.md) - social presence architecture, backend timing, initiative paths, and intent resolution.
-5. [`personas/README.md`](personas/README.md) - plug-and-play persona setup workflow, local-only persona paths, and interview-agent instructions.
-6. [`concepts/experiment-brief.md`](concepts/experiment-brief.md) - initial concise experiment setup.
-7. [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md) - raw meeting synthesis covering objectives, personas, actions, mood, socket chat permissions, spectator stance, and open risks.
-8. [`notes/design-conversation-history.md`](notes/design-conversation-history.md) - raw design conversation history, gap analysis, mood/AutoDream research, and timeline brainstorms.
+5. [`concepts/experiment-brief.md`](concepts/experiment-brief.md) - initial concise experiment setup.
 
 ## Folder Structure
 
@@ -31,7 +28,6 @@ Read these in order:
 - [`embodiment.md`](embodiment.md) - physical bodies, space, hearing and body intents for grid-hotel actors (hotel integration, with [`plans/hotel-package.md`](plans/hotel-package.md) and ADR-0018..0026).
 - [`plans/script-likeness.md`](plans/script-likeness.md) - dialogue measured against real plays: the benchmark, the norms, the length, novelty, motif and question checks in the actor loop, the scene spine, and the score in each run's replay manifest.
 - [`plans/beat-sheet.md`](plans/beat-sheet.md) - the scene's shape written at compile (arc, blocking, props, planted information, camera, a physical climax by 4:00), the director step that writes it, and how a run plays it.
-- [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
 - [`video/README.md`](video/README.md) - convert saved runs, narratives, and scripts into video.
 
 ## Core Thesis
@@ -150,11 +146,9 @@ The novela layer, implemented as a projection over committed events:
 - Attention: [`concepts/concept-map.md`](concepts/concept-map.md)
 - Motivation and emotion: [`architecture/application.md`](architecture/application.md)
 - Pressure and inhibition: [`concepts/concept-map.md`](concepts/concept-map.md)
-- Masking: [`concepts/concept-map.md`](concepts/concept-map.md), [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md)
+- Masking: [`concepts/concept-map.md`](concepts/concept-map.md)
 - Lurking and silence: [`concepts/concept-map.md`](concepts/concept-map.md), [`architecture/social-presence.md`](architecture/social-presence.md)
-- Mood and emotional drift: [`architecture/emotion.md`](architecture/emotion.md), [`notes/design-conversation-history.md`](notes/design-conversation-history.md), [`concepts/concept-map.md`](concepts/concept-map.md)
-- Persona setup workflow: [`personas/README.md`](personas/README.md)
-- Personality/persona questionnaires: [`notes/persona-assessment-canonical.md`](notes/persona-assessment-canonical.md), [`notes/personality-assessment-research.md`](notes/personality-assessment-research.md), [`notes/friend-questionnaire.md`](notes/friend-questionnaire.md), [`notes/solo-questionnaire.md`](notes/solo-questionnaire.md)
+- Mood and emotional drift: [`architecture/emotion.md`](architecture/emotion.md), [`concepts/concept-map.md`](concepts/concept-map.md)
 
 ### Stream And Observability
 
@@ -170,16 +164,16 @@ The novela layer, implemented as a projection over committed events:
 ### Channel World
 
 - V1 delivery-agnostic runtime: [`architecture/application.md`](architecture/application.md)
-- Public/private channels: [`architecture/social-presence.md`](architecture/social-presence.md), [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md)
-- Permissions and safety: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
-- Action capabilities: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
+- Public/private channels: [`architecture/social-presence.md`](architecture/social-presence.md)
+- Permissions and safety:, [`concepts/concept-map.md`](concepts/concept-map.md)
+- Action capabilities:, [`concepts/concept-map.md`](concepts/concept-map.md)
 
 ### Spectator And Narrator
 
 - Frontend comparison, before/after evidence and validation: [`frontend-gauntlet-review.md`](frontend-gauntlet-review.md)
-- Recaps: [`concepts/concept-map.md`](concepts/concept-map.md), [`notes/design-conversation-history.md`](notes/design-conversation-history.md)
-- Novela framing: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
-- Anti-gamification stance: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
+- Recaps: [`concepts/concept-map.md`](concepts/concept-map.md)
+- Novela framing:, [`concepts/concept-map.md`](concepts/concept-map.md)
+- Anti-gamification stance:, [`concepts/concept-map.md`](concepts/concept-map.md)
 
 ## V1 Target Behaviors
 
@@ -207,35 +201,21 @@ pnpm --filter @perfectman/server simulation
 pnpm --filter @perfectman/server simulation --config path/to/config.json
 ```
 
-Config format: see [`../examples/simulations/mock.inline-personas.example.json`](../examples/simulations/mock.inline-personas.example.json). For local friend-group personas stored outside git, see [`../examples/simulations/mock.persona-file.example.json`](../examples/simulations/mock.persona-file.example.json), [`../examples/personas/`](../examples/personas/), and [`personas/README.md`](personas/README.md).
+Config format: see [`../examples/simulations/mock.inline-personas.example.json`](../examples/simulations/mock.inline-personas.example.json). For a character kept in its own file, see [`../examples/simulations/mock.persona-file.example.json`](../examples/simulations/mock.persona-file.example.json) and [`../examples/personas/compiled/`](../examples/personas/compiled/).
 
 `buildConfiguredSimulation` in `packages/server/src/config/simulation-config.ts` is the composition root — it validates the config, wires repositories (in-memory or SQLite), delivery gateways (mock, stdout, html-snapshot, or composite), `AgentConfigRegistry`, `AgentRuntime`, and `SimulationRuntime`.
 
-`config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`. To keep real people out of git, put compiled persona files in `config/personas/*.persona.json` and reference them from `config/index.json` using `personaFile`.
+`config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`. A character can live in its own file under `config/personas/*.persona.json`, referenced from `config/index.json` with `personaFile`.
 
-### Local friend-group persona quickstart
+### Character file quickstart
 
 ```bash
-mkdir -p config/personas config/persona-notes
-cp examples/personas/setup/persona-setup.config.example.json config/persona-setup.local.json
-cp examples/personas/compiled/example-friend.persona.example.json config/personas/example-friend.persona.json
+mkdir -p config/personas
+cp examples/personas/compiled/example-character.persona.example.json config/personas/example-character.persona.json
 cp examples/simulations/mock.persona-file.example.json config/index.json
 ```
 
-Then edit:
-
-- `config/persona-setup.local.json` — who you are interviewing and which aliases/agent ids to use.
-- `config/personas/<agent-id>.persona.json` — compiled runtime persona and prompt profile.
-- `config/index.json` — local simulation config; each agent should use `"personaFile": "personas/<agent-id>.persona.json"`.
-
-Optional local helper: create/use `docs/personas/local-questionnaire-agent.md` to guide an AI agent through the interview and synthesis process. That file is intentionally gitignored.
-
-Before committing, check that real persona files are ignored:
-
-```bash
-git status --ignored --short docs/personas config
-git check-ignore -v config/index.json config/personas/example-friend.persona.json config/persona-notes/example-friend/raw.md docs/personas/local-questionnaire-agent.md
-```
+Characters are fictional. Do not model real people.
 
 For the FreeLLMAPI config, run the local proxy first:
 

@@ -12,22 +12,22 @@ import * as motion from "../motion.js";
 
 const AGENTS = [
   { id: "iris", displayName: "íris" },
-  { id: "bruno", displayName: "bruno" },
+  { id: "dario", displayName: "dario" },
 ];
-const IDS = ["bruno", "iris"];
+const IDS = ["dario", "iris"];
 const CHANNELS: LiveChannel[] = [
-  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "bruno"] },
-  { id: "dm", name: "dm", type: "private_channel", memberAgentIds: ["iris", "bruno"] },
+  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "dario"] },
+  { id: "dm", name: "dm", type: "private_channel", memberAgentIds: ["iris", "dario"] },
 ];
 
 function beat(id: string, over: Partial<StageBeat> = {}): StageBeat {
   return {
     id, kind: "message", pulseIndex: 0, channelId: "geral", actorId: "iris", text: `line ${id}`,
-    audienceIds: [], participantIds: ["iris", "bruno"], duration: 3, page: 0, ...over,
+    audienceIds: [], participantIds: ["iris", "dario"], duration: 3, page: 0, ...over,
   };
 }
 
-const BEATS = [beat("a"), beat("b", { actorId: "bruno" }), beat("c", { channelId: "dm" }), beat("d", { channelId: "dm" })];
+const BEATS = [beat("a"), beat("b", { actorId: "dario" }), beat("c", { channelId: "dm" }), beat("d", { channelId: "dm" })];
 const PLACED = placeBeats(BEATS, AGENTS, CHANNELS);
 
 function panelAt(index: number) {

@@ -10,7 +10,7 @@ import type {
   EventVisibility,
 } from "@perfectman/shared";
 import { scoreAttention } from "../attention/score-attention.js";
-import { CAIO } from "@perfectman/shared";
+import { TOMAS } from "@perfectman/shared";
 
 // --- Helpers ---
 
@@ -53,7 +53,7 @@ function makeAgent(overrides?: Partial<AgentState>): AgentState {
   return {
     agentId: "a1",
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: DEFAULT_MOOD,
     socialEmotions: ZERO_SOCIAL,
@@ -83,7 +83,7 @@ const DEFAULT_WORLD: WorldSignals = {
 describe("scoreAttention", () => {
   it("returns noticed=false for offline agent", () => {
     const agent = makeAgent({ presence: "offline" });
-    const result = scoreAttention(agent, CAIO, [], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.noticed).toBe(false);
     expect(result.dueScore).toBe(0);
     expect(result.needsLLM).toBe(false);
@@ -96,7 +96,7 @@ describe("scoreAttention", () => {
       payload: { mentionedAgentIds: ["a1"] },
       emotionalSalience: "medium",
     });
-    const result = scoreAttention(agent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.reasons).toContain("direct_mention");
     expect(result.dueScore).toBeGreaterThan(0);
   });
@@ -109,7 +109,7 @@ describe("scoreAttention", () => {
       payload: { replyToActorId: "a1" },
       emotionalSalience: "medium",
     });
-    const result = scoreAttention(agent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.reasons).toContain("reply_to_self");
   });
 
@@ -121,14 +121,14 @@ describe("scoreAttention", () => {
       payload: { mentionedAgentIds: ["a1"] },
       emotionalSalience: "high",
     });
-    const result = scoreAttention(agent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.needsLLM).toBe(true);
   });
 
   it("needsLLM=false for low-salience irrelevant event", () => {
     const agent = makeAgent();
     const event = makeEvent("e1", { emotionalSalience: "low" });
-    const result = scoreAttention(agent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.needsLLM).toBe(false);
   });
 
@@ -140,8 +140,8 @@ describe("scoreAttention", () => {
       coreMood: { ...DEFAULT_MOOD, energy: 0.9 },
     });
     const event = makeEvent("e1");
-    const lowResult = scoreAttention(lowEnergyAgent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
-    const highResult = scoreAttention(highEnergyAgent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const lowResult = scoreAttention(lowEnergyAgent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const highResult = scoreAttention(highEnergyAgent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
     expect(lowResult.dueScore).toBeLessThanOrEqual(highResult.dueScore);
   });
 
@@ -155,7 +155,7 @@ describe("scoreAttention", () => {
         emotionalSalience: "critical",
       }),
     );
-    const result = scoreAttention(agent, CAIO, events, DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, events, DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.dueScore).toBeLessThanOrEqual(1);
     expect(result.dueScore).toBeGreaterThanOrEqual(0);
   });
@@ -166,7 +166,7 @@ describe("scoreAttention", () => {
       makeEvent("e1", { payload: { mentionedAgentIds: ["a1"] }, emotionalSalience: "high" }),
       makeEvent("e2", { payload: { mentionedAgentIds: ["a1"] }, emotionalSalience: "high" }),
     ];
-    const result = scoreAttention(agent, CAIO, events, DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, events, DEFAULT_WORLD, new Map(), null, 3000);
     const unique = new Set(result.reasons);
     expect(result.reasons.length).toBe(unique.size);
   });
@@ -176,7 +176,7 @@ describe("scoreAttention", () => {
     const event = makeEvent("trigger-ev", {
       payload: { mentionedAgentIds: ["a1"] },
     });
-    const result = scoreAttention(agent, CAIO, [event], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [event], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.triggeringEventId).toBe("trigger-ev");
   });
 
@@ -184,7 +184,7 @@ describe("scoreAttention", () => {
     const agent = makeAgent({
       coreMood: { ...DEFAULT_MOOD, arousal: 0.15, energy: 0.5 },
     });
-    const result = scoreAttention(agent, CAIO, [], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.reasons).toContain("boredom_threshold");
   });
 });
@@ -193,10 +193,10 @@ describe("own events and needsLLM", () => {
   it("a high-salience event authored by the agent itself does not set needsLLM", () => {
     const agent = makeAgent();
     const own = makeEvent("e1", { actorId: agent.agentId, emotionalSalience: "high" });
-    const result = scoreAttention(agent, CAIO, [own], DEFAULT_WORLD, new Map(), null, 3000);
+    const result = scoreAttention(agent, TOMAS, [own], DEFAULT_WORLD, new Map(), null, 3000);
     expect(result.needsLLM).toBe(false);
     const foreign = makeEvent("e2", { actorId: "other1", emotionalSalience: "high" });
-    expect(scoreAttention(agent, CAIO, [foreign], DEFAULT_WORLD, new Map(), null, 3000).needsLLM).toBe(true);
+    expect(scoreAttention(agent, TOMAS, [foreign], DEFAULT_WORLD, new Map(), null, 3000).needsLLM).toBe(true);
   });
 });
 
@@ -210,19 +210,19 @@ describe("a whisper outranks an older line that named the agent too (hotel, D44)
 
   it("the whisper is the triggering event, whichever came first", () => {
     const agent = makeAgent();
-    expect(scoreAttention(agent, CAIO, [spoken, whisper], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("new");
-    expect(scoreAttention(agent, CAIO, [whisper, spoken], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("new");
+    expect(scoreAttention(agent, TOMAS, [spoken, whisper], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("new");
+    expect(scoreAttention(agent, TOMAS, [whisper, spoken], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("new");
   });
 
   it("two spoken lines still keep the first as the trigger", () => {
     const agent = makeAgent();
     const later = makeEvent("later", { actorId: "h:9", payload: { mentionedAgentIds: ["a1"], mode: "say" }, emotionalSalience: "high" });
-    expect(scoreAttention(agent, CAIO, [spoken, later], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("old");
+    expect(scoreAttention(agent, TOMAS, [spoken, later], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("old");
   });
 
   it("a whisper somebody else heard clearly is no more than a mention", () => {
     const agent = makeAgent();
     const other = makeEvent("other", { actorId: "h:9", payload: { mentionedAgentIds: ["a1"], mode: "whisper", hearing: { a2: "clear", a1: "notice" } }, emotionalSalience: "high" });
-    expect(scoreAttention(agent, CAIO, [spoken, other], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("old");
+    expect(scoreAttention(agent, TOMAS, [spoken, other], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("old");
   });
 });

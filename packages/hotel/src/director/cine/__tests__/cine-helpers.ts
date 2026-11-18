@@ -3,7 +3,7 @@ import type { PerfectmanUi } from "../../generated.js";
 
 type Actor = { ref: string; name: string; role?: string; avatar: number; room: number; tile: Tile };
 
-/** Four people in two rooms: Duda and Rafa in the lounge (12), Gabi and Leo in the kitchen (13). */
+/** Four people in two rooms: Duda and Rafa in the lounge (12), Gabi and Renan in the kitchen (13). */
 export class FakeWorld implements CineWorld {
   readonly actors = new Map<string, Actor>();
   readonly moods = new Map<string, CineMood>();
@@ -13,7 +13,7 @@ export class FakeWorld implements CineWorld {
     this.add({ ref: "duda", name: "Duda", role: "conciliadora", avatar: -701, room: 12, tile: [4, 4] });
     this.add({ ref: "rafa", name: "Rafa", role: "cético", avatar: -702, room: 12, tile: [6, 4] });
     this.add({ ref: "gabi", name: "Gabi", role: "performer", avatar: -703, room: 13, tile: [3, 3] });
-    this.add({ ref: "leo", name: "Leo", role: "anfitrião", avatar: -704, room: 13, tile: [5, 3] });
+    this.add({ ref: "renan", name: "Renan", role: "anfitrião", avatar: -704, room: 13, tile: [5, 3] });
   }
   add(a: Actor): void {
     this.actors.set(a.ref, a);

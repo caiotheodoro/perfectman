@@ -48,14 +48,14 @@ export class FakePort implements DramaDecisionPort {
 export function rig(o: { port?: FakePort | undefined; log?: DramaLog; drama?: boolean; ghost?: boolean; allow?: (observer: string, offender: string) => boolean; note?: (agentId: string, reasons: BlockedReason[]) => void } = {}) {
   const clock = new ManualClock(50_000);
   const mirror = new HotelSpaceMirror();
-  const refresh = (): void => mirror.applySnapshot(snapshot(12, 1, [avatar(-701, "Duda", 4, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Leo", 2, 2), avatar(9, "ana", 7, 5)]), clock.now());
+  const refresh = (): void => mirror.applySnapshot(snapshot(12, 1, [avatar(-701, "Duda", 4, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Renan", 2, 2), avatar(9, "ana", 7, 5)]), clock.now());
   refresh();
-  for (const [ref, id, name] of [["duda", -701, "Duda"], ["rafa", -702, "Rafa"], ["gabi", -703, "Gabi"], ["leo", -704, "Leo"]] as const) mirror.registerActor({ ref, id, run: 7, name }, "12", clock.now());
+  for (const [ref, id, name] of [["duda", -701, "Duda"], ["rafa", -702, "Rafa"], ["gabi", -703, "Gabi"], ["renan", -704, "Renan"]] as const) mirror.registerActor({ ref, id, run: 7, name }, "12", clock.now());
   const sent: SidecarMsg[] = [];
   const blocked: Array<[string, BlockedReason[]]> = [];
   const pool: string[] = [];
   const poolApi: ActorPool = { defer: (r) => pool.push(`defer:${r}`), admit: (r) => pool.push(`admit:${r}`), retire: (r) => pool.push(`retire:${r}`) };
-  const states = new Map<string, AgentState>(["duda", "rafa", "gabi", "leo"].map((r) => [r, agentState()]).map(([r, s]) => [r as string, { ...(s as AgentState), agentId: r as string }]));
+  const states = new Map<string, AgentState>(["duda", "rafa", "gabi", "renan"].map((r) => [r, agentState()]).map(([r, s]) => [r as string, { ...(s as AgentState), agentId: r as string }]));
   const store: AgentStateStore = { get: async (r) => states.get(r) ?? null, upsert: async (s) => void states.set(s.agentId, s) };
   const port = "port" in o ? o.port : new FakePort();
   let cid = 0;
@@ -66,8 +66,8 @@ export function rig(o: { port?: FakePort | undefined; log?: DramaLog; drama?: bo
     hooks: { blocked: (a, r) => blocked.push([a, r]), arrived: () => undefined, pairAborted: () => undefined, pairOutcome: () => undefined },
   });
   body = new DramaBody({
-    run: 7, clock, mirror, executor: exec, ...(port ? { port: () => port } : {}), isOwn: (r) => ["duda", "rafa", "gabi", "leo"].includes(r),
-    names: (r) => ({ duda: "Duda", rafa: "Rafa", gabi: "Gabi", leo: "Leo" })[r], lang: "en", pool: poolApi, store, ghostVoice: o.ghost === true,
+    run: 7, clock, mirror, executor: exec, ...(port ? { port: () => port } : {}), isOwn: (r) => ["duda", "rafa", "gabi", "renan"].includes(r),
+    names: (r) => ({ duda: "Duda", rafa: "Rafa", gabi: "Gabi", renan: "Renan" })[r], lang: "en", pool: poolApi, store, ghostVoice: o.ghost === true,
     hooks: { blocked: (a, r) => blocked.push([a, r]) },
     ...(o.allow ? { provocation: { allow: o.allow } } : {}),
     ...(o.note ? { note: o.note } : {}),

@@ -29,8 +29,8 @@ function noOpEvent(actorId: string, privateMotiveSummary: string): CommittedEven
 describe("ruleNarration — engine fallback motives never surface as the hidden shift", () => {
   it("quotes a real character motive over a co-occurring engine fallback motive", () => {
     const events = [
-      noOpEvent("caio", "Fallback applied: JSON parse error at position 12"),
-      noOpEvent("mari", "quero manter distância da Mariana porque ela me traiu ontem"),
+      noOpEvent("tomas", "Fallback applied: JSON parse error at position 12"),
+      noOpEvent("mari", "quero manter distância da Lara porque ela me traiu ontem"),
     ];
 
     const narration = ruleNarration(scenario, events);
@@ -41,10 +41,10 @@ describe("ruleNarration — engine fallback motives never surface as the hidden 
 
   it("falls back to the generic line when every no_op motive is engine-authored", () => {
     const events = [
-      noOpEvent("caio", "Fallback applied: JSON parse error at position 12"),
+      noOpEvent("tomas", "Fallback applied: JSON parse error at position 12"),
       noOpEvent("mari", `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, even after a retry — blocked structurally.`),
-      noOpEvent("leo", "LLM budget exceeded: per-minute cap reached"),
-      noOpEvent("goulart", "Provider failed: timeout after 5000ms"),
+      noOpEvent("renan", "LLM budget exceeded: per-minute cap reached"),
+      noOpEvent("vasco", "Provider failed: timeout after 5000ms"),
       noOpEvent("ana", "Retry call failed."),
       noOpEvent("bea", "Reaction target unresolvable; reaction dropped."),
     ];
@@ -58,8 +58,8 @@ describe("ruleNarration — engine fallback motives never surface as the hidden 
 describe("ruleNarrationFromTranscript — same guard on the string-based path", () => {
   it("quotes a real character motive over a co-occurring engine fallback motive", () => {
     const transcript = [
-      `[p1] caio (no_op_recorded) [internally: Fallback applied: JSON parse error at position 12]`,
-      `[p1] mari (no_op_recorded) [internally: quero manter distância da Mariana porque ela me traiu ontem]`,
+      `[p1] tomas (no_op_recorded) [internally: Fallback applied: JSON parse error at position 12]`,
+      `[p1] mari (no_op_recorded) [internally: quero manter distância da Lara porque ela me traiu ontem]`,
     ].join("\n");
 
     const narration = ruleNarrationFromTranscript(transcript, "Test Scene");
@@ -72,9 +72,9 @@ describe("ruleNarrationFromTranscript — same guard on the string-based path", 
 describe("ruleNarrationFromTranscript — canonical renderer lines", () => {
   it("counts messages from the canonical quoted line with channel and privacy marker", () => {
     const transcript = [
-      `[p1] caio (message_sent) #ch_geral "bora marcar a call"`,
+      `[p1] tomas (message_sent) #ch_geral "bora marcar a call"`,
       `[p2] mari (reply_sent) #cerne-decisao 🔒 "só depois do pdf" [internally: ganhar tempo]`,
-      `[p3] leo (message_sent) #ch_geral "fechado" [engine-fallback]`,
+      `[p3] renan (message_sent) #ch_geral "fechado" [engine-fallback]`,
     ].join("\n");
 
     const narration = ruleNarrationFromTranscript(transcript, "Test Scene");

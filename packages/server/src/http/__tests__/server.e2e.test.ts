@@ -20,10 +20,10 @@ async function markdownInputs() {
     personas: [
       { filename: "iris.persona.md", text: persona },
       {
-        filename: "bruno.persona.md",
+        filename: "dario.persona.md",
         text: persona
-          .replace("personaId: iris", "personaId: bruno")
-          .replace("displayName: Íris", "displayName: Bruno"),
+          .replace("personaId: iris", "personaId: dario")
+          .replace("displayName: Íris", "displayName: Dario"),
       },
     ],
     scenario: { filename: "dinner.scenario.md", text: scenario },
@@ -122,7 +122,7 @@ describe("web server", () => {
 
     expect(body.ok).toBe(true);
     expect(body.summary.agents.map((a: { id: string }) => a.id).sort()).toEqual([
-      "bruno",
+      "dario",
       "iris",
       "marcela",
     ]);
@@ -182,7 +182,7 @@ describe("web server", () => {
     // The replay the stopped frame points at actually resolves.
     const replay = await (await fetch(`${base}/api/runs/${runId}/replay`)).json();
     expect(replay.pulses).toHaveLength(5);
-    expect(replay.agentIds.sort()).toEqual(["bruno", "iris", "marcela"]);
+    expect(replay.agentIds.sort()).toEqual(["dario", "iris", "marcela"]);
 
     const runs = await (await fetch(`${base}/api/runs`)).json();
     expect(runs.runs.some((r: { runId: string }) => r.runId === runId)).toBe(true);

@@ -170,8 +170,8 @@ packages/shared/src/
   fixtures/
     personas.ts                               # buildFivePersonaSeedFixture()
     simulation-fixture.ts                     # buildSimulationFixture()
-    bruno-caio-exclusion.ts                   # buildBrunoCaioExclusionScenario()
-    cold-start-first-10-minutes.ts            # buildGoulartColdStartScenario()
+    dario-tomas-exclusion.ts                   # buildDarioTomasExclusionScenario()
+    cold-start-first-10-minutes.ts            # buildVascoColdStartScenario()
     delayed-reply.ts                          # buildDelayedReplyScenario()
     no-op-inhibition.ts                       # buildNoOpInhibitionScenario()
     private-channel-motive.ts                 # buildPrivateChannelMotiveScenario()
@@ -761,8 +761,8 @@ Each fixture includes: simulation, channels, agents, agent states, events, expec
 
 - `buildSimulationFixture()` — basic 5-agent sim with #geral
 - `buildFivePersonaSeedFixture()` — all 5 persona configs with seed states
-- `buildGoulartColdStartScenario()` — Goulart arrives first, boredom drives first message
-- `buildBrunoCaioExclusionScenario()` — Caio replies to Goulart not Bruno, tests exclusion cascade
+- `buildVascoColdStartScenario()` — Vasco arrives first, boredom drives first message
+- `buildDarioTomasExclusionScenario()` — Tomas replies to Vasco not Dario, tests exclusion cascade
 - `buildPrivateChannelMotiveScenario()` — affinity+inhibition drives private channel creation
 - `buildDelayedReplyScenario()` — delay interpretation changes meaning
 - `buildNoOpInhibitionScenario()` — overwhelming inhibition produces first-class no-op
@@ -813,7 +813,7 @@ Each fixture includes: simulation, channels, agents, agent states, events, expec
 - `updateRelationalEmotions` — per-pair asymmetric, mood-congruent distortion
 - `computeActionEmotions` — 15 formulas
 - `updateEmotionStack` — 8-step cycle composition
-- Tests: bounds/clamping, Bruno-Caio asymmetry, energy/stability rules, angular constraint
+- Tests: bounds/clamping, Dario-Tomas asymmetry, energy/stability rules, angular constraint
 
 ### M7: Interpretation + Motivation + Pressure + Inhibition
 - `interpretProgrammaticSignals` — 6 signal types

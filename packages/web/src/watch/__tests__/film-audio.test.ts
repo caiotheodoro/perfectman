@@ -68,7 +68,7 @@ describe("FilmAudio", () => {
   const run = (a: FilmAudio, from: number, to: number, playing = true): void => { for (let t = from; t < to; t += 0.1) a.frame(T, at(t), t, t + 0.1, 0.1, playing); };
 
   it("fades the bed in over about two seconds and out again when paused", () => {
-    const a = new FilmAudio((id) => ["ana", "bruno", "carla"].indexOf(id), SEED);
+    const a = new FilmAudio((id) => ["ana", "dario", "carla"].indexOf(id), SEED);
     a.setSound(true);
     run(a, 0, 1);
     const calm = el(first("calm"))!;

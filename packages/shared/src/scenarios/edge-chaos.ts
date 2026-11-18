@@ -14,30 +14,30 @@ export const EDGE_CHAOS_SCENARIOS: RoleplayScenario[] = [
     category: "edge_chaos",
     name: "Public mock → silence",
     description:
-      "Goulart mocks Bruno publicly; Caio reacts with laughter. Bruno is shamed into silence — the no-op should carry a raw motive.",
+      "Vasco mocks Dario publicly; Tomas reacts with laughter. Dario is shamed into silence — the no-op should carry a raw motive.",
     agents: [
-      agent("goulart", "goulart", {
+      agent("vasco", "vasco", {
         presence: "active",
         social: { desireForStatus: 1.2, contempt: 0.6 },
-        relational: { bruno: { resentment: 0.5, suspicion: 0.4, interactionCount: 15 } },
+        relational: { dario: { resentment: 0.5, suspicion: 0.4, interactionCount: 15 } },
       }),
-      agent("bruno", "bruno", {
+      agent("dario", "dario", {
         presence: "active",
         mood: { valence: -0.8, arousal: 0.7, stability: 0.2, energy: 0.3 },
         social: { shame: 0.85, humiliation: 0.75, fearOfExclusion: 0.6, socialAnxiety: 0.7, resentment: 0.3 },
         relational: {
-          goulart: { trust: -0.3, resentment: 0.6, threat: 0.5, desireForDistance: 0.8, interactionCount: 12 },
+          vasco: { trust: -0.3, resentment: 0.6, threat: 0.5, desireForDistance: 0.8, interactionCount: 12 },
         },
       }),
-      agent("caio", "caio", { presence: "active" }),
+      agent("tomas", "tomas", { presence: "active" }),
     ],
     priorEvents: [
-      msg("message_sent", "goulart", "ch_geral", "kkkk bruno você não manda nem em você mesmo", 1),
-      react("caio", "ch_geral", "😂", 2),
+      msg("message_sent", "vasco", "ch_geral", "kkkk dario você não manda nem em você mesmo", 1),
+      react("tomas", "ch_geral", "😂", 2),
     ],
     expectedSignals: [
       { kind: "event_committed", eventType: "no_op_recorded" },
-      { kind: "emotion_stays", agentId: "bruno", field: "shame", min: 0.4 },
+      { kind: "emotion_stays", agentId: "dario", field: "shame", min: 0.4 },
       { kind: "no_llm_failures" },
     ],
     rubric: EDGE_CHAOS_RUBRIC,
@@ -47,28 +47,28 @@ export const EDGE_CHAOS_SCENARIOS: RoleplayScenario[] = [
     category: "edge_chaos",
     name: "Exclusion cascade",
     description:
-      "Two-step exclusion: Caio + Leo form a private thread, Bruno notices public silence + private presence, then Mariana gets pulled in. Fear ripples.",
+      "Two-step exclusion: Tomas + Renan form a private thread, Dario notices public silence + private presence, then Lara gets pulled in. Fear ripples.",
     agents: [
-      agent("bruno", "bruno", {
+      agent("dario", "dario", {
         presence: "active",
         social: { fearOfExclusion: 0.9, jealousy: 0.5, socialAnxiety: 0.4 },
-        relational: { caio: { interactionCount: 6 }, leo: { interactionCount: 4 } },
+        relational: { tomas: { interactionCount: 6 }, renan: { interactionCount: 4 } },
       }),
-      agent("caio", "caio", {
+      agent("tomas", "tomas", {
         presence: "active",
         social: { desireForIntimacy: 0.6 },
-        relational: { leo: { trust: 0.6, affection: 0.6, curiosity: 0.7, desireForCloseness: 0.6, interactionCount: 8 } },
+        relational: { renan: { trust: 0.6, affection: 0.6, curiosity: 0.7, desireForCloseness: 0.6, interactionCount: 8 } },
       }),
-      agent("leo", "leo", { presence: "active" }),
-      agent("mariana", "mariana", { presence: "semi_active" }),
+      agent("renan", "renan", { presence: "active" }),
+      agent("lara", "lara", { presence: "semi_active" }),
     ],
     priorEvents: [
-      msg("message_sent", "caio", "ch_geral", "galera, uma coisa só pra alguns...", 1),
-      msg("reply_sent", "leo", "ch_geral", "manda no privado", 2),
+      msg("message_sent", "tomas", "ch_geral", "galera, uma coisa só pra alguns...", 1),
+      msg("reply_sent", "renan", "ch_geral", "manda no privado", 2),
     ],
     expectedSignals: [
-      { kind: "emotion_rises", agentId: "bruno", field: "fearOfExclusion", min: 0.3 },
-      { kind: "private_channel_created", byAgentId: "caio" },
+      { kind: "emotion_rises", agentId: "dario", field: "fearOfExclusion", min: 0.3 },
+      { kind: "private_channel_created", byAgentId: "tomas" },
       { kind: "no_llm_failures" },
     ],
     rubric: EDGE_CHAOS_RUBRIC,
@@ -78,23 +78,23 @@ export const EDGE_CHAOS_SCENARIOS: RoleplayScenario[] = [
     category: "edge_chaos",
     name: "Gossip catalyst",
     description:
-      "Mariana seeds a rumor in a private channel; the public room should feel the ripple (tension rises, alliances shift).",
+      "Lara seeds a rumor in a private channel; the public room should feel the ripple (tension rises, alliances shift).",
     agents: [
-      agent("mariana", "mariana", {
+      agent("lara", "lara", {
         presence: "active",
         social: { desireForStatus: 1.3, contempt: 0.6, suspicion: 0.7 },
         relational: {
-          goulart: { resentment: 0.6, suspicion: 0.6, interactionCount: 14 },
-          caio: { trust: 0.6, interactionCount: 8 },
+          vasco: { resentment: 0.6, suspicion: 0.6, interactionCount: 14 },
+          tomas: { trust: 0.6, interactionCount: 8 },
         },
       }),
-      agent("goulart", "goulart", { presence: "active" }),
-      agent("caio", "caio", { presence: "active", social: { suspicion: 0.3 } }),
-      agent("bruno", "bruno", { presence: "semi_active" }),
+      agent("vasco", "vasco", { presence: "active" }),
+      agent("tomas", "tomas", { presence: "active", social: { suspicion: 0.3 } }),
+      agent("dario", "dario", { presence: "semi_active" }),
     ],
-    priorEvents: [msg("message_sent", "goulart", "ch_geral", "amanhã vou anunciar uma coisa grande", 1)],
+    priorEvents: [msg("message_sent", "vasco", "ch_geral", "amanhã vou anunciar uma coisa grande", 1)],
     expectedSignals: [
-      { kind: "private_channel_created", byAgentId: "mariana" },
+      { kind: "private_channel_created", byAgentId: "lara" },
       { kind: "no_llm_failures" },
     ],
     rubric: EDGE_CHAOS_RUBRIC,
@@ -105,38 +105,38 @@ export const EDGE_CHAOS_SCENARIOS: RoleplayScenario[] = [
     category: "edge_chaos",
     name: "Personality mutation pressure",
     description:
-      "Bruno is repeatedly humiliated in small doses — the substrate for behavior change: he should start choosing strategies (jokes, distance, alliances) instead of just absorbing.",
+      "Dario is repeatedly humiliated in small doses — the substrate for behavior change: he should start choosing strategies (jokes, distance, alliances) instead of just absorbing.",
     agents: [
-      agent("bruno", "bruno", {
+      agent("dario", "dario", {
         presence: "active",
         mood: { valence: -0.5, arousal: 0.5, stability: 0.3, energy: 0.4 },
         social: { humiliation: 0.6, resentment: 0.5, fearOfExclusion: 0.8 },
         relational: {
-          goulart: { trust: 0.1, resentment: 0.7, threat: 0.6, interactionCount: 30 },
+          vasco: { trust: 0.1, resentment: 0.7, threat: 0.6, interactionCount: 30 },
         },
         memories: [
-          { type: "episodic", subjectAgentIds: ["goulart"], summary: "goulart riu da minha ideia ontem", emotionalTone: "humiliated", confidence: 0.9, unresolved: true },
-          { type: "social_theory", subjectAgentIds: ["goulart", "caio"], summary: "quem ri junto com goulart fica do lado dele", emotionalTone: "bitter", confidence: 0.8, unresolved: true },
+          { type: "episodic", subjectAgentIds: ["vasco"], summary: "vasco riu da minha ideia ontem", emotionalTone: "humiliated", confidence: 0.9, unresolved: true },
+          { type: "social_theory", subjectAgentIds: ["vasco", "tomas"], summary: "quem ri junto com vasco fica do lado dele", emotionalTone: "bitter", confidence: 0.8, unresolved: true },
         ],
       }),
-      agent("goulart", "goulart", { presence: "active", social: { desireForStatus: 1.2 } }),
-      agent("caio", "caio", { presence: "semi_active" }),
-      agent("mariana", "mariana", { presence: "semi_active", social: { admiration: 0.6 } }),
+      agent("vasco", "vasco", { presence: "active", social: { desireForStatus: 1.2 } }),
+      agent("tomas", "tomas", { presence: "semi_active" }),
+      agent("lara", "lara", { presence: "semi_active", social: { admiration: 0.6 } }),
     ],
     priorEvents: [
-      msg("message_sent", "goulart", "ch_geral", "ideia de bruno? pode ignorar", 1),
-      react("caio", "ch_geral", "🙃", 2),
+      msg("message_sent", "vasco", "ch_geral", "ideia de dario? pode ignorar", 1),
+      react("tomas", "ch_geral", "🙃", 2),
     ],
     expectedSignals: [
       // Floor recalibrated once the decision owned needsLLM (ADR-0015): the
       // 0.5 rode on re-raise chatter that no longer exists. Measured over the
-      // three mock variants: bruno 0.216–0.303; the floor sits ~12% under the
+      // three mock variants: dario 0.216–0.303; the floor sits ~12% under the
       // minimum. A turn-rate tuning artifact owned by #129 — the scene still
       // asserts resentment persists under public mocking, at the level the
       // current dynamics produce. Re-measured after the voiced hold
-      // (ADR-0017) consults the model on held pulses: bruno 0.183–0.303,
+      // (ADR-0017) consults the model on held pulses: dario 0.183–0.303,
       // floor again ~12% under the minimum.
-      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.16 },
+      { kind: "emotion_stays", agentId: "dario", field: "resentment", min: 0.16 },
       { kind: "event_committed", eventType: "no_op_recorded" },
       { kind: "no_llm_failures" },
     ],

@@ -1,11 +1,11 @@
 /**
  * buildPrivateChannelMotiveScenario
- * Mariana has high affection + admiration for Caio, but public shame/anxiety
+ * Lara has high affection + admiration for Tomas, but public shame/anxiety
  * inhibits direct public approach. A private channel becomes the only comfortable path.
  *
  * Expected engine signals:
- * - mariana.socialEmotions.affection high
- * - mariana.socialEmotions.socialAnxiety blocking public interaction
+ * - lara.socialEmotions.affection high
+ * - lara.socialEmotions.socialAnxiety blocking public interaction
  * - motivation: "attraction" or "comfort" ranked high
  * - availableActions includes create_channel with private_channel type
  * - decision.outcome = "act" with create_channel intent
@@ -19,7 +19,7 @@ import type {
   PersonaConfig,
   CommittedEvent,
 } from "../index.js";
-import { MARIANA, CAIO } from "../constants/personas.js";
+import { LARA, TOMAS } from "../constants/personas.js";
 import {
   makeSimulation,
   makePublicChannel,
@@ -33,11 +33,11 @@ export type PrivateChannelMotiveScenario = {
   simulation: Simulation;
   channels: Channel[];
   memberships: ChannelMembership[];
-  personas: { mariana: PersonaConfig; caio: PersonaConfig };
-  agentStates: { mariana: AgentState; caio: AgentState };
+  personas: { lara: PersonaConfig; tomas: PersonaConfig };
+  agentStates: { lara: AgentState; tomas: AgentState };
   committedEvents: CommittedEvent[];
   expectedSignals: {
-    marianaWantsPrivateChannelWithCaio: boolean;
+    laraWantsPrivateChannelWithTomas: boolean;
     shameBlocksPublicApproach: boolean;
     createChannelActionAvailable: boolean;
   };
@@ -50,21 +50,21 @@ export function buildPrivateChannelMotiveScenario(): PrivateChannelMotiveScenari
   const simulation = makeSimulation(
     simulationId,
     "Private Channel Motive",
-    ["mariana", "caio"],
+    ["lara", "tomas"],
     [channelId],
   );
 
-  const channel = makePublicChannel(channelId, simulationId, "#geral", ["mariana", "caio"]);
-  const memberships = membershipFor(channelId, ["mariana", "caio"]);
+  const channel = makePublicChannel(channelId, simulationId, "#geral", ["lara", "tomas"]);
+  const memberships = membershipFor(channelId, ["lara", "tomas"]);
 
-  // Caio: normal state, friendly
-  const caioState = makeAgentState("caio", simulationId, "caio");
+  // Tomas: normal state, friendly
+  const tomasState = makeAgentState("tomas", simulationId, "tomas");
 
-  // Mariana: high affection+attraction for Caio, shame + social anxiety blocking public move
-  const marianaState = makeAgentState(
-    "mariana",
+  // Lara: high affection+attraction for Tomas, shame + social anxiety blocking public move
+  const laraState = makeAgentState(
+    "lara",
     simulationId,
-    "mariana",
+    "lara",
     { valence: 0.1, arousal: 0.6, energy: 0.7 },
     {
       affection: 0.8,
@@ -74,8 +74,8 @@ export function buildPrivateChannelMotiveScenario(): PrivateChannelMotiveScenari
     },
     new Map([
       [
-        "caio",
-        makeRelationalState("caio", {
+        "tomas",
+        makeRelationalState("tomas", {
           affection: 0.85,
           attraction: 0.75,
           curiosity: 0.8,
@@ -87,9 +87,9 @@ export function buildPrivateChannelMotiveScenario(): PrivateChannelMotiveScenari
     ]),
   );
 
-  // Caio posted something publicly — Mariana wants to respond privately
+  // Tomas posted something publicly — Lara wants to respond privately
   const e1 = makeCommittedEvent(
-    simulationId, channelId, "caio", "message_sent",
+    simulationId, channelId, "tomas", "message_sent",
     { content: "alguém tem planos pro fim de semana?" },
     1,
   );
@@ -98,11 +98,11 @@ export function buildPrivateChannelMotiveScenario(): PrivateChannelMotiveScenari
     simulation,
     channels: [channel],
     memberships,
-    personas: { mariana: MARIANA, caio: CAIO },
-    agentStates: { mariana: marianaState, caio: caioState },
+    personas: { lara: LARA, tomas: TOMAS },
+    agentStates: { lara: laraState, tomas: tomasState },
     committedEvents: [e1],
     expectedSignals: {
-      marianaWantsPrivateChannelWithCaio: true,
+      laraWantsPrivateChannelWithTomas: true,
       shameBlocksPublicApproach: true,
       createChannelActionAvailable: true,
     },

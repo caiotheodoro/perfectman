@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { BRUNO_PACK, CAIO_PACK, GOULART_PACK, LEO_PACK, MARIANA_PACK } from "@perfectman/shared";
+import { DARIO_PACK, TOMAS_PACK, VASCO_PACK, RENAN_PACK, LARA_PACK } from "@perfectman/shared";
 import { findGarble, findOwnEcho, findPhraseLoop, findRoomEcho } from "../echo-guard.js";
-import { CAIO_JOKE, HELOISA, IAN_FIRST, NORMAL, PISTOLINHA } from "./fixtures/ptbr-lines.js";
+import { TOMAS_JOKE, HELOISA, OMAR_FIRST, NORMAL, PISTOLINHA } from "./fixtures/ptbr-lines.js";
 
 describe("false positives on normal Portuguese", () => {
   it("no ordinary line is garbled", () => {
@@ -37,7 +37,7 @@ describe("false positives on normal Portuguese", () => {
   });
 
   it("no ordinary line echoes, or loops with, the production lines", () => {
-    const production = [IAN_FIRST, CAIO_JOKE, PISTOLINHA[0]!, HELOISA[0]!];
+    const production = [OMAR_FIRST, TOMAS_JOKE, PISTOLINHA[0]!, HELOISA[0]!];
     for (const line of NORMAL) {
       expect(findOwnEcho(line, production), line).toBeUndefined();
       expect(findRoomEcho(line, production), line).toBeUndefined();
@@ -57,7 +57,7 @@ describe("false positives on normal Portuguese", () => {
   });
 
   // Lines written by hand for the five pt-BR personas (lowercase chat, "kk", slang, emoji): not written for this guard.
-  const AUTHORED = [BRUNO_PACK, CAIO_PACK, GOULART_PACK, LEO_PACK, MARIANA_PACK].flatMap((pack) => pack.styleExamples);
+  const AUTHORED = [DARIO_PACK, TOMAS_PACK, VASCO_PACK, RENAN_PACK, LARA_PACK].flatMap((pack) => pack.styleExamples);
 
   it("none of the personas' hand-written chat lines is garbled, echoes another, or loops", () => {
     expect(AUTHORED.length).toBeGreaterThan(40);

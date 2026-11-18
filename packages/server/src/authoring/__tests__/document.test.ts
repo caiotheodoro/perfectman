@@ -44,13 +44,13 @@ describe("parseMarkdown — frontmatter", () => {
 describe("parseMarkdown — sections", () => {
   it("splits ## sections and nests ### subsections", () => {
     const doc = parseMarkdown(
-      ["## Agents", "", "### ana", "Starting mood: guarded", "", "### bruno", "Starting mood: buoyant"].join(
+      ["## Agents", "", "### ana", "Starting mood: guarded", "", "### dario", "Starting mood: buoyant"].join(
         "\n",
       ),
     );
     expect(doc.sections).toHaveLength(1);
     const agents = findSection(doc, "agents");
-    expect(agents?.subsections.map((s) => s.key)).toEqual(["ana", "bruno"]);
+    expect(agents?.subsections.map((s) => s.key)).toEqual(["ana", "dario"]);
     expect(sectionText(agents?.subsections[0])).toBe("Starting mood: guarded");
   });
 
@@ -117,8 +117,8 @@ describe("splitKeyValue", () => {
   });
 
   it("splits on the last colon for pair keys", () => {
-    expect(splitKeyValue("ana:bruno: close_friends", "last")).toEqual({
-      key: "ana:bruno",
+    expect(splitKeyValue("ana:dario: close_friends", "last")).toEqual({
+      key: "ana:dario",
       value: "close_friends",
     });
   });

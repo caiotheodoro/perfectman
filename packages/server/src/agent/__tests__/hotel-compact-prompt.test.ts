@@ -217,7 +217,7 @@ describe("angle of the turn", () => {
     expect(PromptBuilder.build(input, profile, "action_intent", undefined, "compact").user).toBe(first.user);
     const seen = new Set(Array.from({ length: 12 }, (_, i) => angleFor({ ...input, perceptionPacket: { ...input.perceptionPacket, ownRecentUtterances: Array(i).fill("x") } }, "pt-BR", "Duda")));
     expect(seen.size).toBeGreaterThan(2);
-    const asked = hotelInput([{ ...humanLine("Duda, tudo bem?", "Visitante"), payload: { content: "Duda, tudo bem?", untrusted: true, senderName: "Visitante", addresseeIds: ["example-friend"] } } as CommittedEvent]);
+    const asked = hotelInput([{ ...humanLine("Duda, tudo bem?", "Visitante"), payload: { content: "Duda, tudo bem?", untrusted: true, senderName: "Visitante", addresseeIds: ["example-character"] } } as CommittedEvent]);
     expect(PromptBuilder.build(asked, profile, "action_intent", undefined, "compact").user).not.toContain("Se for falar");
   });
 });

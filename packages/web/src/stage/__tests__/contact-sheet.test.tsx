@@ -11,9 +11,9 @@ import { frameFor, frameLabel } from "../Frame.js";
 
 const AGENTS = [
   { id: "iris", displayName: "íris" },
-  { id: "bruno", displayName: "bruno" },
+  { id: "dario", displayName: "dario" },
 ];
-const IDS = ["iris", "bruno"];
+const IDS = ["iris", "dario"];
 const CHANNELS: LiveChannel[] = [{ id: "geral", name: "geral", type: "public_channel", memberAgentIds: IDS }];
 
 function beat(id: string, over: Partial<StageBeat> = {}): StageBeat {
@@ -22,7 +22,7 @@ function beat(id: string, over: Partial<StageBeat> = {}): StageBeat {
     audienceIds: [], participantIds: IDS, duration: 3, page: 0, ...over,
   };
 }
-const BEATS = ["a", "b", "c", "d", "e"].map((id) => beat(id, { actorId: id < "c" ? "iris" : "bruno" }));
+const BEATS = ["a", "b", "c", "d", "e"].map((id) => beat(id, { actorId: id < "c" ? "iris" : "dario" }));
 const PLACED = placeBeats(BEATS, AGENTS, CHANNELS);
 const FRAMES = BEATS.map((b, i) => frameFor(b, PLACED[i]!, IDS));
 const LABELS = BEATS.map((b) => frameLabel(b, AGENTS, CHANNELS[0]));

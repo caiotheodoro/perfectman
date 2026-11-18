@@ -5,10 +5,10 @@ import { GENERIC_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 
 describe("PersonaLoader", () => {
   it("resolves the authored persona pack for a canonical persona", () => {
-    const profile = PersonaLoader.getProfile("goulart");
+    const profile = PersonaLoader.getProfile("vasco");
     expect(profile).toBeDefined();
-    expect(profile.personaId).toBe("goulart");
-    expect(profile.displayName).toBe("Goulart");
+    expect(profile.personaId).toBe("vasco");
+    expect(profile.displayName).toBe("Vasco");
     expect(profile.language).toBe("pt-BR");
     expect(profile.identityFrame.length).toBeGreaterThan(40);
     expect(profile.voiceGuidelines.length).toBeGreaterThanOrEqual(3);
@@ -17,7 +17,7 @@ describe("PersonaLoader", () => {
   });
 
   it("carries the persona's messageLength into the prompt profile", () => {
-    const pack = getPersonaPackById("goulart");
+    const pack = getPersonaPackById("vasco");
     expect(pack).toBeDefined();
     const profile = personaPackToProfile(pack!);
 
@@ -25,9 +25,9 @@ describe("PersonaLoader", () => {
   });
 
   it("capitalises the displayName from the personaId", () => {
-    const profile = PersonaLoader.getProfile("BRUNO");
-    expect(profile.displayName).toBe("BRUNO");
-    expect(profile.personaId).toBe("BRUNO");
+    const profile = PersonaLoader.getProfile("DARIO");
+    expect(profile.displayName).toBe("DARIO");
+    expect(profile.personaId).toBe("DARIO");
   });
 
   it("returns a generic fallback profile for any persona ID not supplied by local config", () => {
@@ -50,7 +50,7 @@ describe("PersonaLoader", () => {
   });
 
   it("should default LLMConfig to mock settings", () => {
-    const config = PersonaLoader.getLLMConfig("example-friend");
+    const config = PersonaLoader.getLLMConfig("example-character");
     expect(config).toBeDefined();
     expect(config.providerType).toBe("mock");
     expect(config.modelName).toBe("mock-model");
@@ -58,7 +58,7 @@ describe("PersonaLoader", () => {
   });
 
   it("should apply persona-tuned sampling for canonical personas", () => {
-    const config = PersonaLoader.getLLMConfig("bruno");
+    const config = PersonaLoader.getLLMConfig("dario");
     expect(config.temperature).toBe(0.7);
     expect(config.extraBody).toMatchObject({ top_p: 0.9 });
   });
@@ -69,7 +69,7 @@ describe("PersonaLoader", () => {
       modelName: "qwen-3-special",
       temperature: 0.9,
     };
-    const config = PersonaLoader.getLLMConfig("example-friend", overrides);
+    const config = PersonaLoader.getLLMConfig("example-character", overrides);
     expect(config).toBeDefined();
     expect(config.providerType).toBe("openai-compatible");
     expect(config.modelName).toBe("qwen-3-special");
@@ -79,17 +79,17 @@ describe("PersonaLoader", () => {
 });
 
 describe("personaPackToProfile — scenario re-skin", () => {
-  const pack = getPersonaPackById("goulart");
-  if (!pack) throw new Error("goulart pack missing");
-  const cast = ["iris", "bruno", "marcela", "theo"];
+  const pack = getPersonaPackById("vasco");
+  if (!pack) throw new Error("vasco pack missing");
+  const cast = ["iris", "dario", "marcela", "theo"];
   const scenarioContext = {
     roomContext: "Você é Íris.",
     startingMood: "Apressada.",
     introBehaviorInstruction: "Anuncie a proposta.",
     displayName: "Íris",
-    castMap: { bruno: "bruno", mariana: "marcela", caio: "theo" },
+    castMap: { dario: "dario", lara: "marcela", tomas: "theo" },
   };
-  const castDisplayNames = { iris: "Íris", bruno: "Bruno", marcela: "Marcela", theo: "Théo" };
+  const castDisplayNames = { iris: "Íris", dario: "Dario", marcela: "Marcela", theo: "Théo" };
 
   it("lets the scenario's displayName win over the pack's and says so in the identity frame", () => {
     const profile = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames });
@@ -97,47 +97,47 @@ describe("personaPackToProfile — scenario re-skin", () => {
     expect(profile.identityFrame.startsWith("In this scene you are Íris")).toBe(true);
     expect(profile.identityFrame).toContain(pack.identityFrame);
     // Without a re-skin nothing changes.
-    expect(personaPackToProfile(pack).displayName).toBe("Goulart");
+    expect(personaPackToProfile(pack).displayName).toBe("Vasco");
   });
 
   it("remaps relationship biases through castMap and drops peers outside the cast", () => {
     const profile = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames });
-    expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["bruno", "marcela", "theo"]);
+    expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["dario", "marcela", "theo"]);
     // Same prose, scene names substituted for pack names.
     expect(profile.relationshipBiases["marcela"]?.view).toBe(
-      pack.relationshipBiases["mariana"]!.replace(/\bMariana\b/g, "Marcela").replace(/\bBruno\b/g, "Bruno").replace(/\bCaio\b/g, "Théo"),
+      pack.relationshipBiases["lara"]!.replace(/\bLara\b/g, "Marcela").replace(/\bDario\b/g, "Dario").replace(/\bTomas\b/g, "Théo"),
     );
-    expect(Object.keys(personaPackToProfile(pack).relationshipBiases)).toContain("leo");
+    expect(Object.keys(personaPackToProfile(pack).relationshipBiases)).toContain("renan");
   });
 
-  it("casts the leo pack for the first time: biases about all four peers survive under the band's ids", () => {
-    // hoc_banda_no_festival — Léo is the fifth member, so leo's biases about
-    // goulart/bruno/mariana/caio must all land on vic/dudu/bea/kai, and the
-    // scene name wins over the pack's "Léo" spelling exactly as for others.
-    const leo = getPersonaPackById("leo");
-    if (!leo) throw new Error("leo pack missing");
-    const bandCast = ["vic", "bea", "dudu", "kai", "leo"];
-    const profile = personaPackToProfile(leo, {
+  it("casts the renan pack for the first time: biases about all four peers survive under the band's ids", () => {
+    // hoc_banda_no_festival — Renan is the fifth member, so renan's biases about
+    // vasco/dario/lara/tomas must all land on vic/dudu/bea/kai, and the
+    // scene name wins over the pack's "Renan" spelling exactly as for others.
+    const renan = getPersonaPackById("renan");
+    if (!renan) throw new Error("renan pack missing");
+    const bandCast = ["vic", "bea", "dudu", "kai", "renan"];
+    const profile = personaPackToProfile(renan, {
       scenarioContext: {
-        roomContext: "Você é Léo, tecladista.",
+        roomContext: "Você é Renan, tecladista.",
         startingMood: "Elétrico.",
         introBehaviorInstruction: "Pergunte na cara.",
-        displayName: "Léo",
-        castMap: { goulart: "vic", bruno: "dudu", mariana: "bea", caio: "kai", leo: "leo" },
+        displayName: "Renan",
+        castMap: { vasco: "vic", dario: "dudu", lara: "bea", tomas: "kai", renan: "renan" },
       },
       castAgentIds: bandCast,
-      castDisplayNames: { vic: "Vic", bea: "Bea", dudu: "Dudu", kai: "Kai", leo: "Léo" },
+      castDisplayNames: { vic: "Vic", bea: "Bea", dudu: "Dudu", kai: "Kai", renan: "Renan" },
     });
     expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["bea", "dudu", "kai", "vic"]);
-    // The prose is re-skinned too: the pack says "Goulart is the best thing
-    // in the chat"; the band member is Vic. A real read had Léo calling Bea
-    // "mariana" and Kai "caio" before this.
+    // The prose is re-skinned too: the pack says "Vasco is the best thing
+    // in the chat"; the band member is Vic. A real read had Renan calling Bea
+    // "lara" and Kai "tomas" before this.
     expect(profile.relationshipBiases["vic"]?.view).toContain("Vic is the best thing");
-    expect(profile.relationshipBiases["vic"]?.view).not.toMatch(/\bGoulart\b/);
+    expect(profile.relationshipBiases["vic"]?.view).not.toMatch(/\bVasco\b/);
     expect(profile.relationshipBiases["bea"]?.view).toMatch(/^Bea /);
-    expect(profile.relationshipBiases["bea"]?.view).not.toMatch(/\bMariana\b/);
-    expect(profile.relationshipBiases["kai"]?.view).not.toMatch(/\bCaio\b/);
-    expect(profile.displayName).toBe("Léo");
+    expect(profile.relationshipBiases["bea"]?.view).not.toMatch(/\bLara\b/);
+    expect(profile.relationshipBiases["kai"]?.view).not.toMatch(/\bTomas\b/);
+    expect(profile.displayName).toBe("Renan");
   });
 
   it("drops pack-derived unresolved memory lines when the scenario seeds its own memories", () => {

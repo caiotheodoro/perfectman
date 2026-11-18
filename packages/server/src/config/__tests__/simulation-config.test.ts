@@ -355,7 +355,7 @@ describe("simulation config", () => {
       ...config,
       agents: [
         config.agents[0],
-        { id: "bruno", persona: { ...persona, id: "bruno", name: "Bruno" }, promptProfile: { ...promptProfile, personaId: "bruno", displayName: "Bruno" }, llm },
+        { id: "dario", persona: { ...persona, id: "dario", name: "Dario" }, promptProfile: { ...promptProfile, personaId: "dario", displayName: "Dario" }, llm },
         { id: "carla", persona: { ...persona, id: "carla", name: "Carla", archetype: "provocateur" }, promptProfile: { ...promptProfile, personaId: "carla", displayName: "Carla" }, llm },
         { id: "diego", persona: { ...persona, id: "diego", name: "Diego", archetype: "strategist" }, promptProfile: { ...promptProfile, personaId: "diego", displayName: "Diego" }, llm },
       ],
@@ -365,7 +365,7 @@ describe("simulation config", () => {
       const meta = (handle.gateways["mock"] as MockDeliveryGateway).runtimeMetadata;
       expect(meta?.agents).toEqual({
         ana: { name: "Ana", archetype: "observer", writingStyle: "brief and careful", language: "pt-BR" },
-        bruno: { name: "Bruno", archetype: "observer", writingStyle: "brief and careful", language: "pt-BR" },
+        dario: { name: "Dario", archetype: "observer", writingStyle: "brief and careful", language: "pt-BR" },
         carla: { name: "Carla", archetype: "provocateur", writingStyle: "brief and careful", language: "pt-BR" },
         diego: { name: "Diego", archetype: "strategist", writingStyle: "brief and careful", language: "pt-BR" },
       });

@@ -11,7 +11,7 @@ import type {
   PersonaConfig,
   CommittedEvent,
 } from "@perfectman/shared";
-import { CAIO } from "@perfectman/shared";
+import { TOMAS } from "@perfectman/shared";
 
 export const BASE_MOOD: CoreMood = {
   valence: 0.0,
@@ -72,7 +72,7 @@ export function makeAgent(overrides: Partial<AgentState> = {}): AgentState {
   return {
     agentId: "a1",
     simulationId: "sim1",
-    personaId: "caio",
+    personaId: "tomas",
     presence: "active",
     coreMood: { ...BASE_MOOD },
     socialEmotions: { ...ZERO_SOCIAL },
@@ -91,11 +91,11 @@ export function makeAgent(overrides: Partial<AgentState> = {}): AgentState {
 
 export function makePersona(overrides: Partial<PersonaConfig> = {}): PersonaConfig {
   return {
-    ...CAIO,
+    ...TOMAS,
     ...overrides,
     // Default sensitivities high enough that single-signal thresholds trip
     socialSensitivities: {
-      ...CAIO.socialSensitivities,
+      ...TOMAS.socialSensitivities,
       ...(overrides.socialSensitivities ?? {}),
     },
   };

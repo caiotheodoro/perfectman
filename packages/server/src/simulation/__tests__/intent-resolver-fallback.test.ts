@@ -226,14 +226,14 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
   it("drops the denied primary's memoryWrites from the committed fallback", async () => {
     // Primary send_message blocked; fallback no_op commits. The denied
     // primary's memoryWrites must not carry over to the derived intent —
-    // recording "I told bruno everything" as memory after the message was
+    // recording "I told dario everything" as memory after the message was
     // refused would be false telemetry.
     const intent = makeIntent({
       fallbackIfBlocked: "no_op",
       memoryWrites: [{
         type: "episodic",
         subjectAgentIds: [],
-        summary: "I told bruno everything",
+        summary: "I told dario everything",
         emotionalTone: "neutral",
         confidence: 0.9,
         intensity: 0,

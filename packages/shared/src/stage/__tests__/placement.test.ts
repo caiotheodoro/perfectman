@@ -14,9 +14,9 @@ import type { StageBeat } from "../beat.js";
 import { idlePlacement, kindOf, placeBeats, roomKeyOf } from "../placement.js";
 import { slotsFor } from "../slots.js";
 
-const AGENTS = [{ id: "iris" }, { id: "bruno" }, { id: "marcela" }];
+const AGENTS = [{ id: "iris" }, { id: "dario" }, { id: "marcela" }];
 const CHANNELS: LiveChannel[] = [
-  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "bruno", "marcela"] },
+  { id: "geral", name: "geral", type: "public_channel", memberAgentIds: ["iris", "dario", "marcela"] },
   { id: "dm", name: "dm", type: "private_channel", memberAgentIds: ["iris", "marcela"] },
 ];
 
@@ -31,7 +31,7 @@ function beat(over: Partial<StageBeat> = {}): StageBeat {
     actorId: "iris",
     text: "…",
     audienceIds: [],
-    participantIds: ["iris", "bruno", "marcela"],
+    participantIds: ["iris", "dario", "marcela"],
     duration: 3,
     page: 0,
     ...over,
@@ -44,14 +44,14 @@ function seats(placement: { marks: readonly { agentId: string; slot: number }[] 
 
 describe("placeBeats", () => {
   it("returns one placement per beat, in order", () => {
-    const beats = [beat(), beat({ actorId: "bruno" })];
+    const beats = [beat(), beat({ actorId: "dario" })];
     const placed = placeBeats(beats, AGENTS, CHANNELS);
     expect(placed).toHaveLength(2);
-    expect(placed[1]?.speaker?.agentId).toBe("bruno");
+    expect(placed[1]?.speaker?.agentId).toBe("dario");
   });
 
   it("keeps everyone seated across beats in the same room", () => {
-    const beats = [beat(), beat({ actorId: "bruno" }), beat({ actorId: "marcela" })];
+    const beats = [beat(), beat({ actorId: "dario" }), beat({ actorId: "marcela" })];
     const [a, b, c] = placeBeats(beats, AGENTS, CHANNELS);
     expect(seats(b!)).toEqual(seats(a!));
     expect(seats(c!)).toEqual(seats(a!));
@@ -63,7 +63,7 @@ describe("placeBeats", () => {
     const beats = [
       beat(),
       beat({ kind: "silence", actorId: "marcela", text: "", thought: { text: "…", drivers: [] } }),
-      beat({ actorId: "bruno" }),
+      beat({ actorId: "dario" }),
     ];
     const [first, silence, after] = placeBeats(beats, AGENTS, CHANNELS);
     expect(silence?.kind).toBe("thought");
@@ -104,7 +104,7 @@ describe("placeBeats", () => {
 
   it("names the room by kind and channel, so a thought is a different room than the channel it came from", () => {
     expect(roomKeyOf("thought", "geral")).not.toBe(roomKeyOf("public", "geral"));
-    const beats = [beat(), beat({ kind: "silence", actorId: "bruno", text: "", thought: { text: "…", drivers: [] } })];
+    const beats = [beat(), beat({ kind: "silence", actorId: "dario", text: "", thought: { text: "…", drivers: [] } })];
     const [talk, quiet] = placeBeats(beats, AGENTS, CHANNELS);
     expect(quiet?.roomKey).not.toBe(talk?.roomKey);
   });

@@ -10,7 +10,7 @@ import { SPINE_ESCALATE_ENV, SpineEscalation, spineEscalateEnabled } from "../ru
 import { rig } from "../testing/drama-body-rig.js";
 
 describe("DramaBody.escalate and unlockNote", () => {
-  const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "leo"].includes(a) && ["duda", "rafa", "gabi", "leo"].includes(b);
+  const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "renan"].includes(a) && ["duda", "rafa", "gabi", "renan"].includes(b);
   const said = (speaker: string, target: string, text: string) => ({ speaker, content: text, addressees: [target], mentioned: [target] });
 
   it("opens the shove for the person the lines were about once two lines have been said, counts it, and logs why", async () => {
@@ -78,7 +78,7 @@ describe("DramaBody.escalate and unlockNote", () => {
 });
 
 describe("SpineEscalation", () => {
-  const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "leo"].includes(a) && ["duda", "rafa", "gabi", "leo"].includes(b);
+  const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "renan"].includes(a) && ["duda", "rafa", "gabi", "renan"].includes(b);
   const said = (speaker: string, target: string, text: string) => ({ speaker, content: text, addressees: [target], mentioned: [target] });
   const cast = [
     { id: "duda", name: "Duda", objective: { description: "manter o cofre fechado", scarceResourceId: "cofre", constraint: "x" } },

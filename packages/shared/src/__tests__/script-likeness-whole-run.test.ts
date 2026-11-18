@@ -25,7 +25,7 @@ const VERBS = ["trouxe", "esqueceu", "procurou", "deixou", "levou", "perdeu", "g
 const THINGS = ["uma caixa azul", "dois guarda-chuvas", "o relógio quebrado", "um pacote de biscoitos", "a lanterna velha", "três cadernos", "o mapa rasgado", "uma panela de barro"];
 const PLACES = ["na garagem", "perto da escada", "ontem à tarde", "depois do almoço", "atrás do sofá", "junto da janela", "no porão", "antes da chuva"];
 const chat = (n: number): ScriptTurn[] =>
-  Array.from({ length: n }, (_, i) => say(["ana", "bia", "caio"][i % 3]!, `${SUBJECTS[(i * 3) % 8]} ${VERBS[(i * 5 + 1) % 8]} ${THINGS[(i * 7 + 2) % 8]} ${PLACES[(i * 11 + 3) % 8]}.`, i * 8_000));
+  Array.from({ length: n }, (_, i) => say(["ana", "bia", "tomas"][i % 3]!, `${SUBJECTS[(i * 3) % 8]} ${VERBS[(i * 5 + 1) % 8]} ${THINGS[(i * 7 + 2) % 8]} ${PLACES[(i * 11 + 3) % 8]}.`, i * 8_000));
 
 describe("fillers", () => {
   it("reads a line made only of interjections as one, and nothing longer or with a content word", () => {
@@ -59,10 +59,10 @@ describe("fillers", () => {
   });
 
   it("never closes a question debt", () => {
-    const base = [say("ana", "Cadê a chave, Bento?"), say("caio", "Não sei de nada."), say("caio", "Sei lá."), say("ana", "Fala.")];
-    const closed = progressAndDebt([...base.slice(0, 1), say("bento", "Está comigo, Ana."), ...base.slice(1)], ["ana", "bento", "caio"]);
+    const base = [say("ana", "Cadê a chave, Bento?"), say("tomas", "Não sei de nada."), say("tomas", "Sei lá."), say("ana", "Fala.")];
+    const closed = progressAndDebt([...base.slice(0, 1), say("bento", "Está comigo, Ana."), ...base.slice(1)], ["ana", "bento", "tomas"]);
     expect(closed.debt.unanswered).toBe(0);
-    const reacted = progressAndDebt([...base.slice(0, 1), say("bento", "Ué."), say("bento", "Hm."), say("bento", "Tá."), say("ana", "Fala.")], ["ana", "bento", "caio"]);
+    const reacted = progressAndDebt([...base.slice(0, 1), say("bento", "Ué."), say("bento", "Hm."), say("bento", "Tá."), say("ana", "Fala.")], ["ana", "bento", "tomas"]);
     expect(reacted.debt.questions).toBe(1);
     expect(reacted.debt.unanswered).toBe(1);
   });
@@ -89,7 +89,7 @@ describe("demand loops", () => {
   it("does not flag the same demand spread over minutes, or made once by each of three actors", () => {
     const slow = [demand(0, "agora"), say("a", "Outra coisa completamente diferente aqui.", 30_000), demand(120_000, "mesmo"), say("a", "Falando de tempo e de chuva.", 150_000), demand(250_000, "já")];
     expect(findDemandLoops(slow.map(analyze), names)).toEqual([]);
-    const three = [say("ana", "Cofre hoje, senão eu conto.", 0), say("bia", "Cofre hoje, senão eu conto.", 5_000), say("caio", "Cofre hoje, senão eu conto.", 10_000)];
+    const three = [say("ana", "Cofre hoje, senão eu conto.", 0), say("bia", "Cofre hoje, senão eu conto.", 5_000), say("tomas", "Cofre hoje, senão eu conto.", 10_000)];
     expect(findDemandLoops(three.map(analyze), names)).toEqual([]);
   });
 
@@ -153,7 +153,7 @@ describe("honest progress", () => {
     const arc = chat(40);
     arc[6] = say("ana", "Você mentiu pra mim, Bia, na frente de todo mundo.", 6 * 8_000);
     arc[15] = say("bia", "Na verdade, fui eu que escondi a chave naquela gaveta.", 15 * 8_000);
-    arc[27] = say("caio", "Eu prometo que devolvo tudo amanhã de manhã.", 27 * 8_000);
+    arc[27] = say("tomas", "Eu prometo que devolvo tudo amanhã de manhã.", 27 * 8_000);
     arc[30] = say("ana", "Cadê a chave, Bia?", 30 * 8_000);
     arc[31] = say("bia", "Está guardada no armário.", 31 * 8_000);
     arc[32] = say("bia", "E você, Ana, onde estava naquela noite?", 32 * 8_000);
@@ -164,7 +164,7 @@ describe("honest progress", () => {
 describe("whole-run scoring", () => {
   const wordy = (n: number): ScriptTurn[] =>
     Array.from({ length: n }, (_, i) =>
-      say(["ana", "bia", "caio"][i % 3]!, `${SUBJECTS[(i * 3) % 8]} resolveu contar para todos na reunião de ontem que ${VERBS[(i * 5 + 1) % 8]} ${THINGS[(i * 7 + 2) % 8]} ${PLACES[(i * 11 + 3) % 8]} e que ninguém tinha percebido nada disso até agora, ${i}.`, i * 8_000),
+      say(["ana", "bia", "tomas"][i % 3]!, `${SUBJECTS[(i * 3) % 8]} resolveu contar para todos na reunião de ontem que ${VERBS[(i * 5 + 1) % 8]} ${THINGS[(i * 7 + 2) % 8]} ${PLACES[(i * 11 + 3) % 8]} e que ninguém tinha percebido nada disso até agora, ${i}.`, i * 8_000),
     );
 
   it("scores a long run whole, next to scenes, and keeps the windows for diagnosis only", () => {

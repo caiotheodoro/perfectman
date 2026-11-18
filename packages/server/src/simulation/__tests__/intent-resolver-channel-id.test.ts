@@ -15,8 +15,8 @@ import type { ActionEmotions, ActionIntent, AgentState, AvailableAction, Simulat
 import { createId } from "@perfectman/shared";
 
 const SIM_ID = "sim_test";
-const CREATOR = "rex";
-const INVITEE = "goulart";
+const CREATOR = "kiko";
+const INVITEE = "vasco";
 const PUBLIC = "ch_public";
 const SETTINGS: SimulationSettings = {
   omniscientSpectatorMode: false,

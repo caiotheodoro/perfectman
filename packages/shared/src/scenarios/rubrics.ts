@@ -242,7 +242,7 @@ const NARRATIVE_AXES = [
     weight: 1.0,
     anchors: {
       1: "Pure template/boilerplate — e.g. \"{n} messages crossed the room ... {n} moments of chosen silence\" (the rule-fallback's literal output). No named action or content from this scene.",
-      2: "Names actors and event kinds but paraphrases them generically (\"Goulart tentou puxar assunto\") with no real content of what was said or done.",
+      2: "Names actors and event kinds but paraphrases them generically (\"Vasco tentou puxar assunto\") with no real content of what was said or done.",
       3: "Mentions real topics/actions from the transcript but stays high-level (\"debateram sobre café e filmes\").",
       4: "Specific, scenario-unique detail tied to an exact object, plan, or line from this scene (\"o Clube do Filme Perdido\", \"o extintor que apaga o passado\").",
       5: "Dense with unique concrete detail throughout both recap and hiddenShift — a reader could reconstruct real beats of the scene from the prose alone.",

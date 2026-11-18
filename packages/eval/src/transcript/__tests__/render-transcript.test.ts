@@ -15,7 +15,7 @@ const SCENARIO = scene({
   name: "Test Scene",
   description: "A room.",
   agents: [
-    agent("marcela", "mariana", {
+    agent("marcela", "lara", {
       hiddenObjective: {
         description: "kill the sale",
         scarceResourceId: "deal",
@@ -26,7 +26,7 @@ const SCENARIO = scene({
         { type: "pending_intention", subjectAgentIds: ["marcela"], summary: "protect Davi's 15%", emotionalTone: "anxious" },
       ],
     }),
-    agent("iris", "goulart", {}),
+    agent("iris", "vasco", {}),
   ],
   channels: [
     channel("ch_geral", "#geral", ["marcela", "iris"], "public_channel"),
@@ -122,7 +122,7 @@ describe("buildTranscriptView / renderTranscript", () => {
 
   it("lists cast and channels, and seeds only when asked", () => {
     const withSeeds = buildTranscriptView(SCENARIO, events, { seeds: "full", motives: "model" });
-    expect(withSeeds.cast).toEqual(["marcela → Mariana (mariana)", "iris → Goulart (goulart)"]);
+    expect(withSeeds.cast).toEqual(["marcela → Lara (lara)", "iris → Vasco (vasco)"]);
     expect(withSeeds.channels).toEqual(["#ch_geral (public)", "#cerne-decisao (private 🔒)"]);
     expect(withSeeds.seeds.join("\n")).toContain("marcela objective: kill the sale");
     expect(withSeeds.seeds.join("\n")).toContain("constraint: mention Davi");
@@ -149,13 +149,13 @@ describe("cast display names", () => {
     const reskinned = scene({
       ...SCENARIO,
       agents: [
-        agent("iris", "goulart", {
+        agent("iris", "vasco", {
           scenarioContext: { roomContext: "r", startingMood: "m", introBehaviorInstruction: "i", displayName: "Íris" },
         }),
       ],
       expectedSignals: [],
     });
     const view = buildTranscriptView(reskinned, [], { seeds: "full", motives: "none" });
-    expect(view.cast).toEqual(["iris → Íris (goulart)"]);
+    expect(view.cast).toEqual(["iris → Íris (vasco)"]);
   });
 });

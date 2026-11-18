@@ -337,7 +337,7 @@ describe("ActionIntentStep", () => {
       const provider = {
         generateIntent: vi
           .fn()
-          .mockResolvedValueOnce(jsonResponse(replyIntentJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("laras-message")))
           .mockResolvedValueOnce(jsonResponse(replyIntentJson("e1"))),
       };
       const outcome = await runStep(provider, targetInput());
@@ -346,7 +346,7 @@ describe("ActionIntentStep", () => {
       if (!outcome.ok) return;
       expect(provider.generateIntent).toHaveBeenCalledTimes(2);
       const retryPrompt = provider.generateIntent.mock.calls[1]![2] as { system: string };
-      expect(retryPrompt.system).toContain("marianas-message");
+      expect(retryPrompt.system).toContain("laras-message");
       expect(retryPrompt.system).toContain("e1");
       expect(retryPrompt.system).toContain("send_message");
       expect(outcome.value.fallbackApplied).toBe(false);
@@ -389,7 +389,7 @@ describe("ActionIntentStep", () => {
       const provider = {
         generateIntent: vi
           .fn()
-          .mockResolvedValueOnce(jsonResponse(replyIntentJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("laras-message")))
           .mockResolvedValueOnce(jsonResponse(replyIntentJson("e1", { visibleContent: REPEAT_TEXT }))),
       };
       const outcome = await runStep(provider, targetInput({ ownRecentUtterances: [REPEAT_TEXT] }));
