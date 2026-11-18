@@ -9,7 +9,7 @@
  * Every number lives in `HT`, and every leaf of `HT` has a line in `HT_SOURCES` that says where it comes from:
  *  - `prior`: a literature value or a judgement call, NOT measured on this hotel. Calibrate it.
  *  - `corpus`: read off the cinema-norms corpus (agent E1, `packages/shared/src/cinema-norms/cinema-norms.json`).
- *  - `runs`: measured on the baseline runs 55-63 (docs/eval/humanlike-baseline.md).
+ *  - `runs`: measured on the hotel's own baseline runs 55-63.
  * Tile distances are Chebyshev tiles; the hotel's tile is not a metre, so the proxemic bands are a stylized mapping of Hall's, a prior.
  */
 
@@ -216,7 +216,7 @@ export type SourceNote = { key: string; src: Provenance; note: string };
 
 /**
  * Where each group of numbers in `HT` comes from. `key` is a path prefix of `HT` (a test checks every leaf of `HT` is covered by one).
- * `corpus` rows cite the cinema-norms numbers read on 2026-11-11 from the E1 branch; `runs` rows are filled by the baseline (docs/eval/humanlike-baseline.md).
+ * `corpus` rows cite the cinema-norms numbers read on 2026-11-11 from the E1 branch; `runs` rows are filled by the baseline runs 55-63.
  */
 export const HT_SOURCES: readonly SourceNote[] = [
   { key: "prox.intimate", src: "prior", note: "Hall 1966: intimate <= 0.45 m, personal to 1.2 m, social to 3.6 m; one tile mapped to about one body width, stylized" },

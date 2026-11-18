@@ -1,15 +1,13 @@
 #!/usr/bin/env node
 /**
- * PR-gate assertion over a bench-report-v1 JSON file.
+ * PR-gate assertion over a behavior-report-v1 JSON file.
  *
  * Fails (exit 1) when:
  *  - any scenario run failed outright, or
  *  - the aggregate signal pass rate is below 1.0, or
  *  - the drama bench (report.drama, mock runs) has a failing scenario, or is missing when --require-drama is passed.
  *
- * The repo's iteration discipline requires expected signals to hold at
- * 100%; rule-judge axis scores are advisory until the judge passes its
- * kappa calibration gate, so they are NOT gated here.
+ * The repo's iteration discipline requires expected signals to hold at 100%.
  *
  * Usage: node scripts/ci/check-bench-gate.mjs [--skip-signal-gate] [--require-drama] <bench-report.json> [expectedIdsCsv]
  *
@@ -40,7 +38,7 @@ try {
   process.exit(2);
 }
 
-if (report.version !== "bench-report-v1") {
+if (report.version !== "behavior-report-v1") {
   console.error(`unexpected report version: ${report.version}`);
   process.exit(2);
 }

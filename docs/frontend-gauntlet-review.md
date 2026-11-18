@@ -73,7 +73,7 @@ node scripts/check-web-viewer.mjs
 
 The browser check writes disposable screenshots and its report under `out/gauntlet/app-browser-checks/`. It covers the real intro/cast/scene/provider wiring, server-busy recovery, cancellation, first beat, public/private/thought/silence, 320/390/1280px layouts, viewport reading position, long text/names, missing emotion, incoming beats, keyboard seek, play/pause, actual audio/mute, completion and early failure. Deterministic timing invariants remain in the focused clock and lifecycle tests.
 
-The complete PR workflow's mock/rule benchmark and `scripts/ci/check-bench-gate.mjs` were also run with its eleven golden scenario IDs. The current CLI ran 35 scenarios: zero failures, 100% signal pass and 95.4% probe pass. The structural gate passed. Rule-judge calibration remained below its threshold, so its scores are advisory and do not establish model quality.
+The PR workflow's mock behavior tests and `scripts/ci/check-bench-gate.mjs` were also run on the core slice: 35 scenarios, zero failures, 100% signal pass and 95.4% probe pass. The structural gate passed.
 
 Independent review results: **Standards pass** after resolving test-fixture, assertion and hygiene findings; **Spec pass** with no concrete correctness blocker or scope creep; **Visual pass** after the mobile reading-position revision. These reviews do not authorize merging.
 

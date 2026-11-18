@@ -6,6 +6,6 @@
  * call count from creeping back toward one-call-per-pulse. Widened from 4
  * with D-62 (the salient-event gate is gone, so the refractory carries the
  * whole cost bound). Provisional;
- * owner: the hidden-objective refinement reads (docs/eval/hoc-experiment-protocol.md).
+ * owner: the hidden-objective scenes.
  */
 export const HOLD_VOICE_REFRACTORY_PULSES = 3;

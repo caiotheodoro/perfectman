@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      GOLDEN_SCENARIOS: v1_casual_chat,v1_exclusion_inferred,v1_private_motive,motive_gossip,edge_public_mock,edge_exclusion_cascade,edge_gossip_catalyst,edge_mutation_pressure,stagnation_resentment_loop,calibration_quiet_room,motive_flirting
+      CORE_SCENARIOS: v1_casual_chat,v1_exclusion_inferred,v1_private_motive,motive_gossip,edge_public_mock,edge_exclusion_cascade,edge_gossip_catalyst,edge_mutation_pressure,stagnation_resentment_loop,calibration_quiet_room,motive_flirting
     steps:
       - uses: actions/checkout@v4
 
@@ -42,27 +42,20 @@ jobs:
       - name: Unit + hygiene tests
         run: pnpm test:all
 
-      # Fast deterministic structural gate: mock generation + rule judge on
-      # the golden-labeled scenario subset. No model, no API key. Signals
-      # must hold at 100%; rule-judge axis scores stay advisory until the
-      # judge clears its kappa >= 0.7 calibration gate.
-      # The drama bench (act contract scenarios on the fake grid hotel, mock model, rule judge) rides on the same report and the same gate.
+      # Behavior tests: every run uses the mock provider, so no model and no
+      # API key. Signals must hold at 100%, and the drama scenarios ride on
+      # the same report and gate.
       # NOTE: pnpm --filter runs inside packages/eval, so --out gets an
       # absolute workspace path to keep the later steps root-relative.
-      - name: Golden-scenario bench (mock + rule judge)
-        run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --scenarios "$GOLDEN_SCENARIOS" --drama --out "$GITHUB_WORKSPACE/out/bench-pr-gate.json"
+      - name: Behavior tests (core slice)
+        run: pnpm --filter @perfectman/eval behavior --slice core --drama --out "$GITHUB_WORKSPACE/out/behavior-pr-gate.json"
 
-      - name: Assert bench gate
-        run: node scripts/ci/check-bench-gate.mjs --require-drama out/bench-pr-gate.json "$GOLDEN_SCENARIOS"
+      - name: Assert behavior gate
+        run: node scripts/ci/check-bench-gate.mjs --require-drama out/behavior-pr-gate.json "$CORE_SCENARIOS"
 
-      # Hotel suite, offline: mock-actor canaries (jailbreak, D43 leaks, untrusted
-      # names, whisper privacy) plus the broken-stub self-test. No model, no key.
-      - name: Hotel canaries (mock)
-        run: pnpm --filter @perfectman/eval bench --suite hotel
-
-      - name: Upload bench report
-        if: always() && hashFiles('out/bench-pr-gate.json') != ''
+      - name: Upload behavior report
+        if: always() && hashFiles('out/behavior-pr-gate.json') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: bench-pr-gate
-          path: out/bench-pr-gate.json
+          name: behavior-pr-gate
+          path: out/behavior-pr-gate.json

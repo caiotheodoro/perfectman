@@ -5,20 +5,21 @@
 <div align="center">
 
 [![PR Gate](https://img.shields.io/github/actions/workflow/status/caiotheodoro/perfectman/pr-gate.yml?branch=main&style=flat-square&label=PR%20gate&labelColor=0D1117&color=7C6BF0)](https://github.com/caiotheodoro/perfectman/actions/workflows/pr-gate.yml)
-[![Benchmark](https://img.shields.io/github/actions/workflow/status/caiotheodoro/perfectman/benchmark.yml?branch=main&style=flat-square&label=benchmark&labelColor=0D1117&color=E8A33D)](https://github.com/caiotheodoro/perfectman/actions/workflows/benchmark.yml)
 [![Node](https://img.shields.io/badge/Node-22%2B-7C6BF0?style=flat-square&labelColor=0D1117)](https://nodejs.org)
 [![License](https://img.shields.io/badge/license-MIT-7C6BF0?style=flat-square&labelColor=0D1117)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/caiotheodoro/perfectman?style=flat-square&labelColor=0D1117&color=E8A33D)](https://github.com/caiotheodoro/perfectman/stargazers)
 
-[What this is](#what-this-is) · [Quickstart](#quickstart) · [Run it free](#running-with-a-real-model-for-free) · [Benchmarks](#benchmarks) · [Architecture](#architecture) · [Open questions](#status--open-questions)
+[What this is](#what-this-is) · [Quickstart](#quickstart) · [Run it free](#running-with-a-real-model-for-free) · [Behavior tests](#behavior-tests) · [Architecture](#architecture) · [Open questions](#status--open-questions)
 
 **[Install and run →](#quickstart)**
 
 </div>
 
-Perfectman is a social simulation with AI personas in shared chat channels.
-Agents do not take fixed turns. Each agent uses an internal model to select an
-action or remain silent.
+Perfectman is a social-simulation engine: fictional characters share chat
+channels and decide for themselves when to speak. Agents do not take fixed
+turns. Each one runs an internal model of attention and emotion to pick an
+action, and silence is a valid pick. A language model only writes the words
+once the engine has decided to speak.
 
 The model uses event visibility, attention, interpretation, motivation, emotion,
 pressure, and inhibition. An agent sends a message only when its pressure is
@@ -34,7 +35,7 @@ script for each social interaction.
 - **Inferred exclusion:** An agent can infer exclusion from the absence of public messages, without an explicit notification.
 - **Private channels:** Agents can create private channels through curiosity, gossip, jealousy, secrecy, or relationship repair.
 - **Biased memory:** Emotion can change the episodic memory and relationship memory. These memories are not exact event records.
-- **Behavior tests:** The reported results cover 123 deterministic scenarios [without a model connection](#benchmarks). CI requires all behavioral signals to pass.
+- **Behavior tests:** The reported results cover 123 deterministic scenarios [without a model connection](#behavior-tests). CI requires all behavioral signals to pass.
 
 > [!NOTE]
 > **Status:** This is an early experiment before version 1.0. The event-oriented
@@ -49,7 +50,7 @@ script for each social interaction.
 - [Turn a saved run into video](#turn-a-saved-run-into-video)
 - [Running with a real model, for free](#running-with-a-real-model-for-free)
 - [Bring your own personas](#bring-your-own-personas)
-- [Benchmarks](#benchmarks)
+- [Behavior tests](#behavior-tests)
 - [Architecture](#architecture)
 - [Status / open questions](#status--open-questions)
 - [Releases](#releases)
@@ -148,7 +149,7 @@ Use an existing transcript, replay, or script to create a local MP4 and an
 interactive story viewer with channels, private conversations, and music:
 
 ```sh
-pnpm video --input docs/eval/evidence/deepseek/scenarios/v1_exclusion_inferred.json --out out/exclusion.mp4
+pnpm video --input examples/video/peacemaker.json --out out/peacemaker.mp4
 ```
 
 The command keeps source order and recorded emotion data. It requires FFmpeg
@@ -238,85 +239,31 @@ docker compose -f docker/app/app.compose.yml run --rm \
 ```
 </details>
 
-## Bring your own personas
+## Write your own characters
 
-See [`docs/personas/README.md`](docs/personas/README.md) for the persona interview
-and compilation procedure. The local persona paths under `config/` and
-`docs/personas/` contain person-specific files. Git ignores these paths. Generic
-instructions and templates remain in the repository.
+Casts and scenes are Markdown under [`examples/presets/`](examples/presets/).
+Copy a cast, give each character a personality, a voice and a private goal, and
+pick it in the web runner. Characters are fictional; do not model real people.
 
-## Benchmarks
+## Behavior tests
 
-The benchmark suite tests the behaviors above. It uses a mock provider and a
-rule judge. It does not require an API key or a model server.
-
-Run the benchmark suite. Then check the CI acceptance criteria:
+The behavior tests check what the social engine does, not how good the text
+is. Every run uses a mock provider, so no model or API key is needed.
 
 ```bash
-pnpm --filter @perfectman/eval bench --mode mock --judge rule --out out/bench.json
-node scripts/ci/check-bench-gate.mjs out/bench.json
+pnpm --filter @perfectman/eval behavior --out out/behavior.json
+node scripts/ci/check-bench-gate.mjs out/behavior.json
 ```
 
-**Reported scenario results:** 123 deterministic scenario runs cover five
-behavioral categories. These figures describe the existing benchmark report.
-They are not results from a new test run.
-
-| Category | Runs | Signal pass rate |
-|---|---:|---:|
-| `motive_archetype` | 51 | 100% |
-| `v1_behavior` | 27 | 100% |
-| `stagnation_attractor` | 18 | 100% |
-| `calibration` | 15 | 100% |
-| `edge_chaos` | 12 | 100% |
-| **Total** | **123** | **100%** |
-
-**Reported behavioral signals:** 276 assertions check the actions of the social
-engine. These assertions do not assess the quality of generated text.
-
-| Signal | Passed | Rate |
-|---|---:|---:|
-| `no_llm_failures` | 123 / 123 | 100% |
-| `event_committed` | 75 / 75 | 100% |
-| `private_channel_created` | 48 / 48 | 100% |
-| `emotion_rises` | 15 / 15 | 100% |
-| `emotion_stays` | 15 / 15 | 100% |
-
-No scenario runs failed in the report. The mean result for **runtime probes**
-is **91.0%**. The lowest results are `content-repetition` (21.1%) and
-`memory-write` (70.7%). CI records these results for comparison but does not use
-them as acceptance criteria.
-
-<a id="what-is-and-isnt-gated"></a>
-
-### CI acceptance criteria
-
-| Layer | Result | Gated in CI? |
-|---|---|---|
-| **Behavioral signals** | 100% | Yes. All signals must pass. |
-| **Runtime probes** | 91.0% | No. CI records these results for comparison. |
-| **Judge axis scores** | 6 of 8 targets met | No. These scores are advisory. |
-
-> [!IMPORTANT]
-> CI does not use judge axis scores as acceptance criteria. The rule judge has
-> not met its calibration target. Cohen's κ against the golden-labeled set is
-> **0.219 against a target of 0.7** (n=39). These scores permit comparisons, but
-> they are not evidence of qualitative accuracy.
->
-> The reported scores for `in_character` (2.99 / 4.0) and `voice_match`
-> (1.16 / 3.8) are below target. The largest disagreement with the golden labels
-> occurs on `voice_match`.
-
-All reported deterministic behavioral signals passed. The qualitative scores
-are not sufficiently reliable. Judge calibration remains
-[open work](#status--open-questions).
-
-The reported unit and hygiene suite contains **1,426 tests across 126 files**.
-The recorded run passed on Node 22.
+Each scenario declares expected signals (an event was committed, a private
+channel was opened, an emotion rose or held) and runtime probes. CI requires
+every signal to pass on the core slice plus the drama scenarios. Probe results
+are recorded for comparison but not gated.
 
 Check the types. Then run the unit tests and hygiene checks:
 
 ```bash
-pnpm lint       # typecheck, all four packages
+pnpm lint       # typecheck, all packages
 pnpm test:all   # unit tests + hygiene gates
 ```
 
@@ -333,7 +280,7 @@ The main layers have these responsibilities:
 | **Event-oriented runtime** (`packages/server`) | It contains the append-only event log, command handlers, and intent resolver. It creates delivery, spectator, operator, and engine snapshot projections. It supports Socket.IO, Discord, stdout, and mock transports. |
 | **Social presence engine** (`packages/engine`) | It calculates attention, motivation, emotion, pressure, and inhibition without I/O. |
 | **Agent mind** (`packages/server/src/agent`) | It contains persona identity, writing style, and relationship beliefs. Its LLM runtime converts perception into intent. |
-| **Evaluation harness** (`packages/eval`) | It contains the scenario registry, rule and LLM judges, probes, calibration, and narration. |
+| **Behavior tests** (`packages/eval`) | It runs the scenario registry on the mock provider and checks signals and probes. It also holds the video renderer and the narrator. |
 | **Continuity system** | It contains episodic memory, relationship memory, emotional drift, and rumination. Emotion can change the memory. |
 
 ## Status / open questions
@@ -345,7 +292,6 @@ The [open design questions](docs/README.md#current-open-questions) include:
 - What can spectators see from private channels?
 - How much scoring logic does the system need?
 - Which symbolic actions must the system keep?
-- How can judge calibration meet its target?
 
 Contributors can start with these questions.
 

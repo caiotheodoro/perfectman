@@ -1,10 +1,10 @@
 # ADR-0017: Voiced Hold and the Private-Channel Drive
 
-**Status**: Accepted (2026-09-05), amended 2026-09-06 (**D-62**). Decisions **D-59..D-62**. Provisional constant `HOLD_VOICE_REFRACTORY_PULSES`, owner: the hidden-objective refinement reads (`docs/eval/hoc-experiment-protocol.md`).
+**Status**: Accepted (2026-09-05), amended 2026-09-06 (**D-62**). Decisions **D-59..D-62**. Provisional constant `HOLD_VOICE_REFRACTORY_PULSES`, owner: the hidden-objective scenes.
 
 ## Context
 
-Nine real reads of the hidden-objective scenes (M0 baseline, M0 main, M1 prompt round 1; `docs/eval/evidence/hoc-m0-*`, `hoc-m1-*`) share two structural results that the prompt could not move:
+Nine real reads of the hidden-objective scenes (M0 baseline, M0 main, M1 prompt round 1) share two structural results that the prompt could not move:
 
 - **Chosen silence is zero.** Every silence is engine-decided — `delay-strategic_patience_hold` 27–62 per scene, cooldowns — and every one of those skips the model (ADR-0015: `needsLLM` is exactly `outcome === "act"`). The model, when consulted, never returns `no_op`; reframing `no_op` as a move in the prompt (#178) did not change that. The thesis signal `chosen_silence_present` requires a model-authored motive on a `no_op`, and the `mask_integrity` anchor 5 reads "the constraint shapes phrasing, silences and channel choice" — a silence with no reason attached is invisible to the judge.
 - **Private talk collapsed under the engine PRs.** The pre-engine baseline opened 8 / 6 / 12 private channels per scene (too many, used as a second public room); the engine arms opened 3 / 1 / 5 and then 2 / 0 / 0, with 0–6 private lines. ADR-0016 (D-57) stamps every pressure felt at the moment of an outward act, so a public reply spends `urge_to_create_private_channel` as surely as opening a channel would, and the drive never survives the refractory.
@@ -16,7 +16,7 @@ Constraints carried in: the engine stays pure; the scheduler is the single write
 1. **Voiced hold (D-59).** In `resolveDecision`, when a delay-favoring inhibition outranks the top pressure and neither being addressed nor an initiative override lifts it, the decision is still a hold — except that when a salient foreign event arrived this pulse (`salientForeignEvent && hasNewEvents`), the agent did not act on the previous pulse (`!justActed`), and it has not voiced a hold within `HOLD_VOICE_REFRACTORY_PULSES`, the decision becomes `act` with `needsLLM: true`, `holdSuggested: true`, seed `hold-<inhibition>`. The prompt renders one paragraph: hold with `no_op` and the real reason, or break the hold if this person would.
 2. **The refractory is read from the log (D-60).** `EngineSnapshot.voicedHoldRecently` is computed by the scheduler from committed events: a `no_op_recorded` by this agent that carries `sourceIntentId` (a model intent) whose motive is not engine-authored, within the last `HOLD_VOICE_REFRACTORY_PULSES` (4). No new agent-state field, no schema change; the engine reads a boolean.
 3. **The private-channel drive is spent only by opening a channel (D-61).** The ADR-0016 stamp loop skips `urge_to_create_private_channel` unless the committed act is `create_channel`. Every other urge keeps D-57.
-4. **Trigger widened (D-62, 2026-09-06).** The M4 milestone (`docs/eval/evidence/hoc-m4-*`, nine runs) recorded three consults, all voiced, and zero in six of nine runs: the salient-event gate made the consult almost never fire, and when it fired the model held. D-59's condition drops `salientForeignEvent`: any new event on a held pulse consults, still never on the pulse after an act, and `HOLD_VOICE_REFRACTORY_PULSES` goes 4 → 3. The refractory alone bounds the cost (at most one consult per agent per three pulses).
+4. **Trigger widened (D-62, 2026-09-06).** The M4 milestone (nine runs) recorded three consults, all voiced, and zero in six of nine runs: the salient-event gate made the consult almost never fire, and when it fired the model held. D-59's condition drops `salientForeignEvent`: any new event on a held pulse consults, still never on the pulse after an act, and `HOLD_VOICE_REFRACTORY_PULSES` goes 4 → 3. The refractory alone bounds the cost (at most one consult per agent per three pulses).
 
 ## Rationale
 

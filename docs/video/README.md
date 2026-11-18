@@ -9,22 +9,16 @@ Install Node.js 22 or later, pnpm, and FFmpeg. Then run from the repository root
 ```sh
 pnpm install
 pnpm build
-pnpm video --input docs/eval/evidence/deepseek/scenarios/v1_exclusion_inferred.json --out out/exclusion.mp4
+pnpm video --input examples/video/peacemaker.json --out out/peacemaker.mp4
 ```
 
 The first render can download Chrome. The renderer and assets are pinned local
 dependencies. No HeyGen account or model key is required.
 
-For a generated narrative, select its scenario. Keep its matching transcript
-beside it in the original evidence directory:
-
-```sh
-pnpm video --input docs/eval/evidence/deepseek/narrations.json --scenario motive_conflict --out out/conflict.mp4
-```
-
-The command renders the saved events first, then the exact narrator recap and
-hidden shift. A summary cannot recover missing events. If its transcript is
-absent, the command fails with the path that is needed.
+For a narrator file, select its scenario with `--scenario <id>` and keep the
+matching transcript beside it. The command renders the saved events first, then
+the narrator recap and hidden shift. If the transcript is absent, the command
+fails with the path that is needed.
 
 ## The film
 

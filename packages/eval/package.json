@@ -14,25 +14,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
-    "bench": "node dist/cli/bench.js",
-    "grade": "node dist/cli/grade.js",
-    "evidence": "node dist/cli/evidence.js",
-    "calibrate": "node dist/cli/calibrate.js",
-    "hotel": "node dist/cli/hotel.js",
-    "script-likeness": "node dist/cli/script-likeness.js",
-    "cinematic": "node dist/cli/cinematic.js",
-    "humanlike": "node dist/cli/humanlike.js",
-    "drama-judge": "node dist/cli/drama-judge.js",
-    "narrate": "node dist/cli/narrate.js",
-    "sweep:repetition": "node dist/cli/sweep-repetition.js",
-    "sweep:goal-layer": "node dist/cli/sweep-goal-layer.js",
+    "behavior": "node dist/cli/behavior.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "sweep:temperature": "node dist/cli/sweep-temperature.js",
     "video": "node dist/cli/video.js",
-    "label": "tsc -p tsconfig.json && node dist/drama/label-ui/cli.js",
-    "drama:sim": "node dist/cli/drama-sim.js",
-    "beat-sheet:bench": "node dist/cli/beat-sheet-bench.js"
+    "drama:sim": "node dist/cli/drama-sim.js"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",

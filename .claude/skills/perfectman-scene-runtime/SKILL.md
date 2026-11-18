@@ -111,4 +111,3 @@ Authored lines follow the scenario's language. Keep verb ids, outcome names and 
 7. Nothing in the lines tells the reader what it is, mentions an id, or says violence "needs permission".
 8. No second `kill`, no physical beat inside 20 s of another.
 
-The drama judge (`docs/drama/judge.md`, 6 axes scored 1 to 5, failure codes D1 to D7) must not be an actor model, and is not calibrated yet. Use it as a second opinion, not as proof.

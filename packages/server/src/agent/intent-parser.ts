@@ -161,7 +161,7 @@ function cutAtSentence(text: string, max: number): string | null {
 
 /**
  * Rebuild a packet from a response whose JSON never closed. Forensic reads
- * (docs/eval/evidence/hoc-f*) showed every "No JSON object found" was a
+ * of failed runs showed every "No JSON object found" was a
  * response that opened as valid JSON and then ran away inside a string —
  * sign-offs in parentheses, emoji runs, numbered "edit" lines — until the
  * token cap. The closed fields are real; the open string is cut at a

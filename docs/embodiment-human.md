@@ -31,13 +31,6 @@ Every number is in one table, `HT` in `human/tuning.ts`, and every group of numb
 - **Logged.** `body-log.jsonl` beside `events.jsonl` (registered as `body_log` in `replay.json`; off with `PERFECTMAN_BODY_LOG=0`, absent at h = 0): one line per decision, `{t_ms, actor, kind, rule, line?, to?, tile?, ms?, detail?, skipped?}`, with rules such as `avert:lie`, `approach:cool`, `backchannel:tilt`, `witness:look_to_accused`, `interrupt:cut`, `typing`.
 - **The suite.** The hotel package's tests run with `PERFECTMAN_HUMAN_LIKENESS=0` (its vitest config), because they pin the body as it was; the human layer has its own tests.
 
-## Measuring it
-
-`pnpm --filter @perfectman/eval humanlike --run <dir> [--json]` reads a run folder (`frames.jsonl`, `body-frames.json`, `replay.json`) and prints: the distance at each line against the bands, stacking events (same tile for a second or more), gaze to the addressee (speaker, listener, mutual, break-and-return), reaction latency to the first key and line to line, overlap and dash-cut rate, typing against line length, gestures per line, non-verbal backchannel, idle motion, frozen windows, walks per actor-minute, and back-and-forth walks. A 0-100 score comes from the bands in `humanlike/score.ts` (each one marked prior, corpus or runs); the five group scores (proxemics, gaze, turns, gesture, idle) say why it moved. The cinematic score's embodiment group can take `score` as it is.
-
-- Baseline on runs 55-63: [`eval/humanlike-baseline.md`](eval/humanlike-baseline.md), [`.json`](eval/humanlike-baseline.json). Scores 29 to 66; run 63 is 62.
-- Offline preview: [`eval/humanlike-preview.md`](eval/humanlike-preview.md): run 63's cast and script on the Terraço, three arms (0, 0.6, 1), the real planner, the real shot planner and the fake grid hotel (`node packages/eval/dist/humanlike/preview.js <dir>`, then `python3 -I packages/eval/scripts/render-humanlike.py <dir>` for the contact sheets).
-
 ## What it needs from the client and the hotel
 
 None of this needed a wire change: gaze is `face` (a tile or a direction), faces are `expression`, gestures are the existing `wave`, `thumbs`, `laugh`, `sign`. What would make it better:

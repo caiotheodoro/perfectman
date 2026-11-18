@@ -1,7 +1,7 @@
 # Deploying
 
 Three pieces, each deployed by hand. Nothing deploys on push to `main`: the only
-workflows are `pr-gate.yml`, `benchmark.yml` and `docker-release.yml` (publishes an
+workflows are `pr-gate.yml` and `docker-release.yml` (publishes an
 image to GHCR on `v*` tags, and does not touch Fly or the Habbo server).
 
 | Piece | Where | How |

@@ -71,7 +71,7 @@ section entirely when the framing line in What already answers "why".>
 ### `## Validation` rules
 
 - First bullet is always the two commands, backticked, joined by ` - `, each followed by `PASS`. Add `(+N)` or `NNN passed (+N <label>)` when there is a test-count delta worth stating.
-- Follow with concrete proof, quantified: `edge_mutation_pressure moves 3 -> 4`, `--slice edges -> 12 variant runs, 0 failed, signals 100%`, `4-cell matrix committed under docs/eval/evidence/`. One or two bullets, no more.
+- Follow with concrete proof, quantified: `edge_mutation_pressure moves 3 -> 4`, `--slice edges -> 12 variant runs, 0 failed, signals 100%`. One or two bullets, no more.
 - If lint or tests were not run, or an unrelated pre-existing failure exists, say so in one plain bullet. Do not claim a green run you did not see.
 
 ## Register

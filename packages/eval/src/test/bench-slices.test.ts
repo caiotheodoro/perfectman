@@ -1,9 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
 import { SCENARIO_REGISTRY } from "@perfectman/shared";
-import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 
-describe("bench slices", () => {
+describe("behavior slices", () => {
   it("resolves every slice id against the scenario registry", () => {
     const registryIds = new Set(SCENARIO_REGISTRY.map(s => s.id));
     for (const [name, ids] of Object.entries(BENCH_SLICES)) {
@@ -12,10 +11,10 @@ describe("bench slices", () => {
     }
   });
 
-  it("golden slice stays pinned to GOLDEN_LABELS (order and uniqueness)", () => {
-    const golden = BENCH_SLICES.golden ?? [];
-    expect(golden).toEqual(GOLDEN_LABELS.map(g => g.scenarioId));
-    expect(new Set(golden).size, "a duplicated label would bench a scenario twice").toBe(golden.length);
+  it("core slice has no duplicates", () => {
+    const core = BENCH_SLICES.core ?? [];
+    expect(core.length).toBeGreaterThan(0);
+    expect(new Set(core).size).toBe(core.length);
   });
 
   it("edges slice covers all four edge_chaos scenarios", () => {

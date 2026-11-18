@@ -51,7 +51,7 @@ export type ReplayManifest = {
     norms_built?: string;
   };
   /**
-   * The cinematic score (docs/eval/cinematic-score.md): written by `pnpm --filter @perfectman/eval cinematic --run <dir> --write-replay`, not by the run.
+   * The cinematic score: an optional block a reader may attach to a replay; the run never writes it.
    * `groups` are 0-100 or null when a group was not scored (engagement needs the judge); `deterministic` is the mean of the four measured groups.
    */
   cinematic_score?: {

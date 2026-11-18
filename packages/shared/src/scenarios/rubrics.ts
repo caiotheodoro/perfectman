@@ -226,8 +226,7 @@ export const EDGE_CHAOS_RUBRIC: JudgeRubric = {
  * whether the AGENTS behaved well, not whether the NARRATOR wrote well, and a
  * transcript can score high on those while its narration is generic filler.
  *
- * Grounded in real committed output (docs/eval/evidence/deepseek/narrations.json,
- * 30 real deepseek-chat narrations) and the rule-fallback's own template
+ * Grounded in real narrator output and the rule-fallback's own template
  * (narrator.ts ruleNarrationFromTranscript: "{n} messages crossed the room
  * ... {n} moments of chosen silence"), not invented from taste:
  *  - The rule fallback is the literal concreteness=1/no_filler=1 anchor.
